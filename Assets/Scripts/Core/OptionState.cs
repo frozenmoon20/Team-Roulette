@@ -54,10 +54,10 @@ public class OptionState : MonoBehaviour
         }
 
         Instance = this;
-
+        DontDestroyOnLoad(gameObject);
         // 모든 옵션을 잠긴 상태로 초기화
 
-        foreach(OptionType type in System.Enum.GetValues(typeof(OptionType)))
+        foreach (OptionType type in System.Enum.GetValues(typeof(OptionType)))
         {
             unlocked[type] = false;
         }
