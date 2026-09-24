@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 using System.Collections.Generic;
-using TMPro.EditorUtilities;
+
 
 // 조건 충족 시 상호작용이 가능해지는 오브젝트의 기본 틀
 
