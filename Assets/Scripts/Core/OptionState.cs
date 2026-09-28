@@ -19,6 +19,11 @@ public enum OptionType
     Blur,
 
     // 사운드 관련
+    SFX,
+    BGM,
+
+    // 진행 기록 
+    MessageSent
 
 }
 

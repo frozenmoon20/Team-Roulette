@@ -38,7 +38,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _Brightness: 0.2
-    - _Contrast: 1.7
+    - _Contrast: 1.1
     - _DotAngle: 0
     - _DotDensity: 120
     - _Softness: 0.05
