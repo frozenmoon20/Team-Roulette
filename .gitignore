@@ -107,3 +107,9 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# free assets(0930)
+/Assets/Room1_Assets/Computer/
+/Assets/Room1_Assets/Computer.meta
+/Assets/Room1_Assets/Models/Desk Table/
+/Assets/Room1_Assets/Models/Desk Table.meta
