@@ -13,6 +13,10 @@ public class FirstPersonPlayer : MonoBehaviour
     public float mouseSensitivity = 2f;
     public float maxPitch = 89f;            // 위아래로 볼 수 있는 최대 각도
 
+    public float acceleration = 22f;    // 가속
+    public float deceleration = 28f;    // 감속
+    [Range(0f, 1f)] public float airControl = 0.5f;     // 공중에서 방향을 바꾸는 힘
+
     [System.NonSerialized] public bool canMove = true;
     [System.NonSerialized] public bool canLook = true;
     [System.NonSerialized] public bool canJump = true;
@@ -22,6 +26,8 @@ public class FirstPersonPlayer : MonoBehaviour
     CharacterController controller;
     float pitch;                // 위아래 각도
     float verticalVelocity;     // 떨어지는 속도
+
+    Vector3 horizontalVelocity; // 수평 속도
 
     void Awake()
     {
@@ -64,25 +70,57 @@ public class FirstPersonPlayer : MonoBehaviour
         bool grounded = controller.isGrounded;
         if (grounded && verticalVelocity < 0f) verticalVelocity = -2f;  // 바닥에 붙어 있게
 
-        Vector3 move = Vector3.zero;
-        if (Allowed(canMove, OptionType.Move))
+        // 입력 → 목표 속도
+        Vector3 targetVelocity = Vector3.zero;
+        if(Allowed(canMove, OptionType.Move))
         {
             float x = Input.GetAxisRaw("Horizontal");
             float z = Input.GetAxisRaw("Vertical");
-            move = transform.right * x + transform.forward * z;
-            if (move.sqrMagnitude > 1f) move.Normalize();               // 대각선이 더 빠르지 않게
+
+            Vector3 dir = transform.right * x + transform.forward * z;
+            if(dir.sqrMagnitude > 1f) dir.Normalize();
 
             bool sprint = canSprint && Input.GetKey(KeyCode.LeftShift);
-            move *= sprint ? sprintSpeed : moveSpeed;
+            targetVelocity = dir * (sprint ? sprintSpeed : moveSpeed);
 
             if (canJump && grounded && Input.GetButtonDown("Jump"))
+            {
                 verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            }
+
         }
 
+        // 현재 속도가 목표 속도로 서서히 다가가게
+
+        bool hasInput = targetVelocity.sqrMagnitude > 0.0001f;
+        float rate = hasInput ? acceleration : deceleration;
+        if (!grounded) rate *= airControl;
+        horizontalVelocity = Vector3.MoveTowards(horizontalVelocity, targetVelocity, rate * Time.deltaTime);
+
+        // 중력, 이동
         verticalVelocity += gravity * Time.deltaTime;
-        move.y = verticalVelocity;
-        controller.Move(move * Time.deltaTime);
+        Vector3 motion = horizontalVelocity;
+        motion.y = verticalVelocity;
+        controller.Move(motion * Time.deltaTime);
+
+        // 머리를 부딪히면 상승 중단
+        if ((controller.collisionFlags & CollisionFlags.Above) != 0 && verticalVelocity > 0f)
+            verticalVelocity = 0f;
+
+
+
     }
+
+    // 미니게임/연출 시작 시 미끄러짐 없이 즉시 멈추고 싶을 때 호출
+    public void StopMovement(ControllerColliderHit hit)
+    {
+        if (Mathf.Abs(hit.normal.y) > 0.3f) return;    // 바닥/천장은 무시
+
+        Vector3 n = new Vector3(hit.normal.x, 0f, hit.normal.z).normalized;
+        float into = Vector3.Dot(horizontalVelocity, n);
+        if (into < 0f) horizontalVelocity -= n * into;
+    }
+
 
     // 스위치가 켜져 있고, OptionState에서 해금되어 있어야 허용
     bool Allowed(bool flag, OptionType type)
@@ -95,4 +133,7 @@ public class FirstPersonPlayer : MonoBehaviour
         Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !locked;
     }
+
+    
 }
+
