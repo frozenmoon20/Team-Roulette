@@ -107,3 +107,8 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+
+ # 에셋스토어·라이선스 애매한 에셋 (비공개 저장소 Team-Roulette-Assets로 따로 공유)
+/Assets/StoreAssets/
+/Assets/StoreAssets.meta
