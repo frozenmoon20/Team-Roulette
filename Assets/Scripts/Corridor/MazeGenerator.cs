@@ -25,7 +25,9 @@ public class MazeGenerator : MonoBehaviour
         {
             for (int z = 0; z < height; z++)
             {
-                Vector3 position = new Vector3(x * cellSize, 0f, z * cellSize);
+               Vector3 position =
+    transform.position +
+    new Vector3(x * cellSize, 0f, z * cellSize);
                 GameObject cellObject = Instantiate(
                     mazeCellPrefab,
                     position,
@@ -38,6 +40,7 @@ public class MazeGenerator : MonoBehaviour
         }
 
         GeneratePath(0, 0);
+        OpenExit();
     }
 
     private void GeneratePath(int x, int z)
@@ -116,4 +119,12 @@ public class MazeGenerator : MonoBehaviour
             directions[randomIndex] = temp;
         }
     }
+
+    private void OpenExit()
+{
+    int exitX = width / 2;
+    int exitZ = height - 1;
+
+    cells[exitX, exitZ].RemoveNorthWall();
+}
 }
