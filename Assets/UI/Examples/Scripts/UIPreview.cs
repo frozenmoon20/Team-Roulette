@@ -39,6 +39,8 @@ namespace TeamRoulette.UI
             }
             if (Input.GetKeyDown(KeyCode.F3) && OptionState.Instance)
                 foreach (OptionType option in System.Enum.GetValues(typeof(OptionType))) OptionState.Instance.Unlock(option);
+            if (Input.GetKeyDown(KeyCode.F4)) ui.GetComponent<PawProgress>().CompleteStage(PawProgress.Count + 1);
+            if (Input.GetKeyDown(KeyCode.F5)) ui.GetComponent<PawProgress>().ResetProgress();
         }
         void OnDestroy()
         {

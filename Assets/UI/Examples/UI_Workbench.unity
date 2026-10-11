@@ -819,8 +819,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "UI \uBBF8\uB9AC\uBCF4\uAE30\nF1  \uB3C5\uBC31    F2  \uBAA9\uD45C \uC644\uB8CC   
-    F3  \uC548\uB0B4 \uD574\uAE08\nTAB  \uBAA9\uD45C    ESC  \uD658\uACBD\uC124\uC815"
+  m_text: "UI \uBBF8\uB9AC\uBCF4\uAE30\nF1 \uB300\uC0AC   F2 \uBAA9\uD45C \uC644\uB8CC  
+    F3 \uC548\uB0B4 \uD574\uAE08\nF4 \uBC1C\uBC14\uB2E5 +1   F5 \uBC1C\uBC14\uB2E5
+    \uCD08\uAE30\uD654   ESC \uC124\uC815"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: de6d13d1e9522754d864a6e35eb74525, type: 2}
   m_sharedMaterial: {fileID: -6672330616229023554, guid: de6d13d1e9522754d864a6e35eb74525, type: 2}
@@ -1244,6 +1245,10 @@ PrefabInstance:
       propertyPath: m_TextStyleHashCode
       value: -1183493901
       objectReference: {fileID: 0}
+    - target: {fileID: 3679620553141721313, guid: 2bd75e917149d0c4aa76033153a2e5b0, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
     - target: {fileID: 4128350763445669611, guid: 2bd75e917149d0c4aa76033153a2e5b0, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -1323,6 +1328,10 @@ PrefabInstance:
     - target: {fileID: 4128350763445669611, guid: 2bd75e917149d0c4aa76033153a2e5b0, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5175460801257933041, guid: 2bd75e917149d0c4aa76033153a2e5b0, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
       objectReference: {fileID: 0}
     - target: {fileID: 5388627152525146946, guid: 2bd75e917149d0c4aa76033153a2e5b0, type: 3}
       propertyPath: m_fontColor32.rgba
