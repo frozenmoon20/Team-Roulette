@@ -13,5 +13,10 @@ MonoBehaviour:
   m_Name: ExampleDialogue
   m_EditorClassIdentifier: Assembly-CSharp::TeamRoulette.UI.DialogueSequence
   lines:
-  - "\u2026\uBE5B\uC774 \uB4E4\uC5B4\uC628\uB2E4.\n\uCEE4\uD2BC\uC744 \uC5F4\uC5B4\uBCFC\uAE4C."
-  - "\uCC9C\uCC9C\uD788, \uD558\uB098\uC529 \uD574\uBCF4\uC790."
+  - "\uBE5B\uC774 \uB108\uBB34 \uBC1D\uC544\u2026"
+  - "\uC694\uC998 \uAD1C\uCC2E\uC544?"
+  - "\uC7A0\uAE50 \uBC14\uB78C\uC744 \uC42C\uACE0 \uC62C\uAE4C."
+  colorCodes:
+  - '#FFFFFF'
+  - '#86DDE5'
+  - '#FFFFFF'

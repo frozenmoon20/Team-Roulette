@@ -7,5 +7,13 @@ namespace TeamRoulette.UI
     public class DialogueSequence : ScriptableObject
     {
         [TextArea(2, 5)] public string[] lines;
+        [HideInInspector] public string[] colorCodes;
+
+        public Color GetLineColor(int index)
+        {
+            if (colorCodes != null && index >= 0 && index < colorCodes.Length &&
+                ColorUtility.TryParseHtmlString(colorCodes[index], out var value)) return value;
+            return Color.white;
+        }
     }
 }

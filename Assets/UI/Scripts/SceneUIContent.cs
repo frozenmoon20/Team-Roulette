@@ -19,7 +19,8 @@ namespace TeamRoulette.UI
 
         [Header("이 씬의 목표")]
         public List<Objective> objectives = new List<Objective>();
-        [Header("독백 (선택)")]
+        public string completedMessage = "목표 완료";
+        [Header("대사 (선택)")]
         public DialogueSequence dialogue;
         public bool playDialogueOnStart;
         public UnityEvent onDialogueFinished = new UnityEvent();

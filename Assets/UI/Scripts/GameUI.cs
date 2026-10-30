@@ -26,7 +26,7 @@ namespace TeamRoulette.UI
         [Header("기존 게임 연결 (비워두면 현재 씬에서 자동 탐색)")]
         public FirstPersonPlayer player;
         public PlayerMotionFeel motion;
-        [Tooltip("독백 / 설정 중 추가로 멈출 스크립트")]
+        [Tooltip("설정 중 추가로 멈출 스크립트")]
         public Behaviour[] extraInputToBlock = Array.Empty<Behaviour>();
         [Tooltip("배경음악 재생용 AudioSource를 연결하세요.")]
         public AudioSource[] musicSources = Array.Empty<AudioSource>();
@@ -38,13 +38,7 @@ namespace TeamRoulette.UI
         public GameObject hud;
         public GameObject dialoguePanel;
         public TMP_Text dialogueText;
-        public TMP_Text dialoguePage;
-        public RectTransform objectiveBody;
-        public CanvasGroup objectiveGroup;
-        public RectTransform objectiveList;
-        public ObjectiveRow objectiveTemplate;
-        public TMP_Text objectiveCount;
-        public TMP_Text objectiveArrow;
+        public TMP_Text objectiveText;
         public GameObject settings;
         public GameObject[] settingsPages;
         public Button[] tabButtons;
@@ -59,14 +53,14 @@ namespace TeamRoulette.UI
 
         readonly Dictionary<Behaviour, bool> blocked = new Dictionary<Behaviour, bool>();
         readonly Dictionary<GameObject, bool> hidden = new Dictionary<GameObject, bool>();
-        readonly List<ObjectiveRow> rows = new List<ObjectiveRow>();
         static GameUI inputOwner;
         SceneUIContent content;
         DialogueSequence currentDialogue;
-        int line, earliestAdvanceFrame, releaseAfterFrame;
+        int line, lineStartedFrame, releaseAfterFrame;
+        float lineElapsed;
         bool initialized;
-        bool pause, capturedInput, expanded = true, releasePending;
-        float savedTimeScale, targetHeight = 248f;
+        bool pause, capturedInput, releasePending;
+        float savedTimeScale;
         CursorLockMode savedCursor;
         bool savedCursorVisible;
         float originalBobHeight, originalBobSide;
@@ -74,7 +68,6 @@ namespace TeamRoulette.UI
         Coroutine captureRoutine;
         RenderTexture backdrop;
         Material runtimeBlur;
-        ScrollRect objectiveScroll;
         public bool IsPaused => pause;
         public bool IsDialogueOpen => currentDialogue != null;
 
@@ -88,8 +81,6 @@ namespace TeamRoulette.UI
             settings.SetActive(false);
             dialoguePanel.SetActive(false);
             blurredBackground.gameObject.SetActive(false);
-            objectiveTemplate.gameObject.SetActive(false);
-            objectiveScroll = objectiveList.GetComponentInParent<ScrollRect>();
             blurredBackground.color = new Color(.45f, .45f, .45f, 1f);
             backButton.onClick.AddListener(CloseSettings);
             for (int i = 0; i < tabButtons.Length; i++)
@@ -153,77 +144,65 @@ namespace TeamRoulette.UI
                 if (pause) CloseSettings(); else OpenSettings();
                 return;
             }
-            if (pause) return;
-            if (Input.GetKeyDown(KeyCode.Tab)) ToggleObjectives();
-            // The cursor stays locked during play; the wheel scrolls the open list.
-            if (expanded && !currentDialogue && objectiveScroll && Input.mouseScrollDelta.y != 0)
+            if (pause || Time.timeScale == 0) return;
+            if (currentDialogue && Time.frameCount > lineStartedFrame)
             {
-                float overflow = objectiveList.rect.height - objectiveScroll.viewport.rect.height;
-                if (overflow > 0) objectiveScroll.verticalNormalizedPosition = Mathf.Clamp01(objectiveScroll.verticalNormalizedPosition + Input.mouseScrollDelta.y * 54 / overflow);
+                lineElapsed += Time.unscaledDeltaTime;
+                if (lineElapsed >= 2f) AdvanceDialogue();
             }
-            if (currentDialogue && Time.frameCount > earliestAdvanceFrame && Input.GetKeyDown(KeyCode.Space)) AdvanceDialogue();
         }
 
         void LateUpdate()
         {
             // Keep gameplay blocked for the entire closing frame, including
             // PlayerInteractor.LateUpdate, so the back-button click cannot pick up an item.
-            if (releasePending && Time.frameCount > releaseAfterFrame && !pause && !currentDialogue) { ReleaseInput(); releasePending = false; }
-            float h = Mathf.MoveTowards(objectiveBody.sizeDelta.y, expanded ? targetHeight : 0, 1400 * Time.unscaledDeltaTime);
-            objectiveBody.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, h);
-            objectiveGroup.alpha = Mathf.Clamp01(h / targetHeight);
-            objectiveGroup.blocksRaycasts = expanded;
-            if (pause || currentDialogue)
+            if (releasePending && Time.frameCount > releaseAfterFrame && !pause) { ReleaseInput(); releasePending = false; }
+            if (pause)
             {
-                Cursor.lockState = pause ? CursorLockMode.None : CursorLockMode.Locked;
-                Cursor.visible = pause;
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
             }
-        }
-
-        public void ToggleObjectives()
-        {
-            expanded = !expanded;
-            objectiveArrow.text = expanded ? "TAB  −" : "TAB  +";
         }
 
         public void RefreshObjectives()
         {
-            foreach (var row in rows) { if (row) { row.gameObject.SetActive(false); Destroy(row.gameObject); } }
-            rows.Clear();
+            if (!content || !objectiveText) return;
             var seen = new HashSet<string>();
-            var active = new List<SceneUIContent.Objective>();
+            bool hasIncomplete = false;
             foreach (var item in content.objectives)
-                if (item != null && item.visible && !string.IsNullOrWhiteSpace(item.id) && seen.Add(item.id)) active.Add(item);
-            int completed = 0;
-            for (int pass = 0; pass < 2; pass++)
-                foreach (var item in active)
+            {
+                if (item == null || string.IsNullOrWhiteSpace(item.id) || !seen.Add(item.id) || item.completed) continue;
+                hasIncomplete = true;
+                if (item.visible)
                 {
-                    if (item.completed != (pass == 1)) continue;
-                    var row = Instantiate(objectiveTemplate, objectiveList);
-                    row.gameObject.SetActive(true);
-                    row.Set(item.text, item.completed);
-                    rows.Add(row);
-                    if (item.completed) completed++;
+                    objectiveText.text = item.text;
+                    return;
                 }
-            objectiveCount.text = completed + " / " + active.Count;
+            }
+            objectiveText.text = hasIncomplete ? "" : content.completedMessage;
         }
 
         public void ShowDialogue(DialogueSequence sequence)
         {
-            if (!isActiveAndEnabled || (inputOwner && inputOwner != this)) return;
+            if (!isActiveAndEnabled || pause || (inputOwner && inputOwner != this)) return;
             if (!sequence || sequence.lines == null || sequence.lines.Length == 0 || currentDialogue) return;
             currentDialogue = sequence;
             line = 0;
-            earliestAdvanceFrame = Time.frameCount;
             dialoguePanel.SetActive(true);
             RenderLine();
-            BlockInput();
         }
 
         void RenderLine()
         {
             dialogueText.text = currentDialogue.lines[line];
-            dialoguePage.text = "SPACE    " + (line + 1) + " / " + currentDialogue.lines.Length;
+            dialogueText.color = currentDialogue.GetLineColor(line);
+            lineElapsed = 0;
+            lineStartedFrame = Time.frameCount;
+            // Fit the backing to the current sentence, with a readable maximum width.
+            Vector2 size = dialogueText.GetPreferredValues(dialogueText.text, 880f, Mathf.Infinity);
+            var panel = (RectTransform)dialoguePanel.transform;
+            panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, Mathf.Clamp(size.x + 40f, 80f, 920f));
+            panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, Mathf.Max(56f, size.y + 20f));
         }
 
         public void AdvanceDialogue()
@@ -232,8 +211,6 @@ namespace TeamRoulette.UI
             if (++line < currentDialogue.lines.Length) { RenderLine(); return; }
             currentDialogue = null;
             dialoguePanel.SetActive(false);
-            releasePending = true;
-            releaseAfterFrame = Time.frameCount;
             content.onDialogueFinished.Invoke();
         }
 
@@ -285,8 +262,8 @@ namespace TeamRoulette.UI
             hud.SetActive(true);
             blurredBackground.gameObject.SetActive(false);
             ReleaseBackdrop();
-            earliestAdvanceFrame = Time.frameCount;
-            if (!currentDialogue) { releasePending = true; releaseAfterFrame = Time.frameCount; }
+            lineStartedFrame = Time.frameCount;
+            releasePending = true; releaseAfterFrame = Time.frameCount;
             if (EventSystem.current) EventSystem.current.SetSelectedGameObject(null);
             PlayerPrefs.Save();
         }
