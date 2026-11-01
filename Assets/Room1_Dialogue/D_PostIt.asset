@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1959a926c5d6c3418787cabe798da3c, type: 3}
+  m_Name: D_PostIt
+  m_EditorClassIdentifier: Assembly-CSharp::TeamRoulette.UI.DialogueSequence
+  lines:
+  - "\uBE44\uBC00\uBC88\uD638 \uD78C\uD2B8\uB97C \uC801\uC740 \uD3EC\uC2A4\uD2B8\uC787."
+  - "\uACA8\uC6B8\uC774\uAC00 \uC544\uD320\uC744 \uB54C\uBD80\uD130"
+  - "\uC774 \uBC88\uD638\uB85C \uBC14\uAFBC \uAE30\uC5B5\uC774 \uB09C\uB2E4.."
+  colorCodes:
+  - '#FFFFFF'
+  - '#FFFFFF'
+  - '#FFFFFF'

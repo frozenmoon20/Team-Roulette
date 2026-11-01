@@ -14,7 +14,7 @@ public class UnlockNotice : MonoBehaviour
 
     void Awake()
     {
-        canvasGroup.alpha = 0f;    
+        canvasGroup.alpha = 0f;
     }
 
     void OnEnable()
@@ -29,7 +29,7 @@ public class UnlockNotice : MonoBehaviour
 
     void HandleOptionChanged(OptionType type, bool isUnlocked)
     {
-        if(!isUnlocked)
+        if (!isUnlocked)
         {
             return;
         }
@@ -44,8 +44,9 @@ public class UnlockNotice : MonoBehaviour
 
     string GetDisplayName(OptionType type)
     {
-        switch (type) {
-            case OptionType.Move:   return "이동";
+        switch (type)
+        {
+            case OptionType.Move: return "이동";
             case OptionType.RotateCamera: return "카메라 회전";
             case OptionType.Grab: return "잡기";
             case OptionType.Push: return "밀기";
@@ -53,7 +54,8 @@ public class UnlockNotice : MonoBehaviour
             case OptionType.Hand: return "손";
             case OptionType.SFX: return "효과음";
             case OptionType.BGM: return "배경음";
-            default: return null;
+            case OptionType.Jump: return "점프";
+            default: return null;   // MessageSent 같은 진행 기록은 알림을 띄우지 않음
 
 
         }
@@ -62,7 +64,7 @@ public class UnlockNotice : MonoBehaviour
     public void Show(string message)
     {
         noticeText.text = message;
-        if(running != null)
+        if (running != null)
         {
             StopCoroutine(running);
         }

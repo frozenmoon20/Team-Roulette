@@ -23,7 +23,11 @@ public enum OptionType
     BGM,
 
     // 진행 기록 
-    MessageSent
+    MessageSent,
+
+    Jump,
+
+    Run
 
 }
 
