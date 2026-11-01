@@ -93,7 +93,13 @@ public class PlayerInteractor : MonoBehaviour
     void TryReturnHeld()
     {
         PlayerHand hand = PlayerHand.Instance;
-        if (hand != null && hand.Held != null) hand.ReturnHeld();
+        if (hand == null || hand.Held == null) return;
+
+        // (복도 미니게임1) 들고 있는 게 캡슐 장난감이면, 열 수 있을 때는 돌려놓지 않고 연다
+        CapsuleToy capsule = hand.Held.GetComponent<CapsuleToy>();
+        if (capsule != null && capsule.TryOpen()) return;
+
+        hand.ReturnHeld();
     }
 
     void UpdateUI()
