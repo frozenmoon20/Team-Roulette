@@ -1,0 +1,1 @@
+Rebuild with wall height 4 and half-unit grid, preserve user cubes, consolidate created assets. No backup.

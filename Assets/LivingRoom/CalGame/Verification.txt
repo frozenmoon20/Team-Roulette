@@ -1,0 +1,1 @@
+PASS: initial state; collider interaction routing; imported sound playback; separate clicks; Circle visibility; repeated clicks; enable/disable persistence.

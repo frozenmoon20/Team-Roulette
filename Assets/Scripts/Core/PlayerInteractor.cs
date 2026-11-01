@@ -36,6 +36,8 @@ public class PlayerInteractor : MonoBehaviour
     GameUI ui;
 
     void Awake() { instance = this; }
+    // (거실) 씬을 겹쳐 열었다 돌아올 때 플레이어가 꺼졌다 켜지므로, 켜질 때 다시 '나'로 등록
+    void OnEnable() { instance = this; lockedLastFrame = false; }
     void OnDestroy() { if (instance == this) instance = null; }
 
     void LateUpdate()

@@ -1,0 +1,1 @@
+WashGame installed in Room3_LivingRoom. Sink transform preserved. Coverage 80%. All created assets under WashGame.

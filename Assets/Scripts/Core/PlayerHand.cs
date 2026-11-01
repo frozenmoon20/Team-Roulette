@@ -42,7 +42,13 @@ public class PlayerHand : MonoBehaviour
     }
     void OnDestroy() { if (Instance == this) Instance = null; }
 
-    void OnEnable() { OptionState.OnOptionChanged += HandleOptionChanged; }
+    void OnEnable()
+    {
+        // Additive Room3 visits suspend the original player rather than recreate it.
+        Instance = this;
+        OptionState.OnOptionChanged += HandleOptionChanged;
+        Refresh();
+    }
     void OnDisable() { OptionState.OnOptionChanged -= HandleOptionChanged; }
 
     void Start() { Refresh(); }
