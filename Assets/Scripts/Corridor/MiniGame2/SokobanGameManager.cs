@@ -1,26 +1,41 @@
 using UnityEngine;
+using TeamRoulette.UI;
 
 public class SokobanGameManager : MonoBehaviour
 {
     public SokobanGoal[] goals;
     public Transform playerResetPoint;
 
-    public bool IsCleared { get; private set; }
+    public GameObject nextPath;
+
+    public bool IsCleared
+    {
+        get;
+        private set;
+    }
 
     bool gameStarted;
+
     SokobanPushBox[] boxes;
 
     void Start()
     {
-        boxes = FindObjectsByType<SokobanPushBox>(
-            FindObjectsSortMode.None
-        );
+        boxes =
+            FindObjectsByType<SokobanPushBox>(
+                FindObjectsSortMode.None
+            );
+
+        if (nextPath != null)
+            nextPath.SetActive(false);
     }
 
     void Update()
     {
-        if (gameStarted && !IsCleared &&
-            Input.GetKeyDown(KeyCode.R))
+        if (
+            gameStarted &&
+            !IsCleared &&
+            Input.GetKeyDown(KeyCode.R)
+        )
         {
             ResetGame();
         }
@@ -36,9 +51,14 @@ public class SokobanGameManager : MonoBehaviour
         if (IsCleared)
             return;
 
-        foreach (SokobanGoal goal in goals)
+        foreach (
+            SokobanGoal goal in goals
+        )
         {
-            if (goal == null || !goal.IsCorrect)
+            if (
+                goal == null ||
+                !goal.IsCorrect
+            )
                 return;
         }
 
@@ -49,12 +69,30 @@ public class SokobanGameManager : MonoBehaviour
     {
         IsCleared = true;
 
-        foreach (SokobanPushBox box in boxes)
+        foreach (
+            SokobanPushBox box in boxes
+        )
         {
             box.LockBox();
         }
 
-        Debug.Log("소코반 미니게임 클리어!");
+        if (nextPath != null)
+            nextPath.SetActive(true);
+
+        SceneUIContent ui =
+            FindFirstObjectByType<SceneUIContent>();
+
+        if (ui != null)
+        {
+            ui.CompleteObjective(
+                "sokoban"
+            );
+        }
+
+        Debug.Log(
+            "소코반 미니게임 클리어!"
+        );
+
         PlayerInteractor.ShowHint(
             "모든 상자를 올바른 위치에 놓았다."
         );
@@ -62,13 +100,17 @@ public class SokobanGameManager : MonoBehaviour
 
     void ResetGame()
     {
-        foreach (SokobanGoal goal in goals)
+        foreach (
+            SokobanGoal goal in goals
+        )
         {
             if (goal != null)
                 goal.ResetGoal();
         }
 
-        foreach (SokobanPushBox box in boxes)
+        foreach (
+            SokobanPushBox box in boxes
+        )
         {
             if (box != null)
                 box.ResetBox();
@@ -77,7 +119,10 @@ public class SokobanGameManager : MonoBehaviour
         FirstPersonPlayer player =
             FindFirstObjectByType<FirstPersonPlayer>();
 
-        if (player != null && playerResetPoint != null)
+        if (
+            player != null &&
+            playerResetPoint != null
+        )
         {
             CharacterController controller =
                 player.GetComponent<CharacterController>();
@@ -95,7 +140,6 @@ public class SokobanGameManager : MonoBehaviour
                 controller.enabled = true;
         }
 
-        Debug.Log("소코반 리셋!");
         PlayerInteractor.ShowHint(
             "퍼즐을 처음부터 다시 시작한다."
         );

@@ -1,4 +1,5 @@
 using UnityEngine;
+using TeamRoulette.UI;
 
 public class LoopCheckTrigger : MonoBehaviour
 {
@@ -6,8 +7,6 @@ public class LoopCheckTrigger : MonoBehaviour
 
     bool started = false;
 
-    // 현재 플레이어 기준의 '앞'이
-    // Trigger의 forward 방향과 같은지 저장
     bool currentForwardIsTriggerForward = true;
 
     private void OnTriggerEnter(Collider other)
@@ -24,39 +23,56 @@ public class LoopCheckTrigger : MonoBehaviour
         if (controller == null)
             return;
 
-        Vector3 moveDirection = controller.velocity.normalized;
+        Vector3 moveDirection =
+            controller.velocity.normalized;
 
         bool physicalForward =
-            Vector3.Dot(moveDirection, transform.forward) > 0f;
+            Vector3.Dot(
+                moveDirection,
+                transform.forward
+            ) > 0f;
 
-        // 최초 진입
+        // 반복 복도 최초 진입
         if (!started)
         {
             started = true;
 
-            // 처음 들어오는 방향을 플레이어의 '앞'으로 저장
-            currentForwardIsTriggerForward = physicalForward;
+            currentForwardIsTriggerForward =
+                physicalForward;
+
+            SceneUIContent ui =
+                FindFirstObjectByType<SceneUIContent>();
+
+            if (ui != null)
+            {
+                ui.CompleteObjective(
+                    "corridor_start"
+                );
+
+                ui.RevealObjective(
+                    "corridor_loop"
+                );
+            }
 
             manager.PrepareNextLoop();
 
             Debug.Log("반복 복도 시작");
+
             return;
         }
 
-        // 현재 플레이어 기준으로 앞으로 간 건지 판단
         bool goingForward =
-            physicalForward == currentForwardIsTriggerForward;
+            physicalForward ==
+            currentForwardIsTriggerForward;
 
         bool correct;
 
         if (manager.hasAnomaly)
         {
-            // 이상현상 → 뒤로 돌아가야 정답
             correct = !goingForward;
         }
         else
         {
-            // 정상 → 그대로 진행해야 정답
             correct = goingForward;
         }
 
@@ -67,13 +83,13 @@ public class LoopCheckTrigger : MonoBehaviour
 
         Debug.Log(
             correct
-                ? "정답! 현재 성공 횟수: " + manager.successCount
+                ? "정답! 현재 성공 횟수: "
+                    + manager.successCount
                 : "오답! 성공 횟수 초기화"
         );
 
-        // 이번에 플레이어가 선택한 방향이
-        // 다음 복도의 새로운 '앞' 방향이 됨
-        currentForwardIsTriggerForward = physicalForward;
+        currentForwardIsTriggerForward =
+            physicalForward;
 
         manager.PrepareNextLoop();
     }

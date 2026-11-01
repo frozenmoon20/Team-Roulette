@@ -1,4 +1,5 @@
 using UnityEngine;
+using TeamRoulette.UI;
 
 public class SokobanEntryTrigger : MonoBehaviour
 {
@@ -18,6 +19,13 @@ public class SokobanEntryTrigger : MonoBehaviour
             return;
 
         activated = true;
+        SceneUIContent ui =
+    FindFirstObjectByType<SceneUIContent>();
+
+if (ui != null)
+{
+    ui.RevealObjective("sokoban");
+}
 
         if (OptionState.Instance != null)
             OptionState.Instance.Unlock(OptionType.Push);

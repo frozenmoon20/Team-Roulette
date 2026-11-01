@@ -1,4 +1,5 @@
 using UnityEngine;
+using TeamRoulette.UI;
 
 public class CorridorLoopManager : MonoBehaviour
 {
@@ -14,16 +15,19 @@ public class CorridorLoopManager : MonoBehaviour
     int consecutiveNormals = 0;
 
     bool firstLoop = true;
+    bool cleared = false;
 
     public void PrepareNextLoop()
     {
+        if (cleared)
+            return;
+
         if (successCount >= clearCount)
         {
             ClearLoop();
             return;
         }
 
-        // 첫 번째 복도는 무조건 정상
         if (firstLoop)
         {
             firstLoop = false;
@@ -33,9 +37,6 @@ public class CorridorLoopManager : MonoBehaviour
             consecutiveNormals = 1;
             consecutiveAnomalies = 0;
         }
-
-        // 정상 복도가 이미 2번 연속 나왔다면
-        // 다음은 무조건 이상현상
         else if (consecutiveNormals >= 2)
         {
             hasAnomaly = true;
@@ -43,9 +44,6 @@ public class CorridorLoopManager : MonoBehaviour
             consecutiveAnomalies = 1;
             consecutiveNormals = 0;
         }
-
-        // 이상현상이 이미 2번 연속 나왔다면
-        // 다음은 무조건 정상
         else if (consecutiveAnomalies >= 2)
         {
             hasAnomaly = false;
@@ -53,11 +51,10 @@ public class CorridorLoopManager : MonoBehaviour
             consecutiveNormals = 1;
             consecutiveAnomalies = 0;
         }
-
-        // 그 외에는 랜덤
         else
         {
-            hasAnomaly = Random.value < 0.5f;
+            hasAnomaly =
+                Random.value < 0.5f;
 
             if (hasAnomaly)
             {
@@ -72,7 +69,9 @@ public class CorridorLoopManager : MonoBehaviour
         }
 
         if (anomalyObject != null)
-            anomalyObject.SetActive(hasAnomaly);
+            anomalyObject.SetActive(
+                hasAnomaly
+            );
 
         Debug.Log(
             hasAnomaly
@@ -83,6 +82,8 @@ public class CorridorLoopManager : MonoBehaviour
 
     void ClearLoop()
     {
+        cleared = true;
+
         hasAnomaly = false;
 
         if (anomalyObject != null)
@@ -91,6 +92,22 @@ public class CorridorLoopManager : MonoBehaviour
         if (nextPath != null)
             nextPath.SetActive(true);
 
-        Debug.Log("반복 복도 클리어!");
+        SceneUIContent ui =
+            FindFirstObjectByType<SceneUIContent>();
+
+        if (ui != null)
+        {
+            ui.CompleteObjective(
+                "corridor_loop"
+            );
+        }
+
+        PlayerInteractor.ShowHint(
+            "반복되는 복도를 빠져나왔다."
+        );
+
+        Debug.Log(
+            "반복 복도 클리어!"
+        );
     }
 }

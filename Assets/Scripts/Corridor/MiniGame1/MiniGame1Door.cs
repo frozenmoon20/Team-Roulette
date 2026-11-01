@@ -1,4 +1,5 @@
 using UnityEngine;
+using TeamRoulette.UI;
 
 public class MiniGame1Door : MonoBehaviour, IInteractable, IHasName
 {
@@ -9,6 +10,7 @@ public class MiniGame1Door : MonoBehaviour, IInteractable, IHasName
     public float openSpeed = 3f;
 
     bool opened;
+
     Quaternion closedRotation;
     Quaternion openRotation;
 
@@ -31,11 +33,12 @@ public class MiniGame1Door : MonoBehaviour, IInteractable, IHasName
         if (!opened)
             return;
 
-        door.localRotation = Quaternion.Slerp(
-            door.localRotation,
-            openRotation,
-            openSpeed * Time.deltaTime
-        );
+        door.localRotation =
+            Quaternion.Slerp(
+                door.localRotation,
+                openRotation,
+                openSpeed * Time.deltaTime
+            );
     }
 
     public void Interact()
@@ -45,12 +48,28 @@ public class MiniGame1Door : MonoBehaviour, IInteractable, IHasName
 
         if (!MiniGame1State.HasKey)
         {
-            PlayerInteractor.ShowHint("잠겨 있다.");
+            PlayerInteractor.ShowHint(
+                "잠겨 있다."
+            );
+
             return;
         }
 
         opened = true;
 
-        PlayerInteractor.ShowHint("문이 열렸다.");
+        SceneUIContent ui =
+            FindFirstObjectByType<SceneUIContent>();
+
+        if (ui != null)
+        {
+            ui.CompleteObjective(
+                "minigame1"
+            );
+
+        }
+
+        PlayerInteractor.ShowHint(
+            "문이 열렸다."
+        );
     }
 }
