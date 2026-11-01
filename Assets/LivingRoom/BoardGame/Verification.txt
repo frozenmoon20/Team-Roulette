@@ -1,0 +1,3 @@
+PASS: 21 items; initial floor/board disorder; exact rotated overlap; rotated boundaries; small overlap; input ownership; detach; held/floor/overlap messages; invalid placement; LIFO C/B/A; retrieve and reattach; red borders; all-trash completion allowed; G hold/reset; no persistence; input restore; completed lockout.
+PASS: scene reload restores initial 14 board / 7 floor items, empty trash, no held item, incomplete state and start interaction; disabling BoardGame restores inputs.
+PASS: shared inputs remain enabled in Edit mode after verification.

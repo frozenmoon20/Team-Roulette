@@ -25,6 +25,7 @@ public class PlayerInteractor : MonoBehaviour
     bool lockedLastFrame;
 
     void Awake()     { instance = this; }
+    void OnEnable() { instance = this; lockedLastFrame = false; }
     void OnDestroy() { if (instance == this) instance = null; }
 
     void LateUpdate()

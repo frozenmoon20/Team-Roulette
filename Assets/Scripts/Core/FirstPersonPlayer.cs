@@ -39,6 +39,20 @@ public class FirstPersonPlayer : MonoBehaviour
         LockCursor(true);
     }
 
+    // Scene travel restores the view as well as the body, without carrying walking momentum.
+    public void Teleport(Vector3 position, Quaternion rotation, Quaternion cameraRotation)
+    {
+        bool wasEnabled = controller.enabled;
+        controller.enabled = false;
+        transform.SetPositionAndRotation(position, rotation);
+        pitch = Mathf.Clamp(Mathf.DeltaAngle(0, cameraRotation.eulerAngles.x), -maxPitch, maxPitch);
+        if (cameraRoot) cameraRoot.localRotation = cameraRotation;
+        horizontalVelocity = Vector3.zero;
+        verticalVelocity = 0;
+        controller.enabled = wasEnabled;
+        Physics.SyncTransforms();
+    }
+
     void Update()
     {
         HandleCursor();
@@ -46,15 +60,18 @@ public class FirstPersonPlayer : MonoBehaviour
         Move();
     }
 
+    [System.NonSerialized] public bool externalCursorControl;
+
     void HandleCursor()
     {
+        if (externalCursorControl) return;
         if (Input.GetKeyDown(KeyCode.Escape)) LockCursor(false);
         else if (Input.GetMouseButtonDown(0) && Cursor.lockState != CursorLockMode.Locked) LockCursor(true);
     }
 
     void Look()
     {
-        if (Cursor.lockState != CursorLockMode.Locked) return;
+        if (Cursor.lockState != CursorLockMode.Locked && !externalCursorControl) return;
         if (!Allowed(canLook, OptionType.RotateCamera)) return;
 
         float mx = Input.GetAxis("Mouse X") * mouseSensitivity;

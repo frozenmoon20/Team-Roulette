@@ -1,0 +1,47 @@
+WashGame Play Mode verification
+PASS: WashGame exists in scene
+PASS: Exactly one active OptionState; Inspector target and runtime singleton match
+PASS: OptionState Inspector refreshes runtime dictionary automatically
+PASS: WashScreen shader compiled
+PASS: Composite uses one UI pass; blur passes are isolated
+PASS: Replaceable particle and audio references assigned
+PASS: Soap cannot skip water start
+PASS: First click starts live blur and water particles
+PASS: Object selection locks the cursor for first-person aiming
+PASS: Central crosshair remains visible during object selection
+PASS: Instructions no longer offer right-click exit
+PASS: Blur checkbox is on during washing
+PASS: Water particles start silently
+PASS: Unchecking OptionState Blur turns the shader off
+PASS: Checking OptionState Blur turns the shader on
+PASS: Movement remains enabled while mouse paints
+PASS: RotateCamera stays checked and player look remains enabled during washing
+PASS: World labels removed
+PASS: Central crosshair remains visible during object selection
+PASS: Instructions no longer offer right-click exit
+PASS: Out-of-order towel is ignored
+PASS: Second water click wets face
+PASS: Soap painting freezes camera without changing RotateCamera option
+PASS: Painting confines the tool cursor to the game window
+PASS: Gauge starts at left edge with no percentage text
+PASS: Repeated brush stroke never double-counts coverage
+PASS: Pause blocks painting and stage changes
+PASS: Settings menu pauses WashGame
+PASS: Closing settings preserves painting freeze, coverage and HUD
+PASS: Cancel does not unlock Blur
+PASS: Cancel restores camera and input state
+PASS: 90% soap coverage fills the screen and keeps Blur checked
+PASS: Completed soap covers the entire screen
+PASS: Soap completion restores movement and locked camera aiming
+PASS: Water starts timed rinse
+PASS: Rinse removes foam and enables towel
+PASS: Water is off before selecting the towel
+PASS: Exactly two water splash sounds, no loop
+PASS: Towel painting freezes camera without changing RotateCamera option
+PASS: Partial wipe keeps uncleared blur while recording towel area
+PASS: Droplets and blur share the towel mask
+PASS: 90% towel coverage unchecks Blur and clears all remaining effects
+PASS: Completion immediately removes both effects
+PASS: Completion restores controls and releases render target
+PASS: Completed game cannot restart or relock Blur
+ALL CHECKS PASSED

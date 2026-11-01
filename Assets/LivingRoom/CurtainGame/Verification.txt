@@ -1,0 +1,19 @@
+CurtainGame Play Mode verification
+PASS: Dog starts hidden and independent
+PASS: Start and End are active trigger volumes
+PASS: Start contact shows Dog and shrinks player to 0.9
+PASS: Fractional Z smoothly scales body, speed and jump
+PASS: CharacterController world collision width shrinks
+PASS: Dog moves through intermediate positions, not teleporting
+PASS: Dog stops one unit ahead
+PASS: Walking backward grows player while Dog waits
+PASS: Retreat past the entrance restores full size
+PASS: Minimum size is 0.4
+PASS: Dog reaches Z15 and retains its size
+PASS: End contact locks player and hides Dog
+PASS: Screen is white and player stays fixed during finale
+PASS: Finale restores controls, size and brightness
+PASS: Original values and arrival Z are restored
+PASS: Both curtains reach their open positions
+PASS: Sequence runs once and curtains remain open
+ALL CHECKS PASSED

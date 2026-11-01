@@ -68,6 +68,7 @@ namespace TeamRoulette.UI
         Coroutine captureRoutine;
         RenderTexture backdrop;
         Material runtimeBlur;
+        public event Action<DialogueSequence> DialogueFinished;
         public bool IsPaused => pause;
         public bool IsDialogueOpen => currentDialogue != null;
 
@@ -121,6 +122,7 @@ namespace TeamRoulette.UI
             OptionState.OnOptionChanged += OptionChanged;
             RefreshObjectives();
             RefreshGuides();
+            if (currentDialogue) dialoguePanel.SetActive(true);
         }
 
         void Start()
@@ -209,9 +211,11 @@ namespace TeamRoulette.UI
         {
             if (pause || !currentDialogue) return;
             if (++line < currentDialogue.lines.Length) { RenderLine(); return; }
+            var finished = currentDialogue;
             currentDialogue = null;
             dialoguePanel.SetActive(false);
             content.onDialogueFinished.Invoke();
+            DialogueFinished?.Invoke(finished);
         }
 
         public void OpenSettings()
@@ -291,6 +295,7 @@ namespace TeamRoulette.UI
             savedCursorVisible = Cursor.visible;
             Remember(player);
             Remember(motion);
+            foreach (var component in extraInputToBlock) Remember(component);
             foreach (var interactor in FindObjectsByType<PlayerInteractor>(FindObjectsSortMode.None))
             {
                 Remember(interactor);
@@ -300,7 +305,6 @@ namespace TeamRoulette.UI
             }
             foreach (var game in FindObjectsByType<EyeOpen>(FindObjectsSortMode.None)) Remember(game);
             foreach (var game in FindObjectsByType<SoundSearchMinigame>(FindObjectsSortMode.None)) Remember(game);
-            foreach (var component in extraInputToBlock) Remember(component);
         }
 
         void ReleaseInput()
@@ -397,7 +401,6 @@ namespace TeamRoulette.UI
             if (canvas) canvas.enabled = true;
             ReleaseInput();
             releasePending = false;
-            currentDialogue = null;
             if (settings) settings.SetActive(false);
             if (dialoguePanel) dialoguePanel.SetActive(false);
             if (hud) hud.SetActive(true);
