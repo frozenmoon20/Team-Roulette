@@ -12,7 +12,9 @@ using TeamRoulette.UI;
 //   3) 화면 떨림이 점점 커지고, 심장 소리가 점점 빨라지고, 숨소리가 점점 커짐
 //   4) 두려움 독백 (fearDialogue)
 //   5) 눈을 감음: 시야가 좁아지다 한 번 버티듯 살짝 넓어졌다가 → 끝까지 감음
-//   6) 완전히 감기는 순간 전화벨이 뚝 끊김 → 심장 소리만 잠깐 → 다음 씬 (nextScene)
+//      마지막으로 끝까지 감는 동안: 심장 소리가 점점 커지고, 암전 직전에 심장 소리·전화벨이 일그러짐
+//      (높낮이가 낮아지며 늘어지고, 출렁이고, 먹먹해짐 → 의식이 멀어지는 느낌. 미니게임2 개 소리 일그러짐과 같은 방식)
+//   6) 완전히 감기는 순간 전화벨이 뚝 끊김 → 일그러진 심장 소리만 잦아듦 → 다음 씬 (nextScene)
 // 원리:
 //   - 떨림: 매 프레임 마지막(LateUpdate)에 카메라의 위치·각도를 작게 흔든다. 펄린 노이즈라 덜덜 떨리는 느낌.
 //     ViewFocus는 고개(PlayerCameraRoot)를 붙잡고, 이 스크립트는 그 아래 카메라만 흔들어서 서로 안 싸움.
@@ -52,11 +54,24 @@ public class PhoneScare : MonoBehaviour
     public float heartPitchTo = 1.5f;        // 심장 소리 최대 빠르기 (점점 빨라짐)
     public float soundVolume = 1f;           // 심장·숨소리 최대 크기
 
+    [Header("암전 직전 소리 일그러짐")]
+    [Range(0f, 1f)] public float warpStart = 0.4f;   // 마지막 눈 감기의 몇 % 지점부터 일그러지기 시작할지 (0 = 처음부터, 0.4 = 40%부터)
+    public float ringPitchEnd = 0.5f;        // 다 감기 직전 전화벨 높낮이 (낮을수록 늘어지고 괴상함)
+    public float heartPitchEnd = 0.55f;      // 다 감기 직전 심장 소리 높낮이 (낮을수록 무겁고 느리게 쿵…쿵…)
+    public float wobble = 0.08f;             // 높낮이가 출렁이는 폭 (0이면 출렁임 없음)
+    public float wobbleSpeed = 3f;           // 출렁이는 빠르기
+    public float muffleCutoff = 700f;        // 다 감기 직전 먹먹함 (Hz, 낮을수록 물속처럼 먹먹. 22000이면 안 먹먹함)
+    [Range(0f, 1f)] public float heartEndVolume = 1f;   // 다 감기 직전 심장 소리 크기 (Sound Volume에 곱함)
+    [Range(0f, 1f)] public float ringEndVolume = 1f;    // 다 감기 직전 전화벨 크기 (원래 크기에 곱함)
+    public bool fadeHeartInDark = true;      // 체크: 암전 뒤 심장 소리가 Dark Hold 동안 서서히 사라짐 / 해제: 씬이 넘어갈 때까지 그대로
+
     [Header("다음")]
-    public string nextScene = "";            // 넘어갈 씬 이름 (예: Hallway_Temp). 비워 두면 씬은 안 넘기고 onClosed만
+    public string nextScene = "";            // 넘어갈 씬 이름 (예: Corridor). 비워 두면 씬은 안 넘기고 onClosed만
+    public float arriveFadeTime = 2f;        // 다음 씬에서 까만 화면이 걷히는 시간 (초)
     public UnityEvent onClosed;              // 눈을 완전히 감은 뒤 (비워도 됨)
 
     bool started;
+    Coroutine fearRoutine;                   // 떨림·심장 소리를 키우는 중 (마지막 눈 감기 때 멈춤)
     float shake;                             // 지금 떨림 세기 0~1
     Transform cam;
     Vector3 camPos;                          // 흔들기 전 카메라 위치·각도 (부모 기준)
@@ -106,7 +121,7 @@ public class PhoneScare : MonoBehaviour
         }
         StartLoop(heartbeat);
         StartLoop(breath);
-        StartCoroutine(BuildFear());
+        fearRoutine = StartCoroutine(BuildFear());
 
         // 4) 두려움 독백
         yield return Wait(fearDialogue);
@@ -115,19 +130,21 @@ public class PhoneScare : MonoBehaviour
         // 5) 눈을 감음: 내려오다 → 한 번 버티듯 살짝 뜨고 → 끝까지
         yield return Lids(0f, 0.55f, 0.8f);
         yield return Lids(0.55f, 0.3f, 0.5f);
-        yield return Lids(0.3f, 1f, closeTime);
+        yield return CloseWithWarp();
 
-        // 6) 완전히 감은 순간 전화벨이 뚝 끊김 → 숨소리 잦아들고 심장 소리만
+        // 6) 완전히 감은 순간 전화벨이 뚝 끊김 → 숨소리 잦아들고 (일그러진) 심장 소리만
         if (ring != null) ring.Stop();
         shake = 0f;
         RestoreCamera();
         StartCoroutine(FadeOut(breath, 0.6f));
+        if (fadeHeartInDark) StartCoroutine(FadeOut(heartbeat, darkHold));
         yield return new WaitForSeconds(darkHold);
 
         onClosed.Invoke();
         if (!string.IsNullOrEmpty(nextScene))
         {
-            if (Application.CanStreamedLevelBeLoaded(nextScene)) SceneManager.LoadScene(nextScene);
+            // 이미 눈을 다 감아 캄캄하므로, 까만 채로 넘어가서 새 씬에서 서서히 밝아짐 (눈을 뜨는 느낌)
+            if (Application.CanStreamedLevelBeLoaded(nextScene)) SceneFader.Go(nextScene, 0f, arriveFadeTime, 0f, startBlack: true);
             else Debug.LogWarning("PhoneScare: '" + nextScene + "' 씬을 불러올 수 없어요. 이름이 맞는지, File > Build Profiles의 Scene List에 들어 있는지 확인하세요.", this);
         }
     }
@@ -147,6 +164,57 @@ public class PhoneScare : MonoBehaviour
             yield return null;
         }
         shake = 1f;
+    }
+
+    // 마지막으로 끝까지 눈을 감는 동안 (closeTime):
+    //   - 심장 소리는 처음부터 점점 커짐
+    //   - warpStart 지점부터 전화벨·심장 소리가 일그러짐: 높낮이가 낮아지고(늘어짐) + 출렁이고 + 먹먹해짐
+    //   먹먹함은 각 소리에 Audio Low Pass Filter를 붙여서(없으면 자동으로 붙임) 높은 소리를 깎아 낸다.
+    IEnumerator CloseWithWarp()
+    {
+        if (fearRoutine != null) StopCoroutine(fearRoutine);     // 심장 빠르기를 키우던 것과 섞이지 않게
+        AudioLowPassFilter ringFilter = Muffler(ring);
+        AudioLowPassFilter heartFilter = Muffler(heartbeat);
+
+        float ringPitch0 = ring != null ? ring.pitch : 1f;
+        float ringVol0 = ring != null ? ring.volume : 1f;
+        float heartPitch0 = heartbeat != null ? heartbeat.pitch : 1f;
+        float heartVol0 = heartbeat != null ? heartbeat.volume : 1f;
+
+        for (float t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(closeTime, 0.01f))
+        {
+            SetLids(Mathf.Lerp(0.3f, 1f, Mathf.SmoothStep(0f, 1f, t)));
+
+            float w = Mathf.InverseLerp(warpStart, 1f, t);       // 일그러짐 정도 0~1
+            w *= w;                                             // 처음엔 살짝, 끝으로 갈수록 확
+            float wob = (Mathf.PerlinNoise(Time.time * wobbleSpeed, 0.5f) * 2f - 1f) * wobble * w;
+            float cutoff = 22000f * Mathf.Pow(Mathf.Max(muffleCutoff, 10f) / 22000f, w);   // 귀가 느끼는 대로 고르게 줄어들도록 비율로
+
+            if (ring != null)
+            {
+                ring.pitch = Mathf.Lerp(ringPitch0, ringPitchEnd, w) + wob;
+                ring.volume = Mathf.Lerp(ringVol0, ringVol0 * ringEndVolume, w);
+            }
+            if (heartbeat != null)
+            {
+                heartbeat.pitch = Mathf.Lerp(heartPitch0, heartPitchEnd, w) + wob;
+                heartbeat.volume = Mathf.Lerp(heartVol0, heartEndVolume * soundVolume, t);   // 심장은 처음부터 점점 커짐
+            }
+            if (ringFilter != null) ringFilter.cutoffFrequency = cutoff;
+            if (heartFilter != null) heartFilter.cutoffFrequency = cutoff;
+            yield return null;
+        }
+        SetLids(1f);
+    }
+
+    // 소리에 먹먹함 필터를 붙임 (이미 있으면 그걸 씀)
+    AudioLowPassFilter Muffler(AudioSource source)
+    {
+        if (source == null) return null;
+        AudioLowPassFilter f = source.GetComponent<AudioLowPassFilter>();
+        if (f == null) f = source.gameObject.AddComponent<AudioLowPassFilter>();
+        f.cutoffFrequency = 22000f;
+        return f;
     }
 
     // 매 프레임 마지막에 카메라를 작게 흔듦 (펄린 노이즈 = 덜덜 떨리는 느낌)

@@ -3,12 +3,19 @@ using UnityEngine;
 using TMPro;
 using System;
 
+// 기능이 해금되면 화면 위에 "OO 기능이 해금되었습니다." 알림을 띄우고, 해금 효과음을 낸다.
+// 효과음은 AudioManager로 보내므로 효과음(SFX) 해금 전에는 안 나고, 설정창 효과음 볼륨을 따른다.
+// (효과음 자체가 해금되는 순간에는 이미 해금된 뒤라 소리가 난다 → "효과음이 돌아왔다"는 첫 소리가 됨)
 public class UnlockNotice : MonoBehaviour
 {
     public TMP_Text noticeText;
     public CanvasGroup canvasGroup;
     public float fadeTime = 0.5f;
     public float showTime = 2f;
+
+    [Header("해금 효과음 (비워 두면 소리 없음)")]
+    public AudioClip unlockClip;
+    [Range(0f, 1f)] public float unlockVolume = 0.8f;
 
     Coroutine running;
 
@@ -38,6 +45,7 @@ public class UnlockNotice : MonoBehaviour
         if (name == null) return;
 
         Show(name + " 기능이 해금되었습니다.");
+        AudioManager.Play(unlockClip, unlockVolume);
 
 
     }

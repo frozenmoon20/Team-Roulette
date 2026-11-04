@@ -19,6 +19,7 @@ using TeamRoulette.UI;
 // 마우스 입력은 프레임마다 들쭉날쭉해서, 빠르기는 speedSmoothTime(초) 동안 부드럽게 평균 낸 값으로 판단한다.
 //   (값이 클수록 순간적인 손떨림에 덜 민감 → 빠르기 유지가 쉬워짐)
 // 높이는 HandAnchor.lift, 떨림은 HandAnchor.shake로 손을 움직이고, 컵도 같은 만큼 직접 움직인다.
+// 효과음 (비워 두면 없음): 실패해서 컵이 내려가 탁자에 닿는 순간 Drop Clip (탁)
 // 사용: 빈 오브젝트에 붙이고 Grip / Anchor / Cup을 연결한다. FingerGrip의 On Gripped에 Begin을 연결.
 public class CupLift : MonoBehaviour
 {
@@ -54,6 +55,10 @@ public class CupLift : MonoBehaviour
     public float putDownTime = 0.6f;         // 성공 후 천천히 내려놓는 시간 (초)
     public float dropTime = 0.3f;            // 실패해서 손과 컵이 같이 내려가는 시간 (초)
     public float failPause = 0.6f;           // 내려간 뒤 실패 대사까지 기다리는 시간 (초)
+
+    [Header("효과음 (비워 두면 소리 없음)")]
+    public AudioClip dropClip;               // 실패해서 컵이 탁자에 떨어지듯 내려앉는 순간 (탁)
+    [Range(0f, 1f)] public float dropVolume = 0.9f;
 
     [Header("이벤트")]
     public UnityEvent onLifted;              // 다 들어 올렸을 때 (성공 대사 재생)
@@ -183,6 +188,7 @@ public class CupLift : MonoBehaviour
         height = 0f;
         strain = 0f;
         Apply();
+        AudioManager.Play(dropClip, dropVolume);           // 컵이 탁자에 닿는 순간 (탁)
         yield return new WaitForSeconds(failPause);        // 잠깐 멈춰 보여 줌
         onFailed.Invoke();                                 // (대사 → 손 되돌리기 → 원래 자리로)
     }

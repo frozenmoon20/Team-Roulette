@@ -16,6 +16,8 @@ using TeamRoulette.UI;
 //     하위 선택지는 같은 선택창 UI를 같이 쓰고, Screen Panel은 비워 둔다.
 //   - Close After: 그 항목이 끝나면 이 선택창을 닫는다 (하위 선택지에서 "보낸다" 후 원래 메뉴로 돌아갈 때).
 //   - "그만 둔다"(Is Exit 체크) → 화면과 선택창을 끄고 onClosed (ViewFocus의 Return에 연결).
+//   - 효과음: 항목을 옮길 때 Move Clip, 고를 때(Space/Enter) Select Clip (마우스 딸깍 소리). 비워 두면 소리 없음.
+//     하위 선택지(답장을 보낼까? 등)에도 같은 소리를 넣으려면 그 ComputerMenu에도 칸을 채운다.
 // 사용: 빈 오브젝트에 붙이고, Screen Panel / Menu Panel / Menu Text를 연결한 뒤 Items에 항목을 채운다.
 public class ComputerMenu : MonoBehaviour
 {
@@ -47,6 +49,11 @@ public class ComputerMenu : MonoBehaviour
     public string normalColor = "#808080";   // 나머지 항목 색
     public bool horizontal = true;           // 체크: 항목을 한 줄에 가로로 / 해제: 세로 목록
     public string gap = "        ";           // 가로일 때 항목 사이 띄어쓰기
+
+    [Header("효과음 (비워 두면 소리 없음)")]
+    public AudioClip moveClip;               // 항목을 옮길 때 (작은 딸깍)
+    public AudioClip selectClip;             // 항목을 고를 때 (마우스 클릭 소리)
+    [Range(0f, 1f)] public float clickVolume = 0.7f;
 
     [Header("항목 (위에서부터 순서대로)")]
     public Item[] items;
@@ -105,15 +112,18 @@ public class ComputerMenu : MonoBehaviour
         if (prev)
         {
             index = (index - 1 + items.Length) % items.Length;
+            AudioManager.Play(moveClip, clickVolume);
             Redraw();
         }
         else if (next)
         {
             index = (index + 1) % items.Length;
+            AudioManager.Play(moveClip, clickVolume);
             Redraw();
         }
         else if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
         {
+            AudioManager.Play(selectClip, clickVolume);
             Choose(items[index]);
         }
     }

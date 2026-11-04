@@ -12,6 +12,7 @@ using TeamRoulette.UI;
 //   - 실패는 없다. 손가락이 풀리면 되돌아갈 뿐이고, 오래 걸리면 FingerGrip의 구제가 점점 쉽게 만든다.
 // 손이 손잡이와 같이 돌아가는 원리: 손이 갈 자리(HandAnchor의 Grip Point)를 Knob_Pivot의 자식으로 두면,
 //   손잡이가 돌 때 그 자리도 같이 돌고, HandAnchor가 매 프레임 손을 그 자리에 붙잡아 두므로 손도 같이 돈다.
+// 효과음 (비워 두면 없음): 휠로 돌리는 동안 Turn Source(반복, 끼익)가 돌리는 빠르기만큼 커짐 / 다 돌리면 Latch Clip(철컥) / 문이 열릴 때 Door Clip(삐걱)
 // 사용: 빈 오브젝트에 붙이고 Grip / Knob / Hinge를 연결한다. FingerGrip(Lift After Grip 체크)의 On Gripped에 Begin을 연결.
 public class KnobTurn : MonoBehaviour
 {
@@ -37,6 +38,14 @@ public class KnobTurn : MonoBehaviour
     public float openAngle = 25f;            // 문이 열리는 각도 (도, 반대로 열리면 -로)
     public float openTime = 1.2f;            // 열리는 데 걸리는 시간 (초)
 
+    [Header("효과음 (비워 두면 소리 없음)")]
+    public AudioSource turnSource;           // 돌리는 소리 (손잡이에 AudioSource: Loop 체크, Play On Awake 끔, Clip에 끼익/덜걱 소리)
+    [Range(0f, 1f)] public float turnVolume = 0.7f;   // 빠르게 돌릴 때 최대 크기
+    public float turnFade = 8f;              // 돌리기를 멈추면 소리가 줄어드는 빠르기 (클수록 빨리 멈춤)
+    public AudioClip latchClip;              // 다 돌려 걸쇠가 풀릴 때 (철컥)
+    public AudioClip doorClip;               // 문이 열릴 때 (삐걱)
+    [Range(0f, 1f)] public float clipVolume = 0.9f;
+
     [Header("이벤트")]
     public UnityEvent onUnlatched;           // 손잡이를 다 돌린 순간 (철컥 소리, 안내 자막 Hide 등)
     public UnityEvent onOpened;              // 문이 다 열린 뒤 (대사 → 손 되돌리기 → 다음 방 전환)
@@ -47,6 +56,7 @@ public class KnobTurn : MonoBehaviour
 
     bool turning;
     bool homeSet;
+    float turnLevel;                         // 돌리는 소리 크기 (0~1, 휠을 굴리면 올라가고 멈추면 내려감)
     Quaternion knobHome;                     // 손잡이 처음 회전
     Quaternion hingeHome;                    // 문 처음 회전
     GameUI ui;
@@ -64,7 +74,23 @@ public class KnobTurn : MonoBehaviour
         }
         angle = 0f;
         turning = true;
+        turnLevel = 0f;
+        if (turnSource != null && turnSource.clip != null)
+        {
+            turnSource.loop = true;
+            turnSource.volume = 0f;
+            turnSource.Play();
+        }
         Apply();
+    }
+
+    // 돌리는 소리: 휠을 굴리면 바로 커지고, 멈추면 서서히 작아짐 (손잡이가 실제로 돌 때만 소리가 남)
+    void UpdateTurnSound(float turn)
+    {
+        if (turnSource == null || !turnSource.isPlaying) return;
+        if (turn > 0f) turnLevel = 1f;
+        else turnLevel = Mathf.MoveTowards(turnLevel, 0f, turnFade * Time.deltaTime);
+        turnSource.volume = turnLevel * turnVolume * AudioManager.Volume;
     }
 
     void Update()
@@ -99,12 +125,15 @@ public class KnobTurn : MonoBehaviour
 
         angle = Mathf.Clamp(angle, 0f, targetAngle);
         Apply();
+        UpdateTurnSound(state == "돌아감" ? turn : 0f);
 
         if (angle >= targetAngle)
         {
             turning = false;
             grip.End();                                                 // 손가락은 쥔 모양 그대로 멈춤
             Debug.Log("미니게임 4: 문고리 다 돌림");
+            if (turnSource != null) turnSource.Stop();
+            AudioManager.Play(latchClip, clipVolume);
             onUnlatched.Invoke();
             StartCoroutine(OpenRoutine());
         }
@@ -119,6 +148,7 @@ public class KnobTurn : MonoBehaviour
     // 문을 openAngle만큼 스르륵 열기 (로컬 Y축)
     IEnumerator OpenRoutine()
     {
+        AudioManager.Play(doorClip, clipVolume);
         if (hinge != null)
         {
             for (float k = 0f; k < 1f; k += Time.deltaTime / openTime)
@@ -138,6 +168,7 @@ public class KnobTurn : MonoBehaviour
         if (!homeSet) return;
         StopAllCoroutines();
         turning = false;
+        if (turnSource != null) turnSource.Stop();
         angle = 0f;
         knob.localRotation = knobHome;
         if (hinge != null) hinge.localRotation = hingeHome;

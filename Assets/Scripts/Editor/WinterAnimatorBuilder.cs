@@ -8,7 +8,7 @@ using UnityEngine;
 //       상태 사이 화살표(Transition)는 만들지 않는다. 어떤 상태로 바꿀지는 DogAnimator 스크립트가 이름으로 직접 정한다.
 //       → 컨트롤러를 손으로 하나하나 만들 필요가 없고, 애니메이션을 바꾸고 싶으면 아래 표만 고치고 다시 실행하면 된다.
 // 사용: 위 메뉴 Tools > 겨울이 애니메이터 만들기 → Assets/Animations/Winter_Animator.controller 가 생김 (이미 있으면 내용만 새로 채움)
-// 이 파일은 반드시 이름이 "Editor"인 폴더 안에 둬야 한다.
+// 이 파일은 반드시 이름이 "Editor"인 폴더 안에 둬야 한다. (Assets/Scripts/Editor) 아니면 빌드할 때 에러가 난다.
 public static class WinterAnimatorBuilder
 {
     const string SourceFolder = "Assets/StoreAssets/Dog - Pomeranian Spitz";   // 강아지 에셋 폴더
@@ -58,6 +58,10 @@ public static class WinterAnimatorBuilder
         { "Scratching",     "Scratching" },
         { "Sitting_loop_2", "Sitting_loop_2" },
         { "Digging_loop",   "Digging_loop" },
+        // 미니게임2 꿈속에서 개가 쓰러져 있는 자세 (DreamTurn의 Last Spot State에서 골라 씀)
+        { "Death_L",        "Death_L" },      // 왼쪽으로 쓰러짐
+        { "Death_R",        "Death_R" },      // 오른쪽으로 쓰러짐
+        { "Lie_Sleep_loop", "Lie_Sleep_loop" },   // 옆으로 누워 숨 쉼 (더 부드러운 대안)
     };
 
     [MenuItem("Tools/겨울이 애니메이터 만들기")]

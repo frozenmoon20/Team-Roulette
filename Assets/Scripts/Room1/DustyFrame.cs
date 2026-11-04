@@ -24,6 +24,8 @@ using UnityEngine.UI;
 //   손 각도는 Wipe Point의 회전 그대로 (맞춰 둔 값 사용). Wipe Point = 손이 사진 가운데를 문지를 때의 손 자리.
 // 대사는 전부 대화창(DialogueStep)으로 나온다. 화면 아래 짧은 글자(ShowHint)는 쓰지 않는다.
 // 팀 공용 ConditionalInteractable을 상속만 한다 (원본은 건드리지 않음). Required Options는 비워 둔다.
+// 효과음 (비워 두면 없음): 문지르는 동안 Rub Source(반복, 쓱쓱)가 마우스를 빨리 움직일수록 커지고, 멈추면 작아짐
+//                          회상으로 넘어가며 하얗게 덮이기 시작하는 순간 Memory Clip (슈웅 / 반짝이는 소리)
 // 사용: 액자(Collider 있어야 함)에 이 스크립트 + InteractName을 붙이고 칸을 채운다.
 public class DustyFrame : ConditionalInteractable
 {
@@ -47,6 +49,17 @@ public class DustyFrame : ConditionalInteractable
     [Range(0.5f, 1f)] public float finishRatio = 0.85f;   // 먼지가 이만큼 지워지면 끝 (남은 먼지는 그대로)
     public int maskWidth = 128;              // 먼지 그림 해상도 (가로). 세로는 먼지 판 비율대로
     public float returnTime = 0.5f;          // 다 닦고 손이 원래 자리로 돌아가는 시간 (초)
+
+    [Header("문지르는 소리 (비워 두면 소리 없음)")]
+    public AudioSource rubSource;            // 액자에 AudioSource: Loop 체크, Play On Awake 끔, Clip에 천/손으로 문지르는 소리
+    [Range(0f, 1f)] public float rubVolume = 0.6f;     // 빠르게 문지를 때 최대 크기
+    public float rubFullSpeed = 3f;          // 마우스를 이만큼 빠르게 움직이면 최대 크기 (작을수록 살살 문질러도 크게 들림)
+    public float rubPitchMin = 0.9f;         // 천천히 문지를 때 높낮이
+    public float rubPitchMax = 1.15f;        // 빠르게 문지를 때 높낮이
+
+    [Header("회상 들어가는 소리 (비워 두면 소리 없음)")]
+    public AudioClip memoryClip;             // 하얗게 덮이며 회상으로 넘어가기 시작할 때 (슈웅, 반짝, 은은한 울림 등)
+    [Range(0f, 1f)] public float memoryVolume = 0.8f;
 
     [Header("다 닦은 뒤")]
     public float closeDistance = 0.12f;      // 사진 쪽으로 더 다가가는 거리 (m)
@@ -173,6 +186,13 @@ public class DustyFrame : ConditionalInteractable
             handOnScreen = clampToScreen;
             if (!clampToScreen) Debug.LogWarning("DustyFrame: 손 기준점이 처음부터 화면 밖이라 '화면 밖 막기'를 껐어요. Screen Margin을 줄이거나 Wipe Point를 화면 안쪽으로 옮기세요.", this);
             float tilt = 0f;
+            float rubLevel = 0f;
+            if (rubSource != null && rubSource.clip != null)
+            {
+                rubSource.loop = true;
+                rubSource.volume = 0f;
+                rubSource.Play();
+            }
             while (cleared < finishRatio)
             {
                 float dt = Time.deltaTime;
@@ -204,8 +224,18 @@ public class DustyFrame : ConditionalInteractable
                 if (Input.GetMouseButton(0)) EraseLine(hasLastBrush ? lastBrush : brush, brush);
                 lastBrush = brush;
                 hasLastBrush = Input.GetMouseButton(0);
+
+                // 문지르는 소리: 마우스를 빨리 움직일수록 크고 조금 높게, 멈추면 금방 작아짐
+                if (rubSource != null && rubSource.isPlaying)
+                {
+                    float target = Mathf.Clamp01(mouseInput.magnitude / Mathf.Max(rubFullSpeed, 0.01f));
+                    rubLevel = Mathf.Lerp(rubLevel, target, 1f - Mathf.Exp(-12f * dt));
+                    rubSource.volume = rubLevel * rubVolume * AudioManager.Volume;
+                    rubSource.pitch = Mathf.Lerp(rubPitchMin, rubPitchMax, rubLevel);
+                }
                 yield return null;
             }
+            if (rubSource != null) rubSource.Stop();
 
             // 4) 다 닦음 → 안내 숨김, 손을 원래 자리로 천천히 (남은 먼지는 그대로)
             if (hint != null) hint.Hide();
@@ -246,6 +276,7 @@ public class DustyFrame : ConditionalInteractable
         if (photoDialogue == null) Debug.LogWarning("DustyFrame: Photo Dialogue가 비어 있어서 대사 없이 바로 회상으로 가요.", this);
         yield return Wait(photoDialogue);
         yield return new WaitForSeconds(holdAfterDialogue);
+        AudioManager.Play(memoryClip, memoryVolume);   // 회상으로 넘어가는 소리
         onMemory.Invoke();                   // 사진을 바라보는 채로 하얗게 덮이기 시작
         if (focus != null) yield return ReleaseFocusBehindWhite();
         busy = false;

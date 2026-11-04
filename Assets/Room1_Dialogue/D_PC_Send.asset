@@ -14,5 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TeamRoulette.UI.DialogueSequence
   lines:
   - "\uADF8\uB798 \uBCF4\uB0B4\uC790..."
+  - "\uB2E4\uC2DC \uB9CC\uB098\uC11C \uB300\uD654\uD558\uACE0 \uC2F6\uB2E4\uACE0
+    \uC804\uB2EC\uD588\uB2E4.."
+  - "\uB2E4\uC2DC \uB098\uAC00\uAE30 \uB450\uB835\uC9C0\uB9CC..."
+  - "\uC6A9\uAE30\uB0B4\uC11C \uB098\uAC00\uBCF4\uC790...\r\n"
   colorCodes:
+  - '#FFFFFF'
+  - '#FFFFFF'
+  - '#FFFFFF'
   - '#FFFFFF'

@@ -10,7 +10,11 @@ using UnityEngine.Events;
 //          침실로 넘어오는 순간 확 줄어들어(깨어남) 조금만 남았다가 가라앉는다.
 //   꿈에 들어가면: 캄캄한 채 개 소리 → 천천히 눈을 떠 공간을 보여 줌 → 혼잣말(introDialogue) → 눈이 감기며 게임 시작(onIntroFinished)
 // OnDogLooked(): 개를 다 찾으면 DreamTurn의 onLooked에서 부른다 → 깨어남 연출 시작
-//   개가 서서히 투명해지며 사라짐 → 하프톤이 짙어짐 → 침실 침대로 이동 → 하프톤 원래대로
+//   (개는 마지막 자리에서 이미 쓰러져 있음 → DreamTurn이 처리) 쓰러진 개를 잠시 바라봄
+//   (Fade Out Dog를 체크하면 예전처럼 개가 서서히 투명해지며 사라짐)
+//   → 하프톤이 짙어지고 흔들림이 커지면서
+//     짖는 소리가 점점 잦아지고·커지고·낮게 일그러지며 겹쳐 울리고, 심장 소리도 점점 커지고 빨라짐
+//   → 침실 침대로 이동하는 순간 모든 소리가 뚝 끊김 → 하프톤 원래대로
 //   → 대사(공용 UI, DialogueStep) → RotateCamera 해금 → 창밖 개 짖는 소리가 서서히 사라짐
 // 미니게임 1(SoundSearch)의 onCleared에 Begin()을 연결한다.
 //   꿈에 들어가면: 미니게임 1의 짖는 소리를 멈추고, 검은 화면(Blackout)을 끄고, 커서를 잠근다
@@ -26,7 +30,7 @@ public class Minigame2 : MonoBehaviour
     public Transform dreamStart;             // 꿈 공간에서 플레이어가 설 자리 (= DreamTest)
     public GameObject eyeOpen;               // MinigameCanvas/EyeOpen
     public GameObject dreamTurn;             // DreamTest (DreamTurn이 붙은 오브젝트)
-    public Transform dog;                    // Test_Dog (사라지는 연출용)
+    public Transform dog;                    // Test_Dog (개가 놓이는 자리. 진짜 개 모델은 이 아래 자식으로)
     public Transform bedPoint;               // 깨어났을 때 설 자리 (침대 옆 빈 오브젝트, 파란 화살표가 바라볼 방향)
 
     [Header("꿈 시작 연출 (천천히 눈 뜨기 → 혼잣말 → 눈 감기)")]
@@ -65,11 +69,34 @@ public class Minigame2 : MonoBehaviour
 
     [Header("깨어남 연출 시간 (초)")]
     public float dogStayTime = 2f;           // 개를 바라본 뒤 머무는 시간
-    public float dogFadeTime = 4f;           // 개가 투명해지며 사라지는 시간
-    public float afterDogTime = 1.5f;        // 개가 사라진 뒤 빈 공간을 바라보는 시간
+    public bool fadeOutDog = false;          // 체크: 예전처럼 개가 투명해지며 사라짐 / 끔: 쓰러진 채로 어둠에 묻힘
+    public float dogFadeTime = 4f;           // (Fade Out Dog 체크했을 때만) 개가 투명해지며 사라지는 시간
+    public float afterDogTime = 1.5f;        // 그다음 어두워지기 전까지 기다리는 시간
     public float halftoneInTime = 3f;        // 하프톤이 짙어지는 시간
     public float darkHoldTime = 1.5f;        // 가장 짙은 상태로 머무는 시간 (이때 침실로 이동)
     public float halftoneOutTime = 3f;       // 침실에서 하프톤이 원래대로 돌아오는 시간
+
+    [Header("깨어남 소리 1: 짖는 소리 폭주 (흔들림이 커질 때부터. 비워 두면 소리 없음)")]
+    public AudioSource barkStormSource;      // 이 오브젝트에 AudioSource 추가 (Play On Awake 끔, Loop 끔, Spatial Blend 0 = 2D)
+    public AudioClip barkClip;               // 짖는 소리. 비워 두면 꿈속 개(DreamTurn)의 짖는 소리를 그대로 씀
+    public float barkIntervalFrom = 1.2f;    // 시작할 때 짖는 간격 (초)
+    public float barkIntervalTo = 0.12f;     // 깨어나기 직전 짖는 간격 (초, 작을수록 다다다닥 겹침)
+    [Range(0f, 1f)] public float barkVolumeFrom = 0.4f;
+    [Range(0f, 1f)] public float barkVolumeTo = 1f;
+    public float barkPitchFrom = 1f;         // 시작 높낮이 (1 = 원래 소리)
+    public float barkPitchTo = 0.55f;        // 깨어나기 직전 높낮이 (낮을수록 느리고 일그러진 괴상한 소리)
+    public float barkPitchJitter = 0.08f;    // 짖을 때마다 높낮이를 이만큼 무작위로 흔듦 (기계적인 반복 방지)
+
+    [Header("깨어남 소리 2: 심장 소리 (비워 두면 소리 없음)")]
+    public AudioSource heartSource;          // AudioSource 하나 더 추가 (Loop 체크, Play On Awake 끔), Clip에 심장 소리
+    [Range(0f, 1f)] public float heartVolumeFrom = 0.3f;
+    [Range(0f, 1f)] public float heartVolumeTo = 1f;
+    public float heartPitchFrom = 1f;        // 시작 빠르기 (pitch를 올리면 심장도 빨리 뜀)
+    public float heartPitchTo = 1.7f;        // 깨어나기 직전 (쿵쿵쿵쿵)
+
+    [Header("깨어남 소리 3: 깨어나는 순간 (선택)")]
+    public AudioClip wakeClip;               // 침실로 넘어오는 순간 한 번 (헉 하는 숨 등). 비워 둬도 됨
+    [Range(0f, 1f)] public float wakeVolume = 1f;
 
     [Header("깨어난 뒤 대사 (DialogueStep. 비워 두면 대사 없이 바로 해금)")]
     public DialogueStep wakeDialogue;        // 대사가 끝날 때까지 기다렸다가 RotateCamera 해금
@@ -82,6 +109,8 @@ public class Minigame2 : MonoBehaviour
     float shakeStrength;                     // 지금 흔들림 폭 배율 (0 = 없음, 1 = 꿈속 기본)
     float shakeSpeedScale = 1f;              // 지금 흔들림 빠르기 배율 (1 = 꿈속 기본)
     float shakePhase;                        // 흔들림 노이즈를 읽는 위치 (매 프레임 빠르기만큼 앞으로 감)
+    float panic;                             // 깨어남 소리의 고조 정도 (0 = 시작, 1 = 깨어나기 직전). WakeUp이 올리고 짖는 소리·심장 소리가 읽음
+    bool storming;                           // 짖는 소리 폭주 중인지
 
     // 빠른 테스트 중인지 (에디터에서만)
     bool Fast => fastTest && Application.isEditor;
@@ -178,20 +207,25 @@ public class Minigame2 : MonoBehaviour
 
     IEnumerator WakeUp()
     {
-        // 1) 개를 바라보며 잠시 머문 뒤, 서서히 투명해지며 사라짐
+        // 1) 쓰러져 있는 개를 바라보며 잠시 머묾 (Fade Out Dog 체크 시: 예전처럼 서서히 투명해지며 사라짐)
         yield return new WaitForSeconds(T(dogStayTime));
-        Renderer[] renderers = dog.GetComponentsInChildren<Renderer>();
-        for (float t = 0f; t < 1f; t += Time.deltaTime / T(dogFadeTime))
+        if (fadeOutDog)
         {
-            SetAlpha(renderers, 1f - Mathf.SmoothStep(0f, 1f, t));
-            yield return null;
+            Renderer[] renderers = dog.GetComponentsInChildren<Renderer>();
+            for (float t = 0f; t < 1f; t += Time.deltaTime / T(dogFadeTime))
+            {
+                SetAlpha(renderers, 1f - Mathf.SmoothStep(0f, 1f, t));
+                yield return null;
+            }
+            dog.gameObject.SetActive(false);
         }
-        dog.gameObject.SetActive(false);
         yield return new WaitForSeconds(T(afterDogTime));
 
-        // 2) 하프톤이 짙어지고, 하얀 공간 전체가 어두워지고, 흔들림이 점점 크고 빨라짐 (꿈이 무너지는 느낌)
+        // 2) 하프톤이 짙어지고, 하얀 공간 전체(쓰러진 개 포함)가 어두워지고, 흔들림이 점점 크고 빨라짐 (꿈이 무너지는 느낌)
+        //    이때부터 짖는 소리 폭주 + 심장 소리가 같이 고조됨
         onDarkenStart.Invoke();
-        Renderer[] space = dreamSpace.GetComponentsInChildren<Renderer>();   // 하늘, 바닥, 기둥 (개는 이미 꺼짐)
+        StartPanicSounds();
+        Renderer[] space = dreamSpace.GetComponentsInChildren<Renderer>();   // 하늘, 바닥, 기둥, 쓰러진 개
         Material[] mats = CollectMaterials(space);
         Color[] startColors = new Color[mats.Length];
         for (int i = 0; i < mats.Length; i++) startColors[i] = mats[i].GetColor(BaseColorId);
@@ -204,6 +238,7 @@ public class Minigame2 : MonoBehaviour
             RenderSettings.fogColor = Color.Lerp(fogColor, darkSpaceColor, k);   // 안개도 같이 (안 하면 먼 기둥은 하얗게 남음)
             shakeStrength = Mathf.Lerp(1f, wakeShakeMultiplier, k);
             shakeSpeedScale = Mathf.Lerp(1f, wakeShakeSpeedMultiplier, k * k);   // k*k: 처음엔 천천히, 끝으로 갈수록 확 빨라짐
+            panic = k;
             yield return null;
         }
         HalftoneController.SetOverride(darkHalftone);
@@ -213,7 +248,9 @@ public class Minigame2 : MonoBehaviour
         eyeOpen.SetActive(false);
         SetDreamFog(false);
         dreamSpace.SetActive(false);
+        dog.gameObject.SetActive(false);         // 쓰러진 개도 꿈과 함께 사라짐
         for (int i = 0; i < mats.Length; i++) mats[i].SetColor(BaseColorId, startColors[i]);   // 다음을 위해 원래 색으로
+        StopPanicSounds();                       // 깨어나는 순간: 짖는 소리·심장 소리가 뚝 끊김 (갑자기 조용해지는 대비)
         Teleport(bedPoint);
         if (cameraRoot != null) cameraRoot.localRotation = Quaternion.identity;
         shakeStrength = bedShake;                // 깨어나는 순간: 크게 흔들리던 게 확 줄어듦 (꿈과 현실의 경계)
@@ -253,6 +290,72 @@ public class Minigame2 : MonoBehaviour
 
         // 7) 창밖 짖는 소리가 서서히 사라짐
         if (soundSearch != null) soundSearch.FadeOutBarking(outsideBarkFadeTime);
+    }
+
+    // ── 깨어남 소리 ──
+    // 효과음 볼륨: 효과음(SFX)이 아직 해금 안 됐으면 0, 해금됐으면 설정창 효과음 슬라이더 값
+    // (설정창 슬라이더는 AudioManager의 AudioSource 볼륨을 바꾸므로 그 값을 그대로 따라간다)
+    static float SfxVolume()
+    {
+        if (OptionState.Instance != null && !OptionState.Instance.IsUnlocked(OptionType.SFX)) return 0f;
+        if (AudioManager.Instance != null && AudioManager.Instance.TryGetComponent(out AudioSource s)) return s.volume;
+        return 1f;
+    }
+
+    void StartPanicSounds()
+    {
+        panic = 0f;
+
+        // 짖는 소리: 비워 두면 꿈속 개의 짖는 소리를 가져옴
+        if (barkClip == null && dreamTurn != null)
+        {
+            DreamTurn turn = dreamTurn.GetComponent<DreamTurn>();
+            if (turn != null && turn.bark != null) barkClip = turn.bark.clip;
+        }
+        if (barkStormSource != null && barkClip != null) StartCoroutine(BarkStorm());
+
+        // 심장 소리: 반복 재생을 켜 두고 볼륨·빠르기는 Update에서 panic에 맞춰 바꿈
+        if (heartSource != null && heartSource.clip != null)
+        {
+            heartSource.loop = true;
+            heartSource.volume = 0f;
+            heartSource.Play();
+        }
+    }
+
+    // 짖는 소리 폭주: panic이 오를수록 간격은 짧게, 소리는 크게, 높낮이는 낮게
+    // PlayOneShot은 앞 소리가 끝나지 않아도 겹쳐서 나므로, 간격이 짧아지면 짖는 소리가 겹겹이 쌓인다
+    IEnumerator BarkStorm()
+    {
+        storming = true;
+        while (storming)
+        {
+            barkStormSource.pitch = Mathf.Lerp(barkPitchFrom, barkPitchTo, panic) + Random.Range(-barkPitchJitter, barkPitchJitter);
+            barkStormSource.PlayOneShot(barkClip, Mathf.Lerp(barkVolumeFrom, barkVolumeTo, panic) * SfxVolume());
+            yield return new WaitForSeconds(Mathf.Lerp(barkIntervalFrom, barkIntervalTo, panic * panic));   // 제곱: 끝으로 갈수록 확 빨라짐
+        }
+    }
+
+    void Update()
+    {
+        // 심장 소리: panic에 맞춰 커지고 빨라짐
+        if (heartSource != null && heartSource.isPlaying)
+        {
+            heartSource.volume = Mathf.Lerp(heartVolumeFrom, heartVolumeTo, panic) * SfxVolume();
+            heartSource.pitch = Mathf.Lerp(heartPitchFrom, heartPitchTo, panic);
+        }
+    }
+
+    void StopPanicSounds()
+    {
+        storming = false;
+        if (barkStormSource != null) barkStormSource.Stop();   // 겹쳐 울리던 짖는 소리까지 전부 끊김
+        if (heartSource != null) heartSource.Stop();
+        if (wakeClip != null && barkStormSource != null)
+        {
+            barkStormSource.pitch = 1f;
+            barkStormSource.PlayOneShot(wakeClip, wakeVolume * SfxVolume());
+        }
     }
 
     static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");

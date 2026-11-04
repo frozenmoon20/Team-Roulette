@@ -16,6 +16,7 @@ using TeamRoulette.UI;
 //   - 맞으면: onSolved(서랍 열기) → 맞았을 때 대사 → 닫고 onClosed
 //     틀리면: 틀렸을 때 대사 → 다시 돌리기. 돌려 둔 숫자는 그대로 남는다 (진짜 자물쇠처럼)
 //   - 대사·설정창이 떠 있는 동안에는 입력을 받지 않는다.
+//   - 효과음 (비워 두면 없음): 다이얼 돌릴 때 Dial Clip(딸깍), 자리 옮길 때 Move Clip, 맞았을 때 Solved Clip(철컥)
 // 사용: 빈 오브젝트에 붙이고 Menu Panel / Menu Text(/ Hint Text)를 컴퓨터 선택창 것으로 연결.
 //       On Closed에 ViewFocus.Return, On Solved에 SlideOpen.Open을 연결한다.
 public class CodeLock : MonoBehaviour
@@ -46,6 +47,14 @@ public class CodeLock : MonoBehaviour
     [Header("대사 (비워도 됨)")]
     public DialogueStep wrongDialogue;       // 틀렸을 때 ("…아닌가 봐.")
     public DialogueStep solvedDialogue;      // 맞았을 때 ("열렸다.")
+
+    [Header("효과음 (비워 두면 소리 없음)")]
+    public AudioClip dialClip;               // 다이얼 숫자를 돌릴 때 (딸깍)
+    public AudioClip moveClip;               // 자리를 옮길 때 (작은 딸깍, 비워도 됨)
+    public AudioClip solvedClip;             // 맞혀서 자물쇠가 풀릴 때 (철컥)
+    public AudioClip wrongClip;              // 틀렸을 때 (덜컥, 비워도 됨)
+    [Range(0f, 1f)] public float sfxVolume = 0.8f;
+    public float dialPitchJitter = 0.06f;    // 다이얼 소리 높낮이를 매번 조금씩 다르게 (기계적 반복 방지)
 
     [Header("이벤트")]
     public UnityEvent onSolved;              // 맞힌 순간 (SlideOpen.Open 연결)
@@ -106,22 +115,26 @@ public class CodeLock : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow))
         {
             index = (index - 1 + slots) % slots;
+            AudioManager.Play(moveClip, sfxVolume);
             Redraw();
         }
         else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
         {
             index = (index + 1) % slots;
+            AudioManager.Play(moveClip, sfxVolume);
             Redraw();
         }
         else if (onDigit && (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow)))
         {
             digits[index] = (digits[index] + 1) % 10;
+            PlayDial();
             Redraw();
             UpdateWorld();
         }
         else if (onDigit && (Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow)))
         {
             digits[index] = (digits[index] + 9) % 10;                   // -1과 같음 (0 아래는 9)
+            PlayDial();
             Redraw();
             UpdateWorld();
         }
@@ -142,6 +155,7 @@ public class CodeLock : MonoBehaviour
         {
             // 정답: 서랍 열기 → 대사 → 닫기
             IsSolved = true;
+            AudioManager.Play(solvedClip, sfxVolume);
             onSolved.Invoke();
             yield return PlayAndWait(solvedDialogue);
             busy = false;
@@ -150,6 +164,7 @@ public class CodeLock : MonoBehaviour
         }
 
         // 오답: 대사 → 다시 돌리기
+        AudioManager.Play(wrongClip, sfxVolume);
         yield return PlayAndWait(wrongDialogue);
         ShowPanel(true);
         Redraw();
@@ -176,6 +191,22 @@ public class CodeLock : MonoBehaviour
         ShowPanel(true);
         Redraw();
         busy = false;
+    }
+
+    // 다이얼 딸깍: 높낮이를 매번 조금씩 다르게
+    // (AudioManager는 한 AudioSource로 소리를 내므로 높낮이를 바꿀 수 없어서, 이 오브젝트에 임시 AudioSource를 하나 만들어 씀)
+    AudioSource dialSource;
+    void PlayDial()
+    {
+        if (dialClip == null) return;
+        if (dialSource == null)
+        {
+            dialSource = gameObject.AddComponent<AudioSource>();
+            dialSource.playOnAwake = false;
+            dialSource.spatialBlend = 0f;
+        }
+        dialSource.pitch = 1f + Random.Range(-dialPitchJitter, dialPitchJitter);
+        dialSource.PlayOneShot(dialClip, sfxVolume * AudioManager.Volume);
     }
 
     string Current()

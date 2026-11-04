@@ -10,6 +10,8 @@ using UnityEngine.Events;
 // 3) 눈을 다 뜬 순간 개가 정면(lookAngle 안)에 있으면 성공 → onFound.
 //    눈이 다시 감기면 개는 다른 자리로 옮겨 가서 짖는다. 실패하면 아무 일 없이 다시 감기고 다시 찾으면 된다.
 // 4) needed번 성공하면 눈을 뜬 채로 유지 → onLooked (깨어나는 연출).
+// 5) 마지막으로 찾아야 하는 자리에서는 개가 이미 쓰러져 있다 (Dog Animator를 넣었을 때).
+//    눈이 감긴 사이에 자리를 옮기면서 자세를 바꾸므로, 쓰러지는 순간은 보이지 않고 눈을 뜨면 이미 쓰러져 있다.
 // 꿈 공간의 DreamTest 오브젝트에 붙인다.
 public class DreamTurn : MonoBehaviour
 {
@@ -21,6 +23,11 @@ public class DreamTurn : MonoBehaviour
     public Transform[] spots;                // 개가 차례로 나타날 자리들 (성공할 때마다 다음 자리로)
     public AudioSource bark;                 // 개에 붙은 짖는 소리 (3D 소리)
     public AudioLowPassFilter barkFilter;    // 개와 같은 오브젝트에 붙인 Audio Low Pass Filter (먹먹함 조절)
+
+    [Header("마지막 자리에서 개 자세 (Dog Animator를 비우면 그대로)")]
+    public Animator dogAnimator;             // dog 아래 진짜 개 모델의 Animator (Winter_Animator)
+    public string lastSpotState = "Death_L"; // 마지막 자리에서의 자세 (Death_L/Death_R = 옆으로 쓰러진 채, Lie_Sleep_loop = 옆으로 누워 숨 쉼)
+    public bool lastSpotHoldEnd = true;      // 체크: 애니메이션 맨 끝 자세(완전히 쓰러진 모습)로 바로 멈춤. Lie_Sleep_loop처럼 반복 동작이면 끄기
 
     [Header("고개 돌리기 (눈을 감고 있을 때만)")]
     public float turnSensitivity = 1.5f;     // 눈 감았을 때 돌아가는 빠르기
@@ -164,7 +171,35 @@ public class DreamTurn : MonoBehaviour
         if (spots == null || spots.Length == 0) return;
         spotIndex = Mathf.Clamp(index, 0, spots.Length - 1);
         dog.SetPositionAndRotation(spots[spotIndex].position, spots[spotIndex].rotation);
+        SetDogPose();
         Bark();
+    }
+
+    // 자리마다 개 자세: 마지막으로 찾아야 하는 자리(needed번째)면 쓰러진 자세, 아니면 서 있는 자세
+    // spotIndex 0 = 첫 번째로 찾을 자리, needed - 1 = 마지막으로 찾을 자리
+    void SetDogPose()
+    {
+        if (dogAnimator == null) return;
+        dogAnimator.applyRootMotion = false;
+        if (spotIndex == needed - 1)
+        {
+            // 상태가 없으면 아무 일도 안 일어나므로 알려 줌 (Tools > 겨울이 애니메이터 만들기를 다시 실행해야 함)
+            if (!dogAnimator.HasState(0, Animator.StringToHash(lastSpotState)))
+            {
+                Debug.LogWarning("DreamTurn: 애니메이터에 '" + lastSpotState + "' 상태가 없어요. Tools > 겨울이 애니메이터 만들기를 다시 실행하세요.", this);
+                return;
+            }
+            // 0.99 = 애니메이션 거의 맨 끝 프레임에서 시작 → 이미 쓰러져 있음
+            // (1로 하면 반복 설정된 애니메이션은 처음(서 있는 자세)으로 되돌아가 버림)
+            dogAnimator.Play(lastSpotState, 0, lastSpotHoldEnd ? 0.99f : 0f);
+            dogAnimator.speed = lastSpotHoldEnd ? 0f : 1f;                // 끝 자세에서 멈춤 (반복 동작이면 그대로 재생)
+            Debug.Log("DreamTurn: 마지막 자리 → 개 자세 " + lastSpotState);
+        }
+        else
+        {
+            dogAnimator.speed = 1f;
+            dogAnimator.Play("Idle", 0, 0f);
+        }
     }
 
     void Bark()

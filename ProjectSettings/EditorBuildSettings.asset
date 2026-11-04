@@ -6,11 +6,17 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Room1.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Assets/Scenes/Test_NightRoom.unity
+    guid: ad909042df99bf846929f34927cfa3e4
+  - enabled: 1
+    path: Assets/Scenes/Corridor.unity
+    guid: 8f2c5bd76baccbf469ae73f961b2b283
   - enabled: 1
     path: Assets/Scenes/Room3_LivingRoom.unity
     guid: d490df6efcf4d3e499387301acddd8b0
+  - enabled: 0
+    path: Assets/Scenes/Room1.unity
+    guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
     path: Assets/Scenes/Room3_Toy.unity
     guid: 946f4d6e24c3ded4187fe362a468b635
