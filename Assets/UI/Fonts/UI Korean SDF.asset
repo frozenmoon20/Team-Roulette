@@ -294,6 +294,30 @@ MonoBehaviour:
       m_LigatureGlyphID: 2073
     - m_ComponentGlyphIDs: 1500000040180000
       m_LigatureGlyphID: 2225
+    - m_ComponentGlyphIDs: 1a000000b7130000
+      m_LigatureGlyphID: 2365
+    - m_ComponentGlyphIDs: 1a00000057140000
+      m_LigatureGlyphID: 2078
+    - m_ComponentGlyphIDs: 1a00000040180000
+      m_LigatureGlyphID: 2230
+    - m_ComponentGlyphIDs: 17000000b7130000
+      m_LigatureGlyphID: 2362
+    - m_ComponentGlyphIDs: 1700000057140000
+      m_LigatureGlyphID: 2075
+    - m_ComponentGlyphIDs: 1700000040180000
+      m_LigatureGlyphID: 2227
+    - m_ComponentGlyphIDs: 19000000b7130000
+      m_LigatureGlyphID: 2364
+    - m_ComponentGlyphIDs: 1900000057140000
+      m_LigatureGlyphID: 2077
+    - m_ComponentGlyphIDs: 1900000040180000
+      m_LigatureGlyphID: 2229
+    - m_ComponentGlyphIDs: 18000000b7130000
+      m_LigatureGlyphID: 2363
+    - m_ComponentGlyphIDs: 1800000057140000
+      m_LigatureGlyphID: 2076
+    - m_ComponentGlyphIDs: 1800000040180000
+      m_LigatureGlyphID: 2228
     m_GlyphPairAdjustmentRecords:
     - m_FirstAdjustmentRecord:
         m_GlyphIndex: 39
