@@ -18,6 +18,12 @@ public class GrabbableItem : MonoBehaviour, IInteractable, IHasName
     Transform homeParent;
     Vector3 homePos;
     Quaternion homeRot;
+    
+public void PlaceExactlyAt(Transform point)
+{
+    transform.SetParent(point.parent, true);
+    transform.SetPositionAndRotation(point.position, point.rotation);
+}
 
 
     // 지금 잡을 수 있는가: Grab 해금 + 손이 보임

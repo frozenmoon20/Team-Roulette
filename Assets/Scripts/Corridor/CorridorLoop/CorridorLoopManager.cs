@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using TeamRoulette.UI;
 
@@ -22,14 +23,14 @@ public class CorridorLoopManager : MonoBehaviour
     [Header("클리어 후 열리는 다음 길")]
     public GameObject nextPath;
 
-    [Header("클리어 후 열리는 문")]
+    [Header("클리어 후 회전할 문 경첩")]
     public Transform exitDoor;
 
-    [Header("문 열리는 높이")]
-    public float doorOpenHeight = 3f;
+    [Header("문 회전 각도")]
+    public float doorOpenAngle = 90f;
 
-    [Header("문 열리는 속도")]
-    public float doorOpenSpeed = 3f;
+    [Header("문 회전 속도")]
+    public float doorOpenSpeed = 90f;
 
     [Header("클리어에 필요한 성공 횟수")]
     public int clearCount = 6;
@@ -51,8 +52,8 @@ public class CorridorLoopManager : MonoBehaviour
     int currentAnomalyIndex = -1;
     int lastAnomalyIndex = -1;
 
-    Vector3 doorClosedPosition;
-    Vector3 doorOpenPosition;
+    Quaternion doorClosedRotation;
+    Quaternion doorOpenRotation;
 
     SceneUIContent sceneUI;
 
@@ -62,23 +63,18 @@ public class CorridorLoopManager : MonoBehaviour
         sceneUI =
             FindFirstObjectByType<SceneUIContent>();
 
-        // 출구 문 위치 기억
         if (exitDoor != null)
         {
-            doorClosedPosition =
-                exitDoor.localPosition;
+            doorClosedRotation = exitDoor.localRotation;
 
-            doorOpenPosition =
-                doorClosedPosition +
-                Vector3.up * doorOpenHeight;
+            doorOpenRotation =
+                doorClosedRotation *
+                Quaternion.Euler(0f, doorOpenAngle, 0f);
         }
 
-        // 다음 길은 처음에는 닫아둠
         if (nextPath != null)
             nextPath.SetActive(false);
 
-        // 뒤를 막는 벽은
-        // 반복 복도 들어오기 전에는 없어야 함
         if (entranceBlocker != null)
             entranceBlocker.SetActive(false);
 
@@ -91,13 +87,12 @@ public class CorridorLoopManager : MonoBehaviour
         if (!cleared)
             return;
 
-        // 클리어 후 문을 위로 천천히 올림
         if (exitDoor != null)
         {
-            exitDoor.localPosition =
-                Vector3.MoveTowards(
-                    exitDoor.localPosition,
-                    doorOpenPosition,
+            exitDoor.localRotation =
+                Quaternion.RotateTowards(
+                    exitDoor.localRotation,
+                    doorOpenRotation,
                     doorOpenSpeed * Time.deltaTime
                 );
         }
@@ -106,23 +101,16 @@ public class CorridorLoopManager : MonoBehaviour
 
     public void PrepareNextLoop()
     {
-        // ============================
-        // 반복 복도 최초 진입
-        // ============================
-
         if (!initialized)
         {
             initialized = true;
 
-            // 시작할 때 막고 있던 벽 제거
             if (startWall != null)
                 startWall.SetActive(false);
 
-            // 플레이어가 들어왔던 길 막기
             if (entranceBlocker != null)
                 entranceBlocker.SetActive(true);
 
-            // 반복 복도 목표 공개
             if (sceneUI == null)
                 sceneUI =
                     FindFirstObjectByType<SceneUIContent>();
@@ -137,15 +125,8 @@ public class CorridorLoopManager : MonoBehaviour
             );
         }
 
-
-        // 이미 클리어한 경우
         if (cleared)
             return;
-
-
-        // ============================
-        // 클리어 여부
-        // ============================
 
         if (successCount >= clearCount)
         {
@@ -153,12 +134,6 @@ public class CorridorLoopManager : MonoBehaviour
             return;
         }
 
-
-        // ============================
-        // 정상 / 이상현상 결정
-        // ============================
-
-        // 첫 번째는 무조건 정상
         if (firstLoop)
         {
             firstLoop = false;
@@ -168,9 +143,6 @@ public class CorridorLoopManager : MonoBehaviour
             consecutiveNormals = 1;
             consecutiveAnomalies = 0;
         }
-
-        // 정상 2번 연속이면
-        // 다음은 반드시 이상현상
         else if (consecutiveNormals >= 2)
         {
             hasAnomaly = true;
@@ -178,9 +150,6 @@ public class CorridorLoopManager : MonoBehaviour
             consecutiveAnomalies = 1;
             consecutiveNormals = 0;
         }
-
-        // 이상현상 2번 연속이면
-        // 다음은 반드시 정상
         else if (consecutiveAnomalies >= 2)
         {
             hasAnomaly = false;
@@ -188,8 +157,6 @@ public class CorridorLoopManager : MonoBehaviour
             consecutiveNormals = 1;
             consecutiveAnomalies = 0;
         }
-
-        // 그 외에는 랜덤
         else
         {
             hasAnomaly =
@@ -207,11 +174,6 @@ public class CorridorLoopManager : MonoBehaviour
             }
         }
 
-
-        // ============================
-        // 이상현상 선택
-        // ============================
-
         if (hasAnomaly)
         {
             SelectRandomAnomaly();
@@ -221,11 +183,9 @@ public class CorridorLoopManager : MonoBehaviour
             currentAnomalyIndex = -1;
         }
 
-
         ApplyLoopState();
 
         UpdateObjectiveUI();
-
 
         if (hasAnomaly)
         {
@@ -250,7 +210,6 @@ public class CorridorLoopManager : MonoBehaviour
             return;
         }
 
-        // 하나뿐이면 그것 사용
         if (anomalyObjects.Length == 1)
         {
             currentAnomalyIndex = 0;
@@ -260,8 +219,6 @@ public class CorridorLoopManager : MonoBehaviour
 
         int newIndex;
 
-        // 직전 이상현상과
-        // 같은 것은 연속 등장 금지
         do
         {
             newIndex =
@@ -279,10 +236,6 @@ public class CorridorLoopManager : MonoBehaviour
 
     void ApplyLoopState()
     {
-        // ============================
-        // 이상현상 전부 끄기
-        // ============================
-
         if (anomalyObjects != null)
         {
             for (
@@ -298,11 +251,6 @@ public class CorridorLoopManager : MonoBehaviour
                 }
             }
         }
-
-
-        // ============================
-        // 선택된 이상현상 하나만 켜기
-        // ============================
 
         if (
             hasAnomaly &&
@@ -320,11 +268,6 @@ public class CorridorLoopManager : MonoBehaviour
             if (selected != null)
                 selected.SetActive(true);
         }
-
-
-        // ============================
-        // 평소 오브젝트
-        // ============================
 
         if (normalObjects != null)
         {
@@ -382,13 +325,7 @@ public class CorridorLoopManager : MonoBehaviour
         hasAnomaly = false;
         currentAnomalyIndex = -1;
 
-        // 성공 횟수 마지막 갱신
         UpdateObjectiveUI();
-
-
-        // ============================
-        // 이상현상 전부 끄기
-        // ============================
 
         if (anomalyObjects != null)
         {
@@ -406,11 +343,6 @@ public class CorridorLoopManager : MonoBehaviour
             }
         }
 
-
-        // ============================
-        // 평소 오브젝트 복구
-        // ============================
-
         if (normalObjects != null)
         {
             for (
@@ -427,25 +359,14 @@ public class CorridorLoopManager : MonoBehaviour
             }
         }
 
-
-        // ============================
-        // 다음 길 생성
-        // ============================
-
         if (nextPath != null)
             nextPath.SetActive(true);
-
-
-        // ============================
-        // 목표 완료
-        // ============================
 
         if (sceneUI != null)
             sceneUI.CompleteObjective(objectiveId);
 
-
         Debug.Log(
-            "반복 복도 클리어! 문이 열립니다."
+            "반복 복도 클리어! 문이 회전하며 열립니다."
         );
     }
 }

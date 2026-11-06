@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.Events;
 
+
+
+
 public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
 {
     public string displayName = "";
@@ -16,6 +19,7 @@ public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
 
     public string DisplayName => displayName;
     public int PlacedCount { get; private set; }
+    public bool useExactPlacement;
 
     public bool CanAccept(GrabbableItem item)
     {
@@ -40,10 +44,18 @@ public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
 
         Transform targetPoint = GetNextPlacePoint();
 
-        hand.PlaceHeld(
-            targetPoint,
-            hideOnPlace
-        );
+        
+if (useExactPlacement && !hideOnPlace)
+{
+    GrabbableItem item = hand.Held;
+    hand.PlaceHeld(targetPoint, false);
+    item.PlaceExactlyAt(targetPoint);
+}
+else
+{
+    hand.PlaceHeld(targetPoint, hideOnPlace);
+}
+
 
         PlacedCount++;
 

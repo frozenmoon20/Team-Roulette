@@ -1,12 +1,13 @@
+
 using UnityEngine;
 using TeamRoulette.UI;
 
 public class LoopCheckTrigger : MonoBehaviour
 {
     public CorridorLoopManager manager;
+    public GameObject minigame1Root;
 
     bool started = false;
-
     bool currentForwardIsTriggerForward = true;
 
     private void OnTriggerEnter(Collider other)
@@ -27,54 +28,40 @@ public class LoopCheckTrigger : MonoBehaviour
             controller.velocity.normalized;
 
         bool physicalForward =
-            Vector3.Dot(
-                moveDirection,
-                transform.forward
-            ) > 0f;
+            Vector3.Dot(moveDirection, transform.forward) > 0f;
 
-        // 반복 복도 최초 진입
         if (!started)
         {
             started = true;
-
-            currentForwardIsTriggerForward =
-                physicalForward;
+            currentForwardIsTriggerForward = physicalForward;
 
             SceneUIContent ui =
                 FindFirstObjectByType<SceneUIContent>();
 
             if (ui != null)
             {
-                ui.CompleteObjective(
-                    "corridor_start"
-                );
-
-                ui.RevealObjective(
-                    "corridor_loop"
-                );
+                ui.CompleteObjective("corridor_start");
+                ui.RevealObjective("corridor_loop");
             }
 
             manager.PrepareNextLoop();
 
-            Debug.Log("반복 복도 시작");
+            if (minigame1Root != null)
+                minigame1Root.SetActive(false);
 
+            Debug.Log("반복 복도 시작 - 미니게임 1 비활성화");
             return;
         }
 
         bool goingForward =
-            physicalForward ==
-            currentForwardIsTriggerForward;
+            physicalForward == currentForwardIsTriggerForward;
 
         bool correct;
 
         if (manager.hasAnomaly)
-        {
             correct = !goingForward;
-        }
         else
-        {
             correct = goingForward;
-        }
 
         if (correct)
             manager.successCount++;
@@ -83,14 +70,11 @@ public class LoopCheckTrigger : MonoBehaviour
 
         Debug.Log(
             correct
-                ? "정답! 현재 성공 횟수: "
-                    + manager.successCount
+                ? "정답! 현재 성공 횟수: " + manager.successCount
                 : "오답! 성공 횟수 초기화"
         );
 
-        currentForwardIsTriggerForward =
-            physicalForward;
-
+        currentForwardIsTriggerForward = physicalForward;
         manager.PrepareNextLoop();
     }
 }

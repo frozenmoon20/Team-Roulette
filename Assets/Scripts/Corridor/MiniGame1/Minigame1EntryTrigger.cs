@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using TeamRoulette.UI;
 
@@ -5,6 +6,7 @@ public class Minigame1EntryTrigger : MonoBehaviour
 {
     public GameObject mazeRoot;
     public GameObject entranceBlocker;
+    public MazeFogController fogController;
 
     bool activated;
 
@@ -39,6 +41,9 @@ public class Minigame1EntryTrigger : MonoBehaviour
                 "SceneUIContent를 찾지 못했습니다."
             );
         }
+
+        if (fogController != null)
+            fogController.ClearFog();
 
         if (mazeRoot != null)
             Destroy(mazeRoot);
