@@ -45,7 +45,7 @@ public void PlaceExactlyAt(Transform point)
         homePos = transform.position;
         homeRot = transform.rotation;
 
-        if (GetComponentInChildren<Collider>() != null)
+        if (GetComponentInChildren<Collider>() == null)
         {
             Debug.LogWarning("Collider가 없어서 클릭이 안 됩니다 → " + name, this);
         }
