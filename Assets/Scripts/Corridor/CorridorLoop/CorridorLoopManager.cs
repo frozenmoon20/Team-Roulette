@@ -8,26 +8,20 @@ public class CorridorLoopManager : MonoBehaviour
     public bool hasAnomaly = false;
     public int successCount = 0;
 
-    [Header("이상현상 후보들 (실제 평소 물체가 아닌 연출용 오브젝트)")]
+    [Header("개별 등장/변화 이상현상 (선택 시 해당 오브젝트 하나 활성화)")]
     public GameObject[] anomalyObjects;
 
-    [Header("물체 사라짐 이상현상에서만 숨길 평소 오브젝트들")]
+    [Header("개별 사라짐 이상현상 (선택 시 해당 평소 물체 하나 비활성화)")]
     public GameObject[] normalObjects;
-
-    [Header("물체 사라짐 이상현상 오브젝트 (Anomaly Objects 중 하나)")]
-    public GameObject disappearanceAnomaly;
 
     [Header("같은 이상현상 재등장 전 필요한 다른 이상현상 수")]
     [Min(0)] public int anomalyCooldown = 4;
 
-    [Header("반복 복도 시작 시 사라질 벽 (별도 트리거에서 처리)")]
+    [Header("반복 복도 시작 벽 (별도 트리거에서 처리)")]
     public GameObject startWall;
 
     [Header("반복 복도 진입 후 뒤를 막을 벽")]
     public GameObject entranceBlocker;
-
-    [Header("클리어 후 열리는 다음 길")]
-    public GameObject nextPath;
 
     [Header("클리어 후 회전할 문 경첩")]
     public Transform exitDoor;
@@ -48,19 +42,33 @@ public class CorridorLoopManager : MonoBehaviour
     public string objectiveMessage =
         "반복되는 복도의 이상 현상을 확인하자.";
 
+    // 한 후보 = 한 이상현상. 등장 효과와 사라짐 효과를 같은 후보 목록으로 관리한다.
+    struct AnomalyCandidate
+    {
+        public GameObject target;
+        public bool disappear;
+
+        public AnomalyCandidate(GameObject target, bool disappear)
+        {
+            this.target = target;
+            this.disappear = disappear;
+        }
+    }
+
+    readonly List<AnomalyCandidate> candidates = new List<AnomalyCandidate>();
+    readonly Queue<GameObject> recentAnomalies = new Queue<GameObject>();
+    readonly Dictionary<GameObject, bool> normalInitialStates =
+        new Dictionary<GameObject, bool>();
+
     int consecutiveAnomalies = 0;
     int consecutiveNormals = 0;
+    int currentAnomalyIndex = -1;
 
     bool firstLoop = true;
     bool initialized = false;
     bool cleared = false;
+    public bool IsCleared => cleared;
     bool warnedNoCandidates = false;
-
-    int currentAnomalyIndex = -1;
-
-    readonly Queue<GameObject> recentAnomalies = new Queue<GameObject>();
-    readonly Dictionary<GameObject, bool> normalInitialStates =
-        new Dictionary<GameObject, bool>();
 
     Quaternion doorClosedRotation;
     Quaternion doorOpenRotation;
@@ -77,6 +85,7 @@ public class CorridorLoopManager : MonoBehaviour
                 doorClosedRotation * Quaternion.Euler(0f, doorOpenAngle, 0f);
         }
 
+        // 평소 물체의 시작 활성화 상태를 저장한다.
         if (normalObjects != null)
         {
             foreach (GameObject obj in normalObjects)
@@ -86,15 +95,59 @@ public class CorridorLoopManager : MonoBehaviour
             }
         }
 
+        BuildCandidateList();
         ResetAnomalyVisuals();
-
-        if (nextPath != null)
-            nextPath.SetActive(false);
 
         if (entranceBlocker != null)
             entranceBlocker.SetActive(false);
 
         UpdateObjectiveUI();
+    }
+
+    void BuildCandidateList()
+    {
+        candidates.Clear();
+        HashSet<GameObject> registered = new HashSet<GameObject>();
+
+        // Anomaly Objects: 개별 등장/소리/조명/사진 변화
+        if (anomalyObjects != null)
+        {
+            foreach (GameObject obj in anomalyObjects)
+            {
+                if (obj == null)
+                    continue;
+
+                if (!registered.Add(obj))
+                {
+                    Debug.LogWarning("이상현상 후보 중복 등록: " + obj.name, obj);
+                    continue;
+                }
+
+                candidates.Add(new AnomalyCandidate(obj, false));
+            }
+        }
+
+        // Normal Objects: 각 물체가 사라지는 것이 각각 별개의 이상현상
+        if (normalObjects != null)
+        {
+            foreach (GameObject obj in normalObjects)
+            {
+                if (obj == null)
+                    continue;
+
+                if (!registered.Add(obj))
+                {
+                    Debug.LogWarning(
+                        "같은 물체가 Anomaly Objects와 Normal Objects에 중복 등록되어 있습니다: "
+                        + obj.name, obj);
+                    continue;
+                }
+
+                // 원래부터 꺼져 있는 물체는 사라져도 변화가 없으므로 후보로 선택하지 않음.
+                if (normalInitialStates.TryGetValue(obj, out bool wasActive) && wasActive)
+                    candidates.Add(new AnomalyCandidate(obj, true));
+            }
+        }
     }
 
     void Update()
@@ -139,6 +192,7 @@ public class CorridorLoopManager : MonoBehaviour
 
         bool nextHasAnomaly;
 
+        // 첫 복도는 정상, 정상/이상 각각 최대 두 번 연속 (기존 규칙 유지).
         if (firstLoop)
         {
             firstLoop = false;
@@ -170,9 +224,8 @@ public class CorridorLoopManager : MonoBehaviour
                 if (!warnedNoCandidates)
                 {
                     Debug.LogWarning(
-                        "최근 이상현상 4종과 겹치지 않는 후보가 없습니다. " +
-                        "중복을 강제로 허용하지 않고 정상 복도로 처리합니다. " +
-                        "4종을 건너뛰려면 최소 5종의 서로 다른 이상현상이 필요합니다."
+                        "쿨다운 조건에 맞는 이상현상 후보가 없습니다. " +
+                        "재등장 제한을 무시하지 않고 정상 복도로 처리합니다."
                     );
                     warnedNoCandidates = true;
                 }
@@ -180,7 +233,7 @@ public class CorridorLoopManager : MonoBehaviour
             else
             {
                 warnedNoCandidates = false;
-                RememberAnomaly(anomalyObjects[currentAnomalyIndex]);
+                RememberAnomaly(candidates[currentAnomalyIndex].target);
             }
         }
 
@@ -201,29 +254,30 @@ public class CorridorLoopManager : MonoBehaviour
         UpdateObjectiveUI();
 
         if (hasAnomaly)
+        {
+            AnomalyCandidate selected = candidates[currentAnomalyIndex];
             Debug.Log("이번 복도: 이상현상 하나 활성화 - " +
-                      anomalyObjects[currentAnomalyIndex].name);
+                      (selected.disappear ? "사라짐: " : "등장/변화: ") +
+                      selected.target.name);
+        }
         else
+        {
             Debug.Log("이번 복도: 정상");
+        }
     }
 
     int SelectRandomAnomaly()
     {
-        if (anomalyObjects == null || anomalyObjects.Length == 0)
+        if (candidates.Count == 0)
             return -1;
 
         HashSet<GameObject> excluded = new HashSet<GameObject>(recentAnomalies);
-        HashSet<GameObject> seen = new HashSet<GameObject>();
         List<int> available = new List<int>();
 
-        for (int i = 0; i < anomalyObjects.Length; i++)
+        for (int i = 0; i < candidates.Count; i++)
         {
-            GameObject anomaly = anomalyObjects[i];
-
-            if (anomaly == null || !seen.Add(anomaly))
-                continue;
-
-            if (!excluded.Contains(anomaly))
+            GameObject target = candidates[i].target;
+            if (target != null && !excluded.Contains(target))
                 available.Add(i);
         }
 
@@ -240,25 +294,29 @@ public class CorridorLoopManager : MonoBehaviour
 
         recentAnomalies.Enqueue(anomaly);
 
+        // 정상 복도가 아니라 실제로 발생한 다른 이상현상 4개를 기준으로 한다.
         while (recentAnomalies.Count > anomalyCooldown)
             recentAnomalies.Dequeue();
     }
 
     void ResetAnomalyVisuals()
     {
+        // 등장/변화 연출은 모두 해제한다.
         if (anomalyObjects != null)
         {
-            foreach (GameObject anomaly in anomalyObjects)
+            foreach (GameObject obj in anomalyObjects)
             {
-                if (anomaly != null && !normalInitialStates.ContainsKey(anomaly))
-                    anomaly.SetActive(false);
+                // 동일한 평소 물체를 잘못 중복 등록해도 평소 상태를 우선 보존.
+                if (obj != null && !normalInitialStates.ContainsKey(obj))
+                    obj.SetActive(false);
             }
         }
 
-        foreach (KeyValuePair<GameObject, bool> pair in normalInitialStates)
+        // 사라졌던 평소 물체는 개별적으로 원래 상태로 되돌린다.
+        foreach (KeyValuePair<GameObject, bool> entry in normalInitialStates)
         {
-            if (pair.Key != null)
-                pair.Key.SetActive(pair.Value);
+            if (entry.Key != null)
+                entry.Key.SetActive(entry.Value);
         }
     }
 
@@ -267,35 +325,22 @@ public class CorridorLoopManager : MonoBehaviour
         ResetAnomalyVisuals();
 
         if (!hasAnomaly || currentAnomalyIndex < 0 ||
-            anomalyObjects == null || currentAnomalyIndex >= anomalyObjects.Length)
+            currentAnomalyIndex >= candidates.Count)
             return;
 
-        GameObject selected = anomalyObjects[currentAnomalyIndex];
-
-        if (selected == null)
+        AnomalyCandidate selected = candidates[currentAnomalyIndex];
+        if (selected.target == null)
             return;
 
-        if (selected == disappearanceAnomaly)
+        if (selected.disappear)
         {
-            if (!normalInitialStates.ContainsKey(selected))
-                selected.SetActive(true);
-
-            if (normalObjects != null)
-            {
-                foreach (GameObject obj in normalObjects)
-                {
-                    if (obj != null)
-                        obj.SetActive(false);
-                }
-            }
-        }
-        else if (normalInitialStates.ContainsKey(selected))
-        {
-            selected.SetActive(false);
+            // 해당 물체 하나만 사라짐. 다른 Normal Objects에는 영향 없음.
+            selected.target.SetActive(false);
         }
         else
         {
-            selected.SetActive(true);
+            // 해당 연출 오브젝트 하나만 등장/활성화.
+            selected.target.SetActive(true);
         }
     }
 
@@ -318,24 +363,34 @@ public class CorridorLoopManager : MonoBehaviour
         sceneUI.Refresh();
     }
 
-    void ClearLoop()
+    
+void ClearLoop()
+{
+    cleared = true;
+    hasAnomaly = false;
+    currentAnomalyIndex = -1;
+
+    UpdateObjectiveUI();
+    ResetAnomalyVisuals();
+
+    if (sceneUI == null)
+        sceneUI = FindFirstObjectByType<SceneUIContent>();
+
+    if (sceneUI != null)
     {
-        cleared = true;
-        hasAnomaly = false;
-        currentAnomalyIndex = -1;
+        // 반복 복도 목표 완료 처리
+        sceneUI.CompleteObjective(objectiveId);
 
-        UpdateObjectiveUI();
-        ResetAnomalyVisuals();
+        // 클리어 메시지 표시
+        GameUI gameUI = sceneUI.GetComponent<GameUI>();
 
-        if (nextPath != null)
-            nextPath.SetActive(true);
-
-        if (sceneUI == null)
-            sceneUI = FindFirstObjectByType<SceneUIContent>();
-
-        if (sceneUI != null)
-            sceneUI.CompleteObjective(objectiveId);
-
-        Debug.Log("반복 복도 클리어! 문이 열립니다.");
+        if (gameUI != null && gameUI.objectiveText != null)
+        {
+            gameUI.objectiveText.text = "목표 완료";
+        }
     }
+
+    Debug.Log("반복 복도 클리어.");
+}
+
 }

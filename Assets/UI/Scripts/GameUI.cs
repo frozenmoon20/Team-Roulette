@@ -164,23 +164,38 @@ namespace TeamRoulette.UI
             }
         }
 
-        public void RefreshObjectives()
+        
+public void RefreshObjectives()
+{
+    if (!content || !objectiveText)
+        return;
+
+    var seen = new HashSet<string>();
+    bool hasIncomplete = false;
+
+    foreach (var item in content.objectives)
+    {
+        if (item == null ||
+            string.IsNullOrWhiteSpace(item.id) ||
+            !seen.Add(item.id) ||
+            item.completed)
         {
-            if (!content || !objectiveText) return;
-            var seen = new HashSet<string>();
-            bool hasIncomplete = false;
-            foreach (var item in content.objectives)
-            {
-                if (item == null || string.IsNullOrWhiteSpace(item.id) || !seen.Add(item.id) || item.completed) continue;
-                hasIncomplete = true;
-                if (item.visible)
-                {
-                    objectiveText.text = item.text;
-                    return;
-                }
-            }
-            objectiveText.text = hasIncomplete ? "" : content.completedMessage;
+            continue;
         }
+
+        hasIncomplete = true;
+
+        if (!item.visible)
+            continue;
+
+        objectiveText.text = item.text;
+        return;
+    }
+
+    objectiveText.text =
+        hasIncomplete ? "" : content.completedMessage;
+}
+
 
         public void ShowDialogue(DialogueSequence sequence)
         {

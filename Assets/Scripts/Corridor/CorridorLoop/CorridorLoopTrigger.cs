@@ -14,6 +14,10 @@ public class LoopCheckTrigger : MonoBehaviour
     {
         FirstPersonPlayer player =
             other.GetComponentInParent<FirstPersonPlayer>();
+            
+        // 반복 복도 클리어 후에는 모든 판정 중지
+        if (manager.IsCleared)
+            return;
 
         if (player == null || manager == null)
             return;
