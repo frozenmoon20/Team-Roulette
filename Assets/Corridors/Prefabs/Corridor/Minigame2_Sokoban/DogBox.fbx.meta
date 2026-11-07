@@ -3,7 +3,22 @@ guid: 88fc5c86fbb48ae44bb8a25ec96f0bb0
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: DogBox_Front
+    second: {fileID: 2100000, guid: 803b9a1a0f1c8794789d9dae82ea3cf6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: DogBox_Side
+    second: {fileID: 2100000, guid: 99fc70aa8e8faa941ab554deba7e8110, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: DogBox_Top
+    second: {fileID: 2100000, guid: 074833ae73cf7ae4abf97208ce398b79, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

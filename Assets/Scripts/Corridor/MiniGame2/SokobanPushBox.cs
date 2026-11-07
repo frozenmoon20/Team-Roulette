@@ -88,7 +88,14 @@ public class SokobanPushBox : MonoBehaviour, IInteractable, IHasName
             return;
         }
 
-        StartCoroutine(Push(direction));
+        
+if (SokobanHandPush.Instance != null)
+{
+    SokobanHandPush.Instance.PlayPush();
+}
+
+StartCoroutine(Push(direction));
+
     }
 
     bool CanMove(Vector3 direction)
