@@ -1,4 +1,5 @@
 
+using System.Collections;
 using UnityEngine;
 using TeamRoulette.UI;
 
@@ -22,6 +23,9 @@ public class SokobanGameManager : MonoBehaviour
 
     [Header("맵1 클리어 시 사라질 벽")]
     public GameObject separatorWall;
+
+    [Header("벽 사라지는 연출")]
+    public float wallDisappearDuration = 1.5f;
 
     [Header("맵2 클리어 후 열릴 다음 길")]
     public GameObject nextPath;
@@ -103,10 +107,10 @@ public class SokobanGameManager : MonoBehaviour
             }
         }
 
-        // 맵1과 맵2 사이의 벽 제거
+        // 맵1과 맵2 사이의 벽이 부드럽게 내려가도록 변경
         if (separatorWall != null)
         {
-            separatorWall.SetActive(false);
+            StartCoroutine(DisappearWall());
         }
         else
         {
@@ -122,6 +126,50 @@ public class SokobanGameManager : MonoBehaviour
         Debug.Log(
             "소코반 맵1 클리어! 맵2 통로 개방"
         );
+    }
+
+    IEnumerator DisappearWall()
+    {
+        Transform wall = separatorWall.transform;
+
+        Vector3 startPosition = wall.position;
+
+        // 벽의 실제 높이를 기준으로 이동 거리 계산
+        Renderer wallRenderer =
+            separatorWall.GetComponentInChildren<Renderer>();
+
+        float wallHeight = wallRenderer != null
+            ? wallRenderer.bounds.size.y
+            : 3f;
+
+        Vector3 targetPosition =
+            startPosition + Vector3.down * (wallHeight + 0.2f);
+
+        float duration = Mathf.Max(0.01f, wallDisappearDuration);
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            // 부드럽게 시작하고 끝나는 움직임
+            t = Mathf.SmoothStep(0f, 1f, t);
+
+            wall.position = Vector3.Lerp(
+                startPosition,
+                targetPosition,
+                t
+            );
+
+            yield return null;
+        }
+
+        wall.position = targetPosition;
+
+        // 연출 종료 후 벽 완전히 비활성화
+        separatorWall.SetActive(false);
     }
 
     void ClearGame()
