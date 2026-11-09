@@ -1,3 +1,4 @@
+
 using System.Collections;
 using UnityEngine;
 
@@ -9,11 +10,14 @@ public enum SokobanColor
     Green
 }
 
+[RequireComponent(typeof(BoxCollider))]
 public class SokobanPushBox : MonoBehaviour, IInteractable, IHasName
 {
+    [Header("상자 정보")]
     public string displayName = "상자";
     public SokobanColor boxColor;
 
+    [Header("상자 이동")]
     public float pushDistance = 1f;
     public float pushSpeed = 5f;
 
@@ -32,17 +36,13 @@ public class SokobanPushBox : MonoBehaviour, IInteractable, IHasName
     {
         boxCollider = GetComponent<BoxCollider>();
 
-        // 게임 시작 당시 위치 저장
         startPosition = transform.localPosition;
         startRotation = transform.localRotation;
     }
 
     public void Interact()
     {
-        if (locked)
-            return;
-
-        if (moving)
+        if (locked || moving)
             return;
 
         if (OptionState.Instance == null ||
@@ -68,17 +68,13 @@ public class SokobanPushBox : MonoBehaviour, IInteractable, IHasName
         if (Mathf.Abs(difference.x) > Mathf.Abs(difference.z))
         {
             direction = new Vector3(
-                Mathf.Sign(difference.x),
-                0f,
-                0f
+                Mathf.Sign(difference.x), 0f, 0f
             );
         }
         else
         {
             direction = new Vector3(
-                0f,
-                0f,
-                Mathf.Sign(difference.z)
+                0f, 0f, Mathf.Sign(difference.z)
             );
         }
 
@@ -88,32 +84,27 @@ public class SokobanPushBox : MonoBehaviour, IInteractable, IHasName
             return;
         }
 
-        
-if (SokobanHandPush.Instance != null)
-{
-    SokobanHandPush.Instance.PlayPush();
-}
+        if (SokobanHandPush.Instance != null)
+            SokobanHandPush.Instance.PlayPush();
 
-StartCoroutine(Push(direction));
-
+        StartCoroutine(Push(direction));
     }
 
     bool CanMove(Vector3 direction)
     {
-        if (boxCollider == null)
-            return false;
+        Bounds bounds = boxCollider.bounds;
 
-        Vector3 center =
-            boxCollider.bounds.center;
-
-        Vector3 halfExtents =
-            boxCollider.bounds.extents * 0.85f;
+        Vector3 halfExtents = new Vector3(
+            bounds.extents.x * 0.8f,
+            bounds.extents.y * 0.7f,
+            bounds.extents.z * 0.8f
+        );
 
         RaycastHit[] hits = Physics.BoxCastAll(
-            center,
+            bounds.center,
             halfExtents,
             direction,
-            transform.rotation,
+            Quaternion.identity,
             pushDistance,
             ~0,
             QueryTriggerInteraction.Ignore
@@ -121,11 +112,18 @@ StartCoroutine(Push(direction));
 
         foreach (RaycastHit hit in hits)
         {
-            if (hit.collider == boxCollider)
+            Collider other = hit.collider;
+
+            if (other == null ||
+                other == boxCollider ||
+                other.transform == transform ||
+                other.transform.IsChildOf(transform))
                 continue;
 
-            if (hit.transform == transform ||
-                hit.transform.IsChildOf(transform))
+            if (other.GetComponentInParent<FirstPersonPlayer>() != null)
+                continue;
+
+            if (other.bounds.max.y <= bounds.min.y + 0.05f)
                 continue;
 
             return false;
@@ -138,31 +136,21 @@ StartCoroutine(Push(direction));
     {
         moving = true;
 
-        Vector3 start =
-            transform.position;
-
         Vector3 target =
-            start + direction * pushDistance;
+            transform.position + direction * pushDistance;
 
-        while (
-            Vector3.Distance(
-                transform.position,
-                target
-            ) > 0.01f
-        )
+        while (Vector3.Distance(transform.position, target) > 0.01f)
         {
-            transform.position =
-                Vector3.MoveTowards(
-                    transform.position,
-                    target,
-                    pushSpeed * Time.deltaTime
-                );
+            transform.position = Vector3.MoveTowards(
+                transform.position,
+                target,
+                pushSpeed * Time.deltaTime
+            );
 
             yield return null;
         }
 
         transform.position = target;
-
         moving = false;
 
         CheckGoalBelow();
@@ -192,8 +180,7 @@ StartCoroutine(Push(direction));
             }
         }
 
-        if (currentGoal != null &&
-            currentGoal != foundGoal)
+        if (currentGoal != null && currentGoal != foundGoal)
         {
             currentGoal.RemoveBox();
             currentGoal = null;

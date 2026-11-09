@@ -24,9 +24,15 @@ public class PlayerInteractor : MonoBehaviour
     Component hoveredComponent;
     bool lockedLastFrame;
 
+    float originalNameFontSize;
+    const float SofaNameScale = 1.5f;
+
     void Awake()
     {
         instance = this;
+
+        if (nameText != null)
+            originalNameFontSize = nameText.fontSize;
     }
 
     void OnDestroy()
@@ -142,7 +148,11 @@ public class PlayerInteractor : MonoBehaviour
             label = hintText;
 
         if (nameText != null)
+        {
+            bool isSofaName = hovered is SofaPeekInteraction && Time.time >= hintUntil;
+            nameText.fontSize = originalNameFontSize * (isSofaName ? SofaNameScale : 1f);
             nameText.text = label;
+        }
 
         if (crosshairDot != null)
             crosshairDot.SetActive(!showHand);
