@@ -1,3 +1,4 @@
+
 using System;
 using TMPro;
 using UnityEngine;
@@ -52,6 +53,7 @@ public class PlayerInteractor : MonoBehaviour
             PlayerHand hand = PlayerHand.Instance;
             bool holding = hand != null && hand.Held != null;
 
+            // 좌클릭 상호작용
             if (Input.GetMouseButtonDown(0) && hovered != null)
             {
                 if (holding && !(hovered is PlaceSpot))
@@ -64,17 +66,32 @@ public class PlayerInteractor : MonoBehaviour
                 }
             }
 
+            // 우클릭 상호작용
             if (Input.GetMouseButtonDown(1) && holding)
             {
-                CapsuleToy capsule =
-                    hand.Held.GetComponent<CapsuleToy>();
+                // [추가] 클릭커는 우클릭으로 내려놓을 수 없음
+                ClickerPocketController pocketController =
+                    FindFirstObjectByType<ClickerPocketController>();
 
-                if (capsule != null && capsule.TryOpen())
+                if (pocketController != null &&
+                    hand.Held == pocketController.clicker)
                 {
-                    return;
+                    ShowHint("클릭커는 E키를 눌러 주머니에 넣자.");
                 }
+                else
+                {
+                    // 기존 캡슐 장난감 기능 유지
+                    CapsuleToy capsule =
+                        hand.Held.GetComponent<CapsuleToy>();
 
-                hand.ReturnHeld();
+                    if (capsule != null && capsule.TryOpen())
+                    {
+                        return;
+                    }
+
+                    // 클릭커 이외의 물건은 기존처럼 내려놓기
+                    hand.ReturnHeld();
+                }
             }
         }
 
@@ -149,8 +166,14 @@ public class PlayerInteractor : MonoBehaviour
 
         if (nameText != null)
         {
-            bool isSofaName = hovered is SofaPeekInteraction && Time.time >= hintUntil;
-            nameText.fontSize = originalNameFontSize * (isSofaName ? SofaNameScale : 1f);
+            bool isSofaName =
+                hovered is SofaPeekInteraction &&
+                Time.time >= hintUntil;
+
+            nameText.fontSize =
+                originalNameFontSize *
+                (isSofaName ? SofaNameScale : 1f);
+
             nameText.text = label;
         }
 
