@@ -3,7 +3,12 @@ guid: 2e42ba5d51fc82d43afe4018a7da995f
 ModelImporter:
   serializedVersion: 24300
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: DogBox_Green_Front
+    second: {fileID: 2100000, guid: 462b872a26385c546b9523fdd906476a, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
