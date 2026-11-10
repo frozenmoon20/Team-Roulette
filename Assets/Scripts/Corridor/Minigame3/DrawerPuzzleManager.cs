@@ -6,25 +6,29 @@ using TeamRoulette.UI;
 
 public class DrawerPuzzleManager : MonoBehaviour
 {
-    [Header("서랍 A~F 순서")]
+    [Header("퍼즐 서랍 A~F")]
     public DrawerPuzzleDrawer[] drawers =
         new DrawerPuzzleDrawer[6];
 
     [Header("서랍 이동 시간")]
     public float moveDuration = 0.35f;
 
-    [Header("클리어 보상")]
-    public GameObject collarReward;
+    [Header("보상 서랍")]
+    public DrawerRewardDrawer rewardDrawer;
+
+    [Header("클릭커 획득 후 열릴 통로")]
     public GameObject nextPath;
 
     [Header("목표 UI")]
     public string objectiveId = "drawer_puzzle";
 
-    [Header("추가 클리어 연출")]
+    [Header("추가 이벤트")]
     public UnityEvent onPuzzleCleared;
+    public UnityEvent onClickerCollected;
 
-    // 초기 상태: A 닫힘, B 열림, C 닫힘
-    //           D 열림, E 열림, F 열림
+    // 초기 상태
+    // A 닫힘 / B 열림 / C 닫힘
+    // D 열림 / E 열림 / F 열림
     readonly bool[] initialStates =
     {
         false, true, false,
@@ -33,19 +37,22 @@ public class DrawerPuzzleManager : MonoBehaviour
 
     readonly bool[] states = new bool[6];
 
-    // 상하좌우로 연결된 서랍
+    // 상하좌우 연결
     readonly int[][] neighbors =
     {
-        new int[] { 1, 3 },       // A: B, D
-        new int[] { 0, 2, 4 },    // B: A, C, E
-        new int[] { 1, 5 },       // C: B, F
-        new int[] { 0, 4 },       // D: A, E
-        new int[] { 1, 3, 5 },    // E: B, D, F
-        new int[] { 2, 4 }        // F: C, E
+        new int[] { 1, 3 },
+        new int[] { 0, 2, 4 },
+        new int[] { 1, 5 },
+        new int[] { 0, 4 },
+        new int[] { 1, 3, 5 },
+        new int[] { 2, 4 }
     };
 
     bool isAnimating;
     bool isCleared;
+    bool hasClicker;
+
+    public bool HasClicker => hasClicker;
 
     void Awake()
     {
@@ -54,6 +61,7 @@ public class DrawerPuzzleManager : MonoBehaviour
             Debug.LogError(
                 "서랍 6개를 연결해야 합니다.", this
             );
+
             enabled = false;
             return;
         }
@@ -65,6 +73,7 @@ public class DrawerPuzzleManager : MonoBehaviour
                 Debug.LogError(
                     $"서랍 {i}가 연결되지 않았습니다.", this
                 );
+
                 enabled = false;
                 return;
             }
@@ -79,10 +88,13 @@ public class DrawerPuzzleManager : MonoBehaviour
         if (!enabled)
             return;
 
-        if (collarReward != null)
-            collarReward.SetActive(false);
+        if (nextPath != null)
+            nextPath.SetActive(false);
 
-        // 게임 시작 시 서랍의 초기 상태 적용
+        if (rewardDrawer != null)
+            rewardDrawer.Prepare(this);
+
+        // 초기 서랍 상태 적용
         for (int i = 0; i < 6; i++)
         {
             drawers[i].MoveToState(
@@ -100,23 +112,21 @@ public class DrawerPuzzleManager : MonoBehaviour
         if (index < 0 || index >= 6)
             return;
 
-        // 첫 번째 서랍 조작 시 당기기 해금
+        // 첫 서랍 조작 시 당기기 해금
         if (OptionState.Instance != null &&
             !OptionState.Instance.IsUnlocked(OptionType.Pull))
         {
-            OptionState.Instance.Unlock(
-                OptionType.Pull
-            );
+            OptionState.Instance.Unlock(OptionType.Pull);
 
             PlayerInteractor.ShowHint(
                 "당기기 기능이 해금되었다."
             );
         }
 
-        // 클릭한 서랍 열림/닫힘 전환
+        // 선택한 서랍 반전
         states[index] = !states[index];
 
-        // 상하좌우 서랍 상태도 반대로 전환
+        // 상하좌우 서랍도 반전
         foreach (int neighbor in neighbors[index])
         {
             states[neighbor] = !states[neighbor];
@@ -131,7 +141,6 @@ public class DrawerPuzzleManager : MonoBehaviour
 
         for (int i = 0; i < 6; i++)
         {
-            // 0: 닫힘, 2: 완전히 열림
             drawers[i].MoveToState(
                 states[i] ? 2 : 0,
                 moveDuration
@@ -149,7 +158,7 @@ public class DrawerPuzzleManager : MonoBehaviour
 
     void CheckClear()
     {
-        // 서랍 6개가 전부 열려 있는지 확인
+        // 6개 모두 열려야 클리어
         for (int i = 0; i < 6; i++)
         {
             if (!states[i])
@@ -166,15 +175,40 @@ public class DrawerPuzzleManager : MonoBehaviour
 
         isCleared = true;
 
-        // 겨울이 목줄 등장
-        if (collarReward != null)
-            collarReward.SetActive(true);
+        Debug.Log("서랍 퍼즐 클리어!");
 
-        // 다음 통로 개방
+        // 잠긴 보상 서랍 개방
+        if (rewardDrawer != null)
+        {
+            rewardDrawer.OpenDrawer();
+        }
+        else
+        {
+            Debug.LogWarning(
+                "보상 서랍이 연결되지 않았습니다.", this
+            );
+        }
+
+        onPuzzleCleared?.Invoke();
+
+        PlayerInteractor.ShowHint(
+            "어디선가 잠금장치가 풀리는 소리가 들린다."
+        );
+    }
+
+    // 클릭커를 직접 클릭했을 때 호출
+    public void CollectClicker()
+    {
+        if (!isCleared || hasClicker)
+            return;
+
+        hasClicker = true;
+
+        // 클릭커 획득 후 다음 길 열기
         if (nextPath != null)
             nextPath.SetActive(true);
 
-        // 목표 UI 완료
+        // 목표 완료
         SceneUIContent ui =
             FindFirstObjectByType<SceneUIContent>();
 
@@ -184,13 +218,14 @@ public class DrawerPuzzleManager : MonoBehaviour
             ui.CompleteObjective(objectiveId);
         }
 
-        // 추가 클리어 연출
-        onPuzzleCleared?.Invoke();
+        onClickerCollected?.Invoke();
 
         PlayerInteractor.ShowHint(
-            "서랍이 모두 열렸다. 겨울이의 목줄을 발견했다."
+            "겨울이의 클릭커를 얻었다."
         );
 
-        Debug.Log("서랍 퍼즐 클리어!");
+        Debug.Log(
+            "겨울이 클릭커 획득! 다음 구간 개방"
+        );
     }
 }

@@ -9,8 +9,8 @@ public class DrawerPuzzleDrawer : MonoBehaviour,
     public string displayName = "서랍";
 
     [Header("서랍 이동 설정")]
-    public Vector3 pullDirection = Vector3.back;
-    public float maxPullDistance = 0.5f;
+    public Vector3 pullDirection = Vector3.left;
+    public float maxPullDistance = 1.5f;
 
     DrawerPuzzleManager manager;
     int drawerIndex;
@@ -70,7 +70,6 @@ public class DrawerPuzzleDrawer : MonoBehaviour,
             elapsed += Time.deltaTime;
 
             float t = Mathf.Clamp01(elapsed / duration);
-
             t = Mathf.SmoothStep(0f, 1f, t);
 
             transform.localPosition = Vector3.Lerp(
