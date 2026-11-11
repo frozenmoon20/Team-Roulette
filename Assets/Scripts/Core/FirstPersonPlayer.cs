@@ -133,7 +133,13 @@ public class FirstPersonPlayer : MonoBehaviour
         Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !locked;
     }
+public void SetLookPitch(float newPitch)
+{
+    pitch = Mathf.Clamp(newPitch, -maxPitch, maxPitch);
 
+    if (cameraRoot != null)
+        cameraRoot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+}
     
 }
 

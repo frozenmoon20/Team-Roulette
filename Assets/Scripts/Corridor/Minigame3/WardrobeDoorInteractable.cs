@@ -2,15 +2,11 @@
 using System.Collections;
 using UnityEngine;
 
-public class WardrobeDoorInteractable : MonoBehaviour,
-    IInteractable, IHasName
+public class WardrobeDoorInteractable : MonoBehaviour, IInteractable, IHasName
 {
     public string displayName = "옷장 문";
 
-    [Header("회전할 경첩 오브젝트")]
-    public Transform doorPivot;
-
-    [Header("열리는 각도")]
+    [Header("문 열림 설정")]
     public float openAngle = 100f;
     public float openDuration = 0.8f;
 
@@ -22,10 +18,7 @@ public class WardrobeDoorInteractable : MonoBehaviour,
 
     private void Awake()
     {
-        if (doorPivot == null)
-            doorPivot = transform;
-
-        closedRotation = doorPivot.localRotation;
+        closedRotation = transform.localRotation;
     }
 
     public void Interact()
@@ -40,9 +33,9 @@ public class WardrobeDoorInteractable : MonoBehaviour,
     {
         isMoving = true;
 
-        Quaternion start = doorPivot.localRotation;
+        Quaternion startRotation = transform.localRotation;
 
-        Quaternion target = isOpen
+        Quaternion targetRotation = isOpen
             ? closedRotation
             : closedRotation * Quaternion.Euler(0f, openAngle, 0f);
 
@@ -59,13 +52,16 @@ public class WardrobeDoorInteractable : MonoBehaviour,
                 Mathf.Clamp01(elapsed / duration)
             );
 
-            doorPivot.localRotation =
-                Quaternion.Slerp(start, target, t);
+            transform.localRotation = Quaternion.Slerp(
+                startRotation,
+                targetRotation,
+                t
+            );
 
             yield return null;
         }
 
-        doorPivot.localRotation = target;
+        transform.localRotation = targetRotation;
 
         isOpen = !isOpen;
         isMoving = false;
