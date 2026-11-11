@@ -19,6 +19,9 @@ public class GyeoulClickerReunion : MonoBehaviour
     public Transform gyeoulSitPoint;
     public GyeoulFollowPlayer gyeoulFollower;
 
+    [Header("겨울이 애니메이션")]
+    public DogAnimator gyeoulAnimator;
+
     [Header("겨울이 바라보기")]
     public Transform gyeoulLookTarget;
     public float dogLookHeight = 0.55f;
@@ -54,6 +57,10 @@ public class GyeoulClickerReunion : MonoBehaviour
         if (clickerController == null)
             clickerController =
                 FindFirstObjectByType<ClickerPocketController>();
+
+        if (gyeoulAnimator == null && gyeoul != null)
+            gyeoulAnimator =
+                gyeoul.GetComponentInChildren<DogAnimator>(true);
     }
 
     private void Start()
@@ -75,14 +82,14 @@ public class GyeoulClickerReunion : MonoBehaviour
             return;
 
         if (joined)
-{
-    PlayBark();
+        {
+            PlayBark();
 
-    if (!playingBark)
-        StartCoroutine(BarkAndActivate());
+            if (!playingBark)
+                StartCoroutine(BarkAndActivate());
 
-    return;
-}
+            return;
+        }
 
         if (player == null ||
             player.cameraRoot == null ||
@@ -151,6 +158,10 @@ public class GyeoulClickerReunion : MonoBehaviour
         if (gyeoulFollower != null)
             gyeoulFollower.enabled = false;
 
+        if (gyeoulAnimator == null)
+            gyeoulAnimator =
+                gyeoul.GetComponentInChildren<DogAnimator>(true);
+
         Vector3 dogDirection =
             player.transform.position - gyeoul.transform.position;
 
@@ -161,6 +172,8 @@ public class GyeoulClickerReunion : MonoBehaviour
             gyeoul.transform.rotation =
                 Quaternion.LookRotation(dogDirection);
         }
+
+        yield return null;
 
         PlayBark();
 
@@ -178,7 +191,9 @@ public class GyeoulClickerReunion : MonoBehaviour
 
         horizontalDirection.y = 0f;
 
-        Quaternion startRotation = player.transform.rotation;
+        Quaternion startRotation =
+            player.transform.rotation;
+
         Quaternion endRotation = startRotation;
 
         if (horizontalDirection.sqrMagnitude > 0.001f)
@@ -199,7 +214,8 @@ public class GyeoulClickerReunion : MonoBehaviour
             ? viewCamera.transform.position
             : player.cameraRoot.position;
 
-        Vector3 lookDirection = targetPoint - cameraPosition;
+        Vector3 lookDirection =
+            targetPoint - cameraPosition;
 
         float horizontalDistance = Mathf.Sqrt(
             lookDirection.x * lookDirection.x +
@@ -235,11 +251,12 @@ public class GyeoulClickerReunion : MonoBehaviour
                 Mathf.Clamp01(elapsed / duration)
             );
 
-            player.transform.rotation = Quaternion.Slerp(
-                startRotation,
-                endRotation,
-                t
-            );
+            player.transform.rotation =
+                Quaternion.Slerp(
+                    startRotation,
+                    endRotation,
+                    t
+                );
 
             float currentPitch = Mathf.LerpAngle(
                 startPitch,
@@ -254,6 +271,9 @@ public class GyeoulClickerReunion : MonoBehaviour
 
         player.transform.rotation = endRotation;
         player.SetLookPitch(targetPitch);
+
+        if (gyeoulAnimator != null)
+            gyeoulAnimator.Sit();
 
         yield return new WaitForSeconds(
             Mathf.Max(0f, lookDuration)
@@ -282,20 +302,23 @@ public class GyeoulClickerReunion : MonoBehaviour
     }
 
     private IEnumerator BarkAndActivate()
-{
-    playingBark = true;
+    {
+        playingBark = true;
 
-    yield return new WaitForSeconds(
-        Mathf.Max(0f, barkActionDelay)
-    );
+        yield return new WaitForSeconds(
+            Mathf.Max(0f, barkActionDelay)
+        );
 
-    onDogCommand?.Invoke();
+        onDogCommand?.Invoke();
 
-    playingBark = false;
-}
+        playingBark = false;
+    }
 
     private void PlayBark()
     {
+        if (gyeoulAnimator != null)
+            gyeoulAnimator.Bark();
+
         if (barkAudioSource != null && barkSound != null)
             barkAudioSource.PlayOneShot(barkSound);
     }
