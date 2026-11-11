@@ -20,6 +20,7 @@ public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
     public DialogueStep wrongItemDialogue;   // 맞지 않는 물건일 때 대사 (넣으면 위 글자 대신 이게 나옴)
     public DialogueStep emptyHandDialogue;   // 빈손으로 클릭했을 때 대사 (비워 두면 아무 일 없음)
     public DialogueStep doneDialogue;        // 다 놓은 뒤 다시 클릭했을 때 대사 (비워 두면 아무 일 없음)
+    public bool disablePlacedColliders = true;   // 놓은 물건의 충돌체를 끔 (통 안 물건이 클릭을 가로채거나 다시 집히지 않게)
     public UnityEvent onAllPlaced;
 
     public string DisplayName => displayName;
@@ -62,19 +63,24 @@ public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
         }
 
         Transform targetPoint = GetNextPlacePoint();
+        GrabbableItem placedItem = hand.Held;
 
         hand.PlaceHeld(
             targetPoint,
             hideOnPlace
         );
 
+        // 놓은 물건의 충돌체 끄기: 켜져 있으면 다음에 이 통을 클릭할 때 안에 든 물건이 먼저 맞아서
+        //   통 이름·대사가 안 나오고, 놓은 물건을 다시 집을 수도 있음
+        if (disablePlacedColliders && placedItem != null)
+            foreach (Collider c in placedItem.GetComponentsInChildren<Collider>()) c.enabled = false;
+
         PlacedCount++;
 
+        // 다 놓아도 이 컴포넌트는 끄지 않음 (끄면 마우스를 대도 이름이 안 뜨고 Done Dialogue도 안 나옴)
+        //   다 놓은 뒤 클릭은 위쪽의 "이미 다 놓았으면" 검사에서 Done Dialogue로 처리됨
         if (PlacedCount >= acceptItems.Length)
-        {
-            enabled = false;
             onAllPlaced.Invoke();
-        }
     }
 
     static void PlayDialogue(DialogueStep step)
