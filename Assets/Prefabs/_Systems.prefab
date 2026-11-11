@@ -181,6 +181,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HalftoneController
   fadeSpeed: 0.08
+  excludedOptions: 0a000000
+  blendByCount:
+  - 0
+  - 0.08
+  - 0.14
+  - 0.2
+  - 0.26
+  - 0.32
+  - 0.38
+  - 0.44
+  - 0.5
+  - 0.54
+  - 0.72
+  - 0.85
+  - 1
+  unlockedNow: 0
+  totalNow: 0
+  targetNow: 0
 --- !u!1 &8724950474643668288
 GameObject:
   m_ObjectHideFlags: 0

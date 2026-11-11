@@ -4,6 +4,9 @@ using UnityEngine;
 // 클릭하면 손에 들고, 맞는 PlaceSpot을 클릭하면 그 자리에 놓인다. 우클릭은 원래 자리로.
 // Grab이 해금되어 있어야 잡힌다. 해금 전에 클릭하면 lockedDialogue(대화창)가 나온다.
 //   lockedDialogue를 비워 두면 예전처럼 화면 아래 짧은 글자(lockedMessage)가 뜬다 (기존 물건은 그대로 동작).
+// 손 위 위치 맞추기: Play 중 물건을 손에 든 채로 Inspector의 Position/Rotation Offset 숫자를 바꾸면 바로 손 위에서 움직인다.
+//   (숫자가 바뀔 때 Unity가 부르는 OnValidate에서 다시 손에 붙임) 맞춘 뒤 Play를 끄면 값이 돌아가므로,
+//   끄기 전에 컴포넌트 ⋮ → Copy Component, 끈 뒤 ⋮ → Paste Component Values.
 public class GrabbableItem : MonoBehaviour, IInteractable, IHasName
 {
     public enum HoldStyle
@@ -38,6 +41,7 @@ public class GrabbableItem : MonoBehaviour, IInteractable, IHasName
     Quaternion homeRot;
     Vector3 localBottom;    // 물건 기준점 → 바닥 가운데 (물건 자기 좌표)
     Vector3 localCenter;    // 물건 기준점 → 몸통 가운데
+    Transform heldPoint;    // 지금 붙어 있는 손 자리 (손에 들고 있을 때만)
 
     void Awake()
     {
@@ -74,15 +78,23 @@ public class GrabbableItem : MonoBehaviour, IInteractable, IHasName
     // 손에 붙이기 (PlayerHand가 호출). 받쳐 들기는 바닥을, 감싸 쥐기는 몸통 가운데를 기준점에 맞춤
     public void AttachTo(Transform point)
     {
+        heldPoint = point;
         transform.SetParent(point, true);
-        transform.rotation = point.rotation * Quaternion.Euler(rotationOffset);
+        ApplyHold();
+    }
+
+    // 손 자리 + Offset으로 위치·방향 정하기
+    void ApplyHold()
+    {
+        transform.rotation = heldPoint.rotation * Quaternion.Euler(rotationOffset);
         Vector3 anchor = holdStyle == HoldStyle.Palm ? localBottom : localCenter;
-        transform.position = point.TransformPoint(positionOffset) - transform.TransformVector(anchor);
+        transform.position = heldPoint.TransformPoint(positionOffset) - transform.TransformVector(anchor);
     }
 
     // 특정 자리에 똑바로 세워 두기 (PlaceSpot이 호출)
     public void PlaceAt(Transform point)
     {
+        heldPoint = null;
         transform.SetParent(point, true);
         transform.rotation = point.rotation;
         transform.position = point.position - transform.TransformVector(localBottom);
@@ -91,8 +103,15 @@ public class GrabbableItem : MonoBehaviour, IInteractable, IHasName
     // 원래 자리로 (우클릭)
     public void ReturnHome()
     {
+        heldPoint = null;
         transform.SetParent(homeParent, true);
         transform.SetPositionAndRotation(homePos, homeRot);
+    }
+
+    // Play 중 Inspector에서 숫자를 바꾸면 Unity가 부름 → 손에 들고 있으면 바뀐 Offset으로 다시 붙임
+    void OnValidate()
+    {
+        if (Application.isPlaying && heldPoint != null && transform.parent == heldPoint) ApplyHold();
     }
 
     static bool GrabUnlocked()

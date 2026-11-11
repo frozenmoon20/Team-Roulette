@@ -4,6 +4,9 @@ using UnityEngine;
 // 해금된 옵션 개수에 비례하여 하프톤 셰이더의 _HalftoneBlend 값을 올리는 스크립트
 // _Systems 프리팹에 들어 있으므로 씬에 따로 붙이지 않는다
 // (연출용) SetOverride(값)으로 잠깐 다른 값을 보여 줄 수 있다. ClearOverride()로 원래대로.
+// 해금 개수별 값 정하기 (Blend By Count): 칸 번호 = 해금된 개수, 칸의 값 = 그때의 하프톤 값 (0 = 가장 짙음, 1 = 깨끗함).
+//   예) 침실을 다 끝냈을 때(대시 빼고) 30%만 밝아지게 → 그 개수 칸에 0.3. 이후 복도·거실 해금으로 1까지.
+//   비워 두면 예전처럼 "해금 개수 ÷ 전체 개수"로 자동 계산. 지금 몇 개가 해금됐는지는 Play 중 "확인용" 칸에 보인다.
 
 public class HalftoneController : MonoBehaviour
 {
@@ -20,6 +23,15 @@ public class HalftoneController : MonoBehaviour
 
     [Tooltip("하프톤 계산에서 뺄 항목 (진행 기록처럼 기능이 아닌 것)")]
     [SerializeField] OptionType[] excludedOptions = { OptionType.MessageSent };
+
+    [Header("해금 개수별 하프톤 값 (칸 번호 = 해금 개수, 0 = 가장 짙음 / 1 = 깨끗함)")]
+    [Tooltip("비워 두면 해금 개수에 비례. 칸이 모자라면 마지막 칸 값을 씀")]
+    [SerializeField] float[] blendByCount;
+
+    [Header("확인용 (Play 중 값 보기)")]
+    [SerializeField] int unlockedNow;        // 지금 해금된 개수 (제외 항목 빼고)
+    [SerializeField] int totalNow;           // 전체 개수 (제외 항목 빼고)
+    [SerializeField] float targetNow;        // 지금 목표 하프톤 값
 
     // 현재 화면에 적용 중인 값
     float current;
@@ -95,7 +107,14 @@ public class HalftoneController : MonoBehaviour
             if (OptionState.Instance.IsUnlocked(t)) unlockedCount++;
         }
 
-        target = total > 0 ? (float)unlockedCount / total : 0f;
+        if (blendByCount != null && blendByCount.Length > 0)
+            target = Mathf.Clamp01(blendByCount[Mathf.Clamp(unlockedCount, 0, blendByCount.Length - 1)]);
+        else
+            target = total > 0 ? (float)unlockedCount / total : 0f;
+
+        unlockedNow = unlockedCount;
+        totalNow = total;
+        targetNow = target;
     }
 
 

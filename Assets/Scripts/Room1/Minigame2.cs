@@ -42,6 +42,7 @@ public class Minigame2 : MonoBehaviour
 
     [Header("깨어남 이벤트 (목표창 숨기기/다시 보이기 등)")]
     public UnityEvent onDarkenStart;         // 개가 사라지고 꿈이 어두워지기 시작할 때
+    public UnityEvent onBedArrive;           // 침실 침대로 옮겨진 바로 그 순간 (BedLie.LieDown 연결 → 누운 시점으로)
     public UnityEvent onWakeFinished;        // 침실에서 깨고 카메라 회전이 해금됐을 때
 
     [Header("미니게임 1 연결")]
@@ -253,6 +254,7 @@ public class Minigame2 : MonoBehaviour
         StopPanicSounds();                       // 깨어나는 순간: 짖는 소리·심장 소리가 뚝 끊김 (갑자기 조용해지는 대비)
         Teleport(bedPoint);
         if (cameraRoot != null) cameraRoot.localRotation = Quaternion.identity;
+        onBedArrive.Invoke();                    // 누운 시점 등 (BedLie)
         shakeStrength = bedShake;                // 깨어나는 순간: 크게 흔들리던 게 확 줄어듦 (꿈과 현실의 경계)
         shakeSpeedScale = 1f;
         if (soundSearch != null) soundSearch.StartBarking(outsideBarkCutoff);   // 현실: 창밖에서 짖는 소리

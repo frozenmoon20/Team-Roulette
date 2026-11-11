@@ -12,6 +12,9 @@ using TeamRoulette.UI;
 //   - 실패는 없다. 손가락이 풀리면 되돌아갈 뿐이고, 오래 걸리면 FingerGrip의 구제가 점점 쉽게 만든다.
 // 손이 손잡이와 같이 돌아가는 원리: 손이 갈 자리(HandAnchor의 Grip Point)를 Knob_Pivot의 자식으로 두면,
 //   손잡이가 돌 때 그 자리도 같이 돌고, HandAnchor가 매 프레임 손을 그 자리에 붙잡아 두므로 손도 같이 돈다.
+// 문이 열릴 때 손 놓기 (Hand Anchor 칸을 채운 경우): 다 돌린 순간 Grip Point 자리를 그대로 복사한 "고정점"을 만들어
+//   HandAnchor가 그 고정점을 붙잡게 바꾼다 → 문이 돌아가도 손은 제자리에 남고, 손가락은 Let Go Time 동안 서서히 펴진다.
+//   (손을 원래 자리로 되돌리는 건 지금처럼 On Opened 쪽 연결이 그대로 한다)
 // 효과음 (비워 두면 없음): 휠로 돌리는 동안 Turn Source(반복, 끼익)가 돌리는 빠르기만큼 커짐 / 다 돌리면 Latch Clip(철컥) / 문이 열릴 때 Door Clip(삐걱)
 // 사용: 빈 오브젝트에 붙이고 Grip / Knob / Hinge를 연결한다. FingerGrip(Lift After Grip 체크)의 On Gripped에 Begin을 연결.
 public class KnobTurn : MonoBehaviour
@@ -38,6 +41,11 @@ public class KnobTurn : MonoBehaviour
     public float openAngle = 25f;            // 문이 열리는 각도 (도, 반대로 열리면 -로)
     public float openTime = 1.2f;            // 열리는 데 걸리는 시간 (초)
 
+    [Header("문이 열릴 때 손 놓기 (비워 두면 예전처럼 손이 문을 따라감)")]
+    public HandAnchor handAnchor;            // 문 미니게임의 HandAnchor (Door_Hand 등)
+    public float letGoTime = 1.5f;           // 손가락이 다 펴지는 시간 (초)
+    [Range(0f, 1f)] public float letGoCurl = 0.1f;   // 다 폈을 때 손가락 굽힘 (0 = 쫙 폄)
+
     [Header("효과음 (비워 두면 소리 없음)")]
     public AudioSource turnSource;           // 돌리는 소리 (손잡이에 AudioSource: Loop 체크, Play On Awake 끔, Clip에 끼익/덜걱 소리)
     [Range(0f, 1f)] public float turnVolume = 0.7f;   // 빠르게 돌릴 때 최대 크기
@@ -59,6 +67,7 @@ public class KnobTurn : MonoBehaviour
     float turnLevel;                         // 돌리는 소리 크기 (0~1, 휠을 굴리면 올라가고 멈추면 내려감)
     Quaternion knobHome;                     // 손잡이 처음 회전
     Quaternion hingeHome;                    // 문 처음 회전
+    Transform letGoPoint;                    // 손을 붙잡아 둘 고정점 (문을 따라가지 않음)
     GameUI ui;
 
     // 돌리기 시작 (FingerGrip의 On Gripped에 연결)
@@ -135,6 +144,7 @@ public class KnobTurn : MonoBehaviour
             if (turnSource != null) turnSource.Stop();
             AudioManager.Play(latchClip, clipVolume);
             onUnlatched.Invoke();
+            LetGoHand();
             StartCoroutine(OpenRoutine());
         }
     }
@@ -143,6 +153,31 @@ public class KnobTurn : MonoBehaviour
     void Apply()
     {
         knob.localRotation = knobHome * Quaternion.Euler(0f, 0f, angle * turnSign);
+    }
+
+    // 손 놓기: 손을 지금 자리에 남겨 두고 (문을 따라가지 않게) 손가락을 천천히 편다
+    void LetGoHand()
+    {
+        if (handAnchor == null || handAnchor.gripPoint == null) return;
+        if (letGoPoint == null) letGoPoint = new GameObject("KnobTurn_LetGoPoint").transform;
+        letGoPoint.SetPositionAndRotation(handAnchor.gripPoint.position, handAnchor.gripPoint.rotation);
+        handAnchor.gripPoint = letGoPoint;   // 이제 HandAnchor는 문에 안 붙은 고정점을 붙잡음
+        StartCoroutine(OpenFingers());
+    }
+
+    IEnumerator OpenFingers()
+    {
+        HandPose pose = grip != null ? grip.pose : null;
+        if (pose == null) yield break;
+        float[] from = new float[5];
+        for (int f = 0; f < 5; f++) from[f] = pose.GetFinger((HandPose.Finger)f);
+        for (float t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(letGoTime, 0.01f))
+        {
+            float k = Mathf.SmoothStep(0f, 1f, t);
+            for (int f = 0; f < 5; f++) pose.SetFinger((HandPose.Finger)f, Mathf.Lerp(from[f], letGoCurl, k));
+            yield return null;
+        }
+        for (int f = 0; f < 5; f++) pose.SetFinger((HandPose.Finger)f, letGoCurl);
     }
 
     // 문을 openAngle만큼 스르륵 열기 (로컬 Y축)
