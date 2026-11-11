@@ -1,43 +1,61 @@
 
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+using UnityEngine.UI;
+using TMPro;
 
 public class ObjectInspectionManager : MonoBehaviour
 {
     public static ObjectInspectionManager Instance { get; private set; }
 
-    [Header("플레이어 연결")]
+    [Header("Player")]
     public Camera viewCamera;
     public FirstPersonPlayer player;
     public PlayerInteractor interactor;
 
-    [Header("조사 화면 설정")]
-    public float inspectionDistance = 1.2f;
-    public float objectDisplaySize = 0.65f;
+    [Header("Inspection")]
+    public float displaySize = 1.5f;
     public float rotationSpeed = 4f;
-    public float zoomSpeed = 0.5f;
-    public float minZoomDistance = 0.5f;
-    public float maxZoomDistance = 2.5f;
+    public float zoomSpeed = 0.6f;
+    public float minOrthographicSize = 0.65f;
+    public float maxOrthographicSize = 2.2f;
 
-    private Transform inspectionPivot;
+    [Header("Blur background only")]
+    public Volume inspectionBlurVolume;
+
+    [Header("Inspection controls hint")]
+    public string inspectionHintText = "드래그 : 회전   |   휠 : 확대·축소   |   우클릭 / ESC : 돌아가기";
+    public TMP_FontAsset inspectionHintFont;
+    public float inspectionHintFontSize = 22f;
+
+    private const float PreviewWorldY = -5000f;
     private InspectableObject inspecting;
+    private GameObject runtimeRoot;
+    private Camera inspectionCamera;
+    private Transform rotationPivot;
+    private RenderTexture inspectionTexture;
+    private Renderer[] originalRenderers;
+    private bool[] originalEnabled;
+    private readonly List<Renderer> previewRenderers = new List<Renderer>();
+    private readonly List<Mesh> bakedMeshes = new List<Mesh>();
 
-    private Transform inspectedTransform;
-    private Transform originalParent;
-    private Vector3 originalLocalPosition;
-    private Quaternion originalLocalRotation;
-    private Vector3 originalLocalScale;
-
-    private Collider[] colliders;
-    private bool[] colliderStates;
-
+    private PlayerMotionFeel motionFeel;
+    private GameObject handModel;
+    private bool previousPlayerEnabled;
+    private bool previousInteractorEnabled;
+    private bool previousMotionEnabled;
+    private bool previousHandEnabled;
+    private bool previousCrosshairEnabled;
+    private bool previousHandIconEnabled;
+    private bool previousNameTextEnabled;
     private bool previousCanMove;
     private bool previousCanLook;
     private bool previousCanJump;
     private bool previousCanSprint;
-    private bool previousInteractorEnabled;
-
-    private GameObject handModel;
-    private bool previousHandVisible;
+    private float previousBlurWeight;
+    private bool dragReady;
 
     private void Awake()
     {
@@ -54,7 +72,7 @@ public class ObjectInspectionManager : MonoBehaviour
 
         if (viewCamera == null)
         {
-            Debug.LogWarning("조사용 카메라가 연결되지 않았습니다.");
+            Debug.LogError("Inspection: View Camera is missing.", this);
             return;
         }
 
@@ -64,74 +82,338 @@ public class ObjectInspectionManager : MonoBehaviour
         if (interactor == null)
             interactor = FindFirstObjectByType<PlayerInteractor>();
 
-        Renderer[] renderers = item.GetComponentsInChildren<Renderer>();
+        originalRenderers = item.GetComponentsInChildren<Renderer>(true);
 
-        if (renderers.Length == 0)
+        if (originalRenderers.Length == 0)
         {
-            Debug.LogWarning("렌더러가 없는 오브젝트입니다.", item);
+            Debug.LogWarning("Inspection: No renderers found.", item);
             return;
         }
 
-        if (inspectionPivot == null)
-        {
-            GameObject pivotObject = new GameObject("InspectionPivot");
-            inspectionPivot = pivotObject.transform;
-        }
+        int layer = FindPreviewLayer();
+        Vector3 center = new Vector3(0f, PreviewWorldY, 0f);
 
-        inspectionPivot.SetParent(viewCamera.transform, false);
-        inspectionPivot.localPosition =
-            new Vector3(0f, 0f, inspectionDistance);
-        inspectionPivot.localRotation = Quaternion.identity;
-        inspectionPivot.localScale = Vector3.one;
+        runtimeRoot = new GameObject("Inspection_Runtime");
 
-        inspecting = item;
-        inspectedTransform = item.transform;
+        rotationPivot = new GameObject("Inspection_RotationPivot").transform;
+        rotationPivot.SetParent(runtimeRoot.transform);
+        rotationPivot.position = center;
 
-        // 원래 배치 기록
-        originalParent = inspectedTransform.parent;
-        originalLocalPosition = inspectedTransform.localPosition;
-        originalLocalRotation = inspectedTransform.localRotation;
-        originalLocalScale = inspectedTransform.localScale;
+        previewRenderers.Clear();
+        bakedMeshes.Clear();
 
-        // 물체의 실제 크기와 중심 계산
-        Bounds bounds = GetBounds(renderers);
-        float longestSide = Mathf.Max(
-            bounds.size.x,
-            bounds.size.y,
-            bounds.size.z
+        Transform visualRoot = CopyVisual(
+            item.transform,
+            rotationPivot,
+            true,
+            layer
         );
 
-        // 조사 중에는 충돌 및 클릭 판정 중지
-        colliders = item.GetComponentsInChildren<Collider>(true);
-        colliderStates = new bool[colliders.Length];
-
-        for (int i = 0; i < colliders.Length; i++)
+        if (previewRenderers.Count == 0)
         {
-            colliderStates[i] = colliders[i].enabled;
-            colliders[i].enabled = false;
+            CleanupRuntime();
+            Debug.LogWarning("Inspection: No visible renderers found.", item);
+            return;
         }
 
-        // 카메라 앞에 물체 배치
-        inspectedTransform.SetParent(inspectionPivot, true);
+        Bounds b = GetPreviewBounds();
 
-        inspectedTransform.position +=
-            inspectionPivot.position - bounds.center;
+        float longestSide = Mathf.Max(
+            b.size.x,
+            b.size.y,
+            b.size.z
+        );
 
-        if (longestSide > 0.0001f)
+        if (longestSide > 0.00001f)
+            visualRoot.localScale *= displaySize / longestSide;
+
+        b = GetPreviewBounds();
+        visualRoot.position += center - b.center;
+
+        originalEnabled = new bool[originalRenderers.Length];
+
+        for (int i = 0; i < originalRenderers.Length; i++)
         {
-            float factor = objectDisplaySize / longestSide;
-            inspectedTransform.localScale *= factor;
+            originalEnabled[i] = originalRenderers[i].enabled;
+            originalRenderers[i].enabled = false;
         }
 
-        // 크기 변경 후 중심 다시 정렬
-        Bounds newBounds = GetBounds(renderers);
+        inspectionTexture = new RenderTexture(
+            Mathf.Max(256, Screen.width),
+            Mathf.Max(256, Screen.height),
+            24,
+            RenderTextureFormat.ARGB32
+        );
 
-        inspectedTransform.position +=
-            inspectionPivot.position - newBounds.center;
+        inspectionTexture.name = "Inspection_Transparent_Texture";
+        inspectionTexture.Create();
 
-        // 플레이어 이동과 시점 고정
+        GameObject cameraObject = new GameObject("Inspection_Camera");
+        cameraObject.transform.SetParent(runtimeRoot.transform);
+
+        inspectionCamera = cameraObject.AddComponent<Camera>();
+        inspectionCamera.transform.position =
+            center + new Vector3(0f, 0f, -8f);
+
+        inspectionCamera.transform.rotation = Quaternion.identity;
+        inspectionCamera.orthographic = true;
+        inspectionCamera.orthographicSize = 1.25f;
+        inspectionCamera.nearClipPlane = 0.01f;
+        inspectionCamera.farClipPlane = 20f;
+        inspectionCamera.clearFlags = CameraClearFlags.SolidColor;
+        inspectionCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+        inspectionCamera.cullingMask = 1 << layer;
+        inspectionCamera.allowHDR = false;
+        inspectionCamera.targetTexture = inspectionTexture;
+
+        UniversalAdditionalCameraData urp =
+            cameraObject.GetComponent<UniversalAdditionalCameraData>();
+
+        if (urp == null)
+            urp = cameraObject.AddComponent<UniversalAdditionalCameraData>();
+
+        urp.renderType = CameraRenderType.Base;
+        urp.renderPostProcessing = false;
+        urp.renderShadows = false;
+
+        GameObject lightObject = new GameObject("Inspection_Light");
+        lightObject.transform.SetParent(runtimeRoot.transform);
+        lightObject.transform.rotation = Quaternion.Euler(40f, -35f, 0f);
+
+        Light light = lightObject.AddComponent<Light>();
+        light.type = LightType.Directional;
+        light.intensity = 1.2f;
+        light.shadows = LightShadows.None;
+        light.cullingMask = 1 << layer;
+
+        GameObject canvasObject = new GameObject("Inspection_Overlay");
+        canvasObject.transform.SetParent(runtimeRoot.transform);
+
+        Canvas canvas = canvasObject.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 1000;
+
+        canvasObject.AddComponent<CanvasScaler>();
+
+        GameObject imageObject = new GameObject("Inspection_Image");
+        imageObject.transform.SetParent(canvasObject.transform, false);
+
+        RawImage image = imageObject.AddComponent<RawImage>();
+        image.texture = inspectionTexture;
+        image.color = Color.white;
+        image.raycastTarget = false;
+
+        RectTransform rect = image.rectTransform;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+
+        CreateInspectionHint(canvasObject.transform);
+
+        inspecting = item;
+        dragReady = false;
+
+        LockPlayerAndBlur();
+    }
+
+    private void CreateInspectionHint(Transform canvasTransform)
+    {
+        if (string.IsNullOrWhiteSpace(inspectionHintText))
+            return;
+
+        GameObject panel = new GameObject("Inspection_Controls_Hint");
+        panel.transform.SetParent(canvasTransform, false);
+
+        Image background = panel.AddComponent<Image>();
+        background.color = new Color(0.04f, 0.04f, 0.04f, 0.65f);
+        background.raycastTarget = false;
+
+        RectTransform panelRect = background.rectTransform;
+        panelRect.anchorMin = new Vector2(0.08f, 0f);
+        panelRect.anchorMax = new Vector2(0.92f, 0f);
+        panelRect.pivot = new Vector2(0.5f, 0f);
+        panelRect.anchoredPosition = new Vector2(0f, 24f);
+        panelRect.sizeDelta = new Vector2(0f, 45f);
+
+        GameObject labelObject = new GameObject("Inspection_Controls_Text");
+        labelObject.transform.SetParent(panel.transform, false);
+
+        TextMeshProUGUI label = labelObject.AddComponent<TextMeshProUGUI>();
+
+        label.text = inspectionHintText;
+        label.color = Color.white;
+        label.alignment = TextAlignmentOptions.Center;
+        label.raycastTarget = false;
+        label.enableAutoSizing = true;
+
+        label.fontSize = Mathf.Min(
+            inspectionHintFontSize,
+            Mathf.Max(13f, Screen.height * 0.036f)
+        );
+
+        label.fontSizeMin = 10f;
+        label.fontSizeMax = Mathf.Max(13f, inspectionHintFontSize);
+        label.overflowMode = TextOverflowModes.Ellipsis;
+
+        if (inspectionHintFont != null)
+        {
+            label.font = inspectionHintFont;
+        }
+        else if (
+            interactor != null &&
+            interactor.nameText != null &&
+            interactor.nameText.font != null
+        )
+        {
+            label.font = interactor.nameText.font;
+        }
+
+        RectTransform labelRect = label.rectTransform;
+        labelRect.anchorMin = Vector2.zero;
+        labelRect.anchorMax = Vector2.one;
+        labelRect.offsetMin = new Vector2(14f, 0f);
+        labelRect.offsetMax = new Vector2(-14f, 0f);
+    }
+
+    private int FindPreviewLayer()
+    {
+        int named = LayerMask.NameToLayer("InspectionPreview");
+
+        if (named >= 0)
+            return named;
+
+        for (int i = 31; i >= 8; i--)
+        {
+            if (string.IsNullOrEmpty(LayerMask.LayerToName(i)))
+                return i;
+        }
+
+        return 31;
+    }
+
+    private Transform CopyVisual(
+        Transform original,
+        Transform parent,
+        bool isRoot,
+        int layer
+    )
+    {
+        GameObject obj = new GameObject("Inspect_" + original.name);
+        obj.layer = layer;
+
+        Transform t = obj.transform;
+        t.SetParent(parent, false);
+
+        if (isRoot)
+        {
+            t.localPosition = Vector3.zero;
+            t.localRotation =
+                Quaternion.Inverse(viewCamera.transform.rotation) *
+                original.rotation;
+
+            t.localScale = original.lossyScale;
+        }
+        else
+        {
+            t.localPosition = original.localPosition;
+            t.localRotation = original.localRotation;
+            t.localScale = original.localScale;
+        }
+
+        if (original.gameObject.activeInHierarchy)
+        {
+            MeshFilter srcFilter = original.GetComponent<MeshFilter>();
+            MeshRenderer srcRenderer = original.GetComponent<MeshRenderer>();
+
+            if (
+                srcFilter != null &&
+                srcRenderer != null &&
+                srcFilter.sharedMesh != null &&
+                srcRenderer.enabled
+            )
+            {
+                MeshFilter dstFilter = obj.AddComponent<MeshFilter>();
+                dstFilter.sharedMesh = srcFilter.sharedMesh;
+
+                MeshRenderer dstRenderer = obj.AddComponent<MeshRenderer>();
+                dstRenderer.sharedMaterials = srcRenderer.sharedMaterials;
+                dstRenderer.shadowCastingMode = ShadowCastingMode.Off;
+                dstRenderer.receiveShadows = false;
+
+                MaterialPropertyBlock block = new MaterialPropertyBlock();
+                srcRenderer.GetPropertyBlock(block);
+                dstRenderer.SetPropertyBlock(block);
+
+                previewRenderers.Add(dstRenderer);
+            }
+
+            SkinnedMeshRenderer skin =
+                original.GetComponent<SkinnedMeshRenderer>();
+
+            if (
+                skin != null &&
+                skin.enabled &&
+                skin.sharedMesh != null
+            )
+            {
+                Mesh baked = new Mesh();
+                skin.BakeMesh(baked);
+                bakedMeshes.Add(baked);
+
+                MeshFilter dstFilter = obj.AddComponent<MeshFilter>();
+                dstFilter.sharedMesh = baked;
+
+                MeshRenderer dstRenderer = obj.AddComponent<MeshRenderer>();
+                dstRenderer.sharedMaterials = skin.sharedMaterials;
+                dstRenderer.shadowCastingMode = ShadowCastingMode.Off;
+                dstRenderer.receiveShadows = false;
+
+                previewRenderers.Add(dstRenderer);
+            }
+
+            SpriteRenderer sprite =
+                original.GetComponent<SpriteRenderer>();
+
+            if (
+                sprite != null &&
+                sprite.enabled &&
+                sprite.sprite != null
+            )
+            {
+                SpriteRenderer newSprite = obj.AddComponent<SpriteRenderer>();
+                newSprite.sprite = sprite.sprite;
+                newSprite.color = sprite.color;
+                newSprite.sharedMaterial = sprite.sharedMaterial;
+
+                previewRenderers.Add(newSprite);
+            }
+        }
+
+        foreach (Transform child in original)
+        {
+            if (child.gameObject.activeInHierarchy)
+                CopyVisual(child, t, false, layer);
+        }
+
+        return t;
+    }
+
+    private Bounds GetPreviewBounds()
+    {
+        Bounds b = previewRenderers[0].bounds;
+
+        for (int i = 1; i < previewRenderers.Count; i++)
+            b.Encapsulate(previewRenderers[i].bounds);
+
+        return b;
+    }
+
+    private void LockPlayerAndBlur()
+    {
         if (player != null)
         {
+            previousPlayerEnabled = player.enabled;
             previousCanMove = player.canMove;
             previousCanLook = player.canLook;
             previousCanJump = player.canJump;
@@ -141,37 +423,63 @@ public class ObjectInspectionManager : MonoBehaviour
             player.canLook = false;
             player.canJump = false;
             player.canSprint = false;
+            player.enabled = false;
+
+            motionFeel = player.GetComponent<PlayerMotionFeel>();
+
+            if (motionFeel != null)
+            {
+                previousMotionEnabled = motionFeel.enabled;
+                motionFeel.enabled = false;
+            }
         }
 
-        // 조사 중 일반 클릭 상호작용 잠시 중지
         if (interactor != null)
         {
             previousInteractorEnabled = interactor.enabled;
+
+            previousCrosshairEnabled =
+                interactor.crosshairDot != null &&
+                interactor.crosshairDot.activeSelf;
+
+            previousHandIconEnabled =
+                interactor.handIcon != null &&
+                interactor.handIcon.activeSelf;
+
             interactor.enabled = false;
+
+            if (interactor.crosshairDot != null)
+                interactor.crosshairDot.SetActive(false);
+
+            if (interactor.handIcon != null)
+                interactor.handIcon.SetActive(false);
+
+            if (interactor.nameText != null)
+            {
+                previousNameTextEnabled =
+                    interactor.nameText.gameObject.activeSelf;
+
+                interactor.nameText.gameObject.SetActive(false);
+            }
         }
 
-        // 조사할 때 손 모델 숨기기
         PlayerHand hand = PlayerHand.Instance;
-
         handModel = hand != null ? hand.handModel : null;
 
         if (handModel != null)
         {
-            previousHandVisible = handModel.activeSelf;
+            previousHandEnabled = handModel.activeSelf;
             handModel.SetActive(false);
         }
 
-        Debug.Log("오브젝트 조사 시작: " + item.name);
-    }
+        if (inspectionBlurVolume != null)
+        {
+            previousBlurWeight = inspectionBlurVolume.weight;
+            inspectionBlurVolume.weight = 1f;
+        }
 
-    private Bounds GetBounds(Renderer[] renderers)
-    {
-        Bounds bounds = renderers[0].bounds;
-
-        for (int i = 1; i < renderers.Length; i++)
-            bounds.Encapsulate(renderers[i].bounds);
-
-        return bounds;
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     private void Update()
@@ -179,46 +487,43 @@ public class ObjectInspectionManager : MonoBehaviour
         if (inspecting == null)
             return;
 
-        // 우클릭 또는 ESC로 조사 종료
-        if (Input.GetMouseButtonDown(1) ||
-            Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(1))
         {
             EndInspection();
             return;
         }
 
-        // 좌클릭 드래그로 물체 회전
-        if (Input.GetMouseButton(0))
+        if (!Input.GetMouseButton(0))
         {
-            float mouseX = Input.GetAxis("Mouse X");
-            float mouseY = Input.GetAxis("Mouse Y");
+            dragReady = true;
+        }
+        else if (dragReady)
+        {
+            float dx = Input.GetAxis("Mouse X");
+            float dy = Input.GetAxis("Mouse Y");
 
-            inspectionPivot.Rotate(
+            rotationPivot.Rotate(
                 Vector3.up,
-                -mouseX * rotationSpeed,
-                Space.Self
+                -dx * rotationSpeed,
+                Space.World
             );
 
-            inspectionPivot.Rotate(
+            rotationPivot.Rotate(
                 Vector3.right,
-                mouseY * rotationSpeed,
-                Space.Self
+                dy * rotationSpeed,
+                Space.World
             );
         }
 
-        // 휠 확대 / 축소
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
+        float wheel = Input.GetAxis("Mouse ScrollWheel");
 
-        if (Mathf.Abs(scroll) > 0.001f)
+        if (Mathf.Abs(wheel) > 0.0001f)
         {
-            float newDistance = Mathf.Clamp(
-                inspectionPivot.localPosition.z - scroll * zoomSpeed,
-                minZoomDistance,
-                maxZoomDistance
+            inspectionCamera.orthographicSize = Mathf.Clamp(
+                inspectionCamera.orthographicSize - wheel * zoomSpeed,
+                minOrthographicSize,
+                maxOrthographicSize
             );
-
-            inspectionPivot.localPosition =
-                new Vector3(0f, 0f, newDistance);
         }
     }
 
@@ -227,47 +532,99 @@ public class ObjectInspectionManager : MonoBehaviour
         if (inspecting == null)
             return;
 
-        // 물체를 원래 자리로 복구
-        inspectedTransform.SetParent(originalParent, false);
-        inspectedTransform.localPosition = originalLocalPosition;
-        inspectedTransform.localRotation = originalLocalRotation;
-        inspectedTransform.localScale = originalLocalScale;
-
-        // Collider 복구
-        for (int i = 0; i < colliders.Length; i++)
+        for (int i = 0; i < originalRenderers.Length; i++)
         {
-            if (colliders[i] != null)
-                colliders[i].enabled = colliderStates[i];
+            if (originalRenderers[i] != null)
+                originalRenderers[i].enabled = originalEnabled[i];
         }
 
-        // 플레이어 조작 복구
         if (player != null)
         {
             player.canMove = previousCanMove;
             player.canLook = previousCanLook;
             player.canJump = previousCanJump;
             player.canSprint = previousCanSprint;
+            player.enabled = previousPlayerEnabled;
         }
 
+        if (motionFeel != null)
+            motionFeel.enabled = previousMotionEnabled;
+
         if (interactor != null)
+        {
             interactor.enabled = previousInteractorEnabled;
 
+            if (interactor.crosshairDot != null)
+            {
+                interactor.crosshairDot.SetActive(
+                    previousCrosshairEnabled
+                );
+            }
+
+            if (interactor.handIcon != null)
+            {
+                interactor.handIcon.SetActive(
+                    previousHandIconEnabled
+                );
+            }
+
+            if (interactor.nameText != null)
+            {
+                interactor.nameText.gameObject.SetActive(
+                    previousNameTextEnabled
+                );
+            }
+        }
+
         if (handModel != null)
-            handModel.SetActive(previousHandVisible);
+            handModel.SetActive(previousHandEnabled);
+
+        if (inspectionBlurVolume != null)
+            inspectionBlurVolume.weight = previousBlurWeight;
 
         inspecting = null;
-        inspectedTransform = null;
+
+        CleanupRuntime();
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
 
-        Debug.Log("오브젝트 조사 종료");
+    private void CleanupRuntime()
+    {
+        if (inspectionCamera != null)
+            inspectionCamera.targetTexture = null;
+
+        if (runtimeRoot != null)
+            Destroy(runtimeRoot);
+
+        runtimeRoot = null;
+        rotationPivot = null;
+        inspectionCamera = null;
+
+        if (inspectionTexture != null)
+        {
+            inspectionTexture.Release();
+            Destroy(inspectionTexture);
+            inspectionTexture = null;
+        }
+
+        foreach (Mesh mesh in bakedMeshes)
+        {
+            if (mesh != null)
+                Destroy(mesh);
+        }
+
+        bakedMeshes.Clear();
+        previewRenderers.Clear();
     }
 
     private void OnDestroy()
     {
         if (inspecting != null)
             EndInspection();
+        else
+            CleanupRuntime();
 
         if (Instance == this)
             Instance = null;
