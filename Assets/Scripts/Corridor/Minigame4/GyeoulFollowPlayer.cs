@@ -9,6 +9,9 @@ public class GyeoulFollowPlayer : MonoBehaviour
     [Header("애니메이션")]
     public DogAnimator dogAnimator;
 
+    [Header("허들")]
+    public GyeoulHurdleJump[] hurdles;
+
     [Header("따라오기 거리")]
     public float followDistance = 1.8f;
     public float trotDistance = 3f;
@@ -29,9 +32,13 @@ public class GyeoulFollowPlayer : MonoBehaviour
     public float sitDelay = 2.5f;
 
     private bool isFollowing;
+    private bool isJumping;
     private bool sitRequested;
     private float currentSpeed;
     private float idleTimer;
+
+    public bool IsFollowing => isFollowing;
+    public bool IsJumping => isJumping;
 
     private void Awake()
     {
@@ -43,30 +50,64 @@ public class GyeoulFollowPlayer : MonoBehaviour
     {
         player = target;
         isFollowing = true;
+        isJumping = false;
         currentSpeed = 0f;
         idleTimer = 0f;
         sitRequested = false;
         enabled = true;
     }
 
+    public void BeginJump()
+    {
+        isJumping = true;
+        currentSpeed = 0f;
+        idleTimer = 0f;
+    }
+
+    public void EndJump()
+    {
+        isJumping = false;
+        currentSpeed = 0f;
+        idleTimer = 0f;
+        sitRequested = false;
+    }
+
     private void Update()
     {
-        if (!isFollowing || player == null)
+        if (!isFollowing || player == null || isJumping)
             return;
 
-        Vector3 direction = player.position - transform.position;
+        GyeoulHurdleJump pendingHurdle = null;
+
+        if (hurdles != null)
+        {
+            foreach (GyeoulHurdleJump hurdle in hurdles)
+            {
+                if (hurdle != null &&
+                    hurdle.ShouldWait(player, transform))
+                {
+                    pendingHurdle = hurdle;
+                    break;
+                }
+            }
+        }
+
+        Vector3 targetPosition = pendingHurdle != null
+            ? pendingHurdle.approachPoint.position
+            : player.position;
+
+        float stopDistance = pendingHurdle != null
+            ? 0.12f
+            : followDistance;
+
+        Vector3 direction = targetPosition - transform.position;
         direction.y = 0f;
 
         float distance = direction.magnitude;
 
-        if (distance <= followDistance)
+        if (distance <= stopDistance)
         {
-            currentSpeed = Mathf.MoveTowards(
-                currentSpeed,
-                0f,
-                deceleration * Time.deltaTime
-            );
-
+            currentSpeed = 0f;
             idleTimer += Time.deltaTime;
 
             if (autoSit &&
@@ -94,7 +135,7 @@ public class GyeoulFollowPlayer : MonoBehaviour
             targetSpeed = walkSpeed;
 
         float slowdown = Mathf.Clamp01(
-            (distance - followDistance) / 0.6f
+            (distance - stopDistance) / 0.6f
         );
 
         targetSpeed *= slowdown;
@@ -122,9 +163,26 @@ public class GyeoulFollowPlayer : MonoBehaviour
 
         float moveDistance = Mathf.Min(
             currentSpeed * Time.deltaTime,
-            distance - followDistance
+            distance - stopDistance
         );
 
-        transform.position += moveDirection * moveDistance;
+        Vector3 nextPosition =
+            transform.position + moveDirection * moveDistance;
+
+        if (hurdles != null)
+        {
+            foreach (GyeoulHurdleJump hurdle in hurdles)
+            {
+                if (hurdle != null)
+                {
+                    nextPosition = hurdle.RestrictMovement(
+                        transform.position,
+                        nextPosition
+                    );
+                }
+            }
+        }
+
+        transform.position = nextPosition;
     }
 }

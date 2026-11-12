@@ -1,0 +1,111 @@
+MealGame Play Mode verification
+Run 1
+PASS: All ingredients/replacement objects start hidden
+PASS: Empty plate and cup start visible
+PASS: Jam toast is pre-parented to plate
+PASS: Requested timings: 10 / 0.5 / 3 seconds
+PASS: Camera ray reaches Fridge
+PASS: Fridge gives raw toast
+PASS: Immediate pickup cancellation returns hidden toast to fridge
+PASS: Shared hand attaches raw toast
+PASS: Wrong destination does not consume item
+PASS: Camera ray reaches Toaster
+PASS: Insert toast shows baking top and timer
+PASS: Fridge gives jam while timer runs
+PASS: Jam cancellation is repeatable
+PASS: Jam is placed on counter
+PASS: Timer decreases independently during jam preparation
+PASS: Toast finishes after full ten seconds
+PASS: Baking toast is replaced with ready toast
+PASS: Cooked toast pops higher; ding clip is assigned
+PASS: Cooked toast is horizontal in world space, independent of wrist rotation
+PASS: Cooked toast stays level while camera looks down
+PASS: Toast bottom rests at palm height
+PASS: Cooked toast cancellation returns to toaster, not initial scene location
+PASS: Camera ray reaches CookedToast
+PASS: Camera ray reaches Plate
+PASS: Cooked toast is placed on plate
+PASS: Camera ray reaches Jam
+PASS: Camera ray reaches CookedToast
+PASS: Empty-space click breaks jam/toast sequence
+PASS: Other-object click breaks jam/toast sequence
+PASS: Toast then jam applies jam
+PASS: Plate carries its active jam toast
+PASS: Carried plate and child toast remain horizontal
+PASS: Plate cancellation preserves meal and location
+PASS: Plate can be placed by clicking table; waits for cup
+PASS: Fridge now gives juice
+PASS: Juice cancellation returns to fridge
+PASS: Camera ray reaches EmptyCup
+PASS: Pour consumes juice and replaces empty cup
+PASS: Pour effect plays
+PASS: Camera ray reaches JuiceCup
+PASS: Juice cup remains upright on palm
+PASS: Full cup can be returned and picked up again
+PASS: Both dishes trigger blackout and lock controls
+PASS: Blackout moves player body to table-front marker
+PASS: Blackout remains during initial half second
+PASS: Blackout ends; eating sound plays
+PASS: Eating view shows plate on left and juice on right
+PASS: Food remains during eating interval
+PASS: Eating finishes with empty plate and empty cup
+PASS: Controls, camera and sound restored
+PASS: Player stays in front of table after eating and control restoration
+PASS: Player stands at floor height after gravity resumes
+PASS: Completed sequence cannot dispense again
+FIRST ORDER PASSED
+Run 2
+PASS: All ingredients/replacement objects start hidden
+PASS: Empty plate and cup start visible
+PASS: Jam toast is pre-parented to plate
+PASS: Requested timings: 10 / 0.5 / 3 seconds
+PASS: Camera ray reaches Fridge
+PASS: Fridge gives raw toast
+PASS: Immediate pickup cancellation returns hidden toast to fridge
+PASS: Shared hand attaches raw toast
+PASS: Wrong destination does not consume item
+PASS: Camera ray reaches Toaster
+PASS: Insert toast shows baking top and timer
+PASS: Fridge gives jam while timer runs
+PASS: Jam cancellation is repeatable
+PASS: Jam is placed on counter
+PASS: Timer decreases independently during jam preparation
+PASS: Toast finishes after full ten seconds
+PASS: Baking toast is replaced with ready toast
+PASS: Cooked toast pops higher; ding clip is assigned
+PASS: Cooked toast is horizontal in world space, independent of wrist rotation
+PASS: Cooked toast stays level while camera looks down
+PASS: Toast bottom rests at palm height
+PASS: Cooked toast cancellation returns to toaster, not initial scene location
+PASS: Camera ray reaches CookedToast
+PASS: Camera ray reaches Plate
+PASS: Cooked toast is placed on plate
+PASS: Camera ray reaches Jam
+PASS: Camera ray reaches CookedToast
+PASS: Empty-space click breaks jam/toast sequence
+PASS: Other-object click breaks jam/toast sequence
+PASS: Jam then toast applies jam
+PASS: Plate carries its active jam toast
+PASS: Carried plate and child toast remain horizontal
+PASS: Plate cancellation preserves meal and location
+PASS: Plate can be placed by clicking table; waits for cup
+PASS: Fridge now gives juice
+PASS: Juice cancellation returns to fridge
+PASS: Camera ray reaches EmptyCup
+PASS: Pour consumes juice and replaces empty cup
+PASS: Pour effect plays
+PASS: Camera ray reaches JuiceCup
+PASS: Juice cup remains upright on palm
+PASS: Full cup can be returned and picked up again
+PASS: Both dishes trigger blackout and lock controls
+PASS: Blackout moves player body to table-front marker
+PASS: Blackout remains during initial half second
+PASS: Blackout ends; eating sound plays
+PASS: Eating view shows plate on left and juice on right
+PASS: Food remains during eating interval
+PASS: Eating finishes with empty plate and empty cup
+PASS: Controls, camera and sound restored
+PASS: Player stays in front of table after eating and control restoration
+PASS: Player stands at floor height after gravity resumes
+PASS: Completed sequence cannot dispense again
+ALL CHECKS PASSED

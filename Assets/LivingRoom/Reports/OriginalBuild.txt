@@ -1,0 +1,10 @@
+Replaced previous geometry: Capsule
+Replaced previous geometry: Floor
+Replaced previous geometry: Wall
+Replaced previous geometry: Wall (1)
+Replaced previous geometry: Wall (2)
+Replaced previous geometry: Wall (3)
+Replaced previous geometry: Wall (4)
+Validated: 71 primitive meshes; six passages clear for 1x2x1 reference; root scale 1; 20 steps, rise 4, run 7, width 3.
+Ceiling intentionally inactive for layout review. No scene backup created. Player, UI and systems unchanged.
+SUCCESS: saved Assets/Scenes/Room3_LivingRoom.unity

@@ -1,0 +1,4 @@
+Floor Y: 0.000
+Player feet marker: (33.500, 0.020, 8.500)
+Table bounds: Center: (33.50, 0.50, 10.00), Extents: (1.50, 0.50, 1.00)
+Character radius: 0.300

@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1959a926c5d6c3418787cabe798da3c, type: 3}
+  m_Name: D_Far Dialogue
+  m_EditorClassIdentifier: Assembly-CSharp::TeamRoulette.UI.DialogueSequence
+  lines:
+  - "\u2026\uB108\uBB34 \uBA40\uC5B4\uC11C \uBABB \uB4E3\uB098 \uBD10."
+  colorCodes:
+  - '#FFFFFF'
