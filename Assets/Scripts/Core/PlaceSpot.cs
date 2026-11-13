@@ -21,6 +21,11 @@ public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
     public DialogueStep emptyHandDialogue;   // 빈손으로 클릭했을 때 대사 (비워 두면 아무 일 없음)
     public DialogueStep doneDialogue;        // 다 놓은 뒤 다시 클릭했을 때 대사 (비워 두면 아무 일 없음)
     public bool disablePlacedColliders = true;   // 놓은 물건의 충돌체를 끔 (통 안 물건이 클릭을 가로채거나 다시 집히지 않게)
+    [Header("효과음 (비워 두면 소리 없음)")]
+    public AudioClip placeClip;              // 물건을 하나 넣을 때마다 나는 소리 (쓰레기통: 툭, 빨래통: 부스럭)
+    [Range(0f, 1f)] public float placeVolume = 0.8f;
+
+    public UnityEvent onPlaced;              // 물건을 하나 넣을 때마다 (필요할 때만 연결)
     public UnityEvent onAllPlaced;
 
     public string DisplayName => displayName;
@@ -76,6 +81,8 @@ public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
             foreach (Collider c in placedItem.GetComponentsInChildren<Collider>()) c.enabled = false;
 
         PlacedCount++;
+        AudioManager.Play(placeClip, placeVolume);   // 효과음 (효과음 해금 전엔 안 남, 설정 볼륨 따름)
+        onPlaced.Invoke();
 
         // 다 놓아도 이 컴포넌트는 끄지 않음 (끄면 마우스를 대도 이름이 안 뜨고 Done Dialogue도 안 나옴)
         //   다 놓은 뒤 클릭은 위쪽의 "이미 다 놓았으면" 검사에서 Done Dialogue로 처리됨

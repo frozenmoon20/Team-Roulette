@@ -23,6 +23,11 @@ using UnityEngine;
 //   손이 HandAnchor에 붙잡혀 있는 동안은 HandSway(평소 손 흔들림)를 꺼 둔다.
 // 겨울이 동작(짖기·먹기)은 HurdleTraining에 연결된 DogAnimator로 한다 (없으면 소리만).
 // 앉은 자세: 몸이 땅보다 아래로 내려가므로 그동안은 CharacterController를 꺼 둔다.
+// 끝 장면 동안은 화면 가운데 조준점(점)을 숨긴다: PlayerInteractor가 매 프레임 점을 다시 켜므로
+//   SetActive로는 안 되고, PlayerInteractor.Blocked(상호작용 잠금)를 켜 두면 점도 같이 숨는다. 회상이 끝나면(OnExitWhite) 풀어 줌.
+// 헥헥 소리: 회상에 들어갈 때(BeginIntro) 겨울이의 헥헥 소리(Pant Source, 반복)를 틀고, 간식을 먹는 동안만 서서히 줄였다가
+//   다 먹으면 다시 서서히 키운다. 회상이 끝나면(OnExitWhite) 멈춘다.
+//   짖을 때(왈!)도 잠깐 헥헥을 멈춘다: 시작 장면의 왈!은 자동, 허들 훈련 중 왈!은 HurdleTraining의 On Bark에 PausePantForBark 연결.
 // 사용: MG5_Sequence에 붙이고 칸을 채운다.
 //       MemoryTrip: Release Player On Enter 해제, On White → BeginIntro, Restart Point → Stand View
 //       HurdleTraining: On Cleared → BeginOutro
@@ -98,6 +103,10 @@ public class MemorySequence : MonoBehaviour
     public AudioSource dogVoice;             // 겨울이의 Audio Source
     public AudioClip barkClip;               // 왈!
     public AudioClip eatClip;                // 냠냠 (비워도 됨)
+    public AudioSource pantSource;           // 헥헥 (Winter 자식 오브젝트의 Audio Source, Loop 체크, Play On Awake 해제). 비워도 됨
+    [Range(0f, 1f)] public float pantVolume = 0.5f;
+    public float pantFadeTime = 0.4f;        // 먹기 전·후로 헥헥 소리가 줄고 커지는 시간 (초)
+    public float barkPantPause = 0.8f;       // 짖을 때 헥헥을 멈추는 시간 (초, 왈! 소리 길이쯤)
 
     enum HandMode { None, Pet, Feed, FeedToPet }
     HandMode handMode = HandMode.None;
@@ -144,6 +153,7 @@ public class MemorySequence : MonoBehaviour
         LockPlayer();
         if (training != null) training.Prepare();   // 겨울이를 시작 자리에 앉힘
         HoldHand(HandMode.Pet, 0.2f);               // 화면이 걷히기 전에 손이 도착하도록 빠르게
+        StartPant();                                // 헥헥
         StartCoroutine(IntroRoutine());
     }
 
@@ -173,6 +183,7 @@ public class MemorySequence : MonoBehaviour
 
         // 4) 왈! (짖는 동작) → 조작 풀고 훈련 시작
         PlayDog(barkClip);
+        PausePantForBark();
         if (DogAnim != null) DogAnim.Bark();
         yield return new WaitForSeconds(0.5f);
         UnlockPlayer();
@@ -191,6 +202,7 @@ public class MemorySequence : MonoBehaviour
     IEnumerator OutroRoutine()
     {
         LockPlayer();
+        PlayerInteractor.Blocked = true;            // 끝 장면 동안 조준점 숨김 (클릭할 것도 없음)
 
         // 1) "잘했어, 겨울아!" + 겨울이 앞에 쪼그려 앉아 내려다봄
         if (praiseDialogue != null) praiseDialogue.Play();
@@ -215,8 +227,10 @@ public class MemorySequence : MonoBehaviour
         }
         // 간식만 사라지게 (손 자세는 그대로 두었다가, 손을 등으로 옮길 때 함께 풂 → 먹는 중에 손이 갑자기 돌아가지 않게)
         if (treatHand != null && treatHand.treat != null) treatHand.treat.SetActive(false);
+        StartCoroutine(FadePant(0f));               // 먹는 동안 헥헥 멈춤
         PlayDog(eatClip);
         yield return new WaitForSeconds(eatTime + (anim != null ? anim.eatEndTime : 0f));
+        StartCoroutine(FadePant(pantVolume));       // 다 먹고 다시 헥헥
 
         // 4) 손을 입가에서 등 위로 옮겨 다시 쓰다듬기 (겨울이 머리 위로 둥글게 넘어가며, 간식 쥔 손 자세도 이때 함께 풀림)
         if (treatHand != null)
@@ -275,6 +289,8 @@ public class MemorySequence : MonoBehaviour
     // 나올 때 화면이 완전히 하얀 순간: 손을 원래대로 (MemoryTrip이 알아서 부름)
     void OnExitWhite()
     {
+        PlayerInteractor.Blocked = false;           // 조준점·상호작용 다시 켜기
+        if (pantSource != null) pantSource.Stop();  // 헥헥 끝
         handMode = HandMode.None;
         endPetting = false;
         if (training != null && training.treatHand != null) training.treatHand.handLocked = false;
@@ -478,6 +494,7 @@ public class MemorySequence : MonoBehaviour
     // 쓰다듬던 자리 → 원래 자리로 손을 천천히
     void LateUpdate()
     {
+        UpdatePantVolume();
         if (returnBlend >= 1f || handT == null) return;
         returnBlend = Mathf.MoveTowards(returnBlend, 1f, Time.deltaTime / Mathf.Max(handReturnTime, 0.01f));
         float k = Mathf.SmoothStep(0f, 1f, returnBlend);
@@ -564,6 +581,55 @@ public class MemorySequence : MonoBehaviour
         if (step == null) yield break;
         step.Play();
         while (step.IsPlaying) yield return null;
+    }
+
+    // ===================== 헥헥 =====================
+
+    float pantLevel;                                // 지금 헥헥 크기 (0~pantVolume), 설정 볼륨은 매 프레임 곱해 줌
+
+    void StartPant()
+    {
+        if (pantSource == null) return;
+        pantSource.loop = true;
+        pantLevel = pantVolume;
+        pantSource.volume = pantLevel * AudioManager.Volume;
+        if (!pantSource.isPlaying) pantSource.Play();
+    }
+
+    // 짖는 동안 헥헥 잠깐 멈춤 (HurdleTraining의 On Bark에 연결)
+    Coroutine barkPause;
+    public void PausePantForBark()
+    {
+        if (pantSource == null || !pantSource.isPlaying) return;
+        if (barkPause != null) StopCoroutine(barkPause);
+        barkPause = StartCoroutine(BarkPauseRoutine());
+    }
+
+    IEnumerator BarkPauseRoutine()
+    {
+        float before = pantLevel > 0f ? pantVolume : 0f;   // 먹는 중(0)이면 그대로 0
+        pantLevel = 0f;                                     // 왈! 하는 순간 바로 멈춤
+        yield return new WaitForSeconds(barkPantPause);
+        yield return FadePant(before);                      // 서서히 다시 헥헥
+        barkPause = null;
+    }
+
+    IEnumerator FadePant(float to)
+    {
+        if (pantSource == null) yield break;
+        float from = pantLevel;
+        for (float t = 0f; t < 1f; t += Time.deltaTime / Mathf.Max(pantFadeTime, 0.01f))
+        {
+            pantLevel = Mathf.Lerp(from, to, t);
+            yield return null;
+        }
+        pantLevel = to;
+    }
+
+    void UpdatePantVolume()
+    {
+        if (pantSource != null && pantSource.isPlaying)
+            pantSource.volume = AudioManager.SfxUnlocked ? pantLevel * AudioManager.Volume : 0f;
     }
 
     void PlayDog(AudioClip clip)

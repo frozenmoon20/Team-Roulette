@@ -63,6 +63,7 @@ public class UnlockNotice : MonoBehaviour
             case OptionType.SFX: return "효과음";
             case OptionType.BGM: return "배경음";
             case OptionType.Jump: return "점프";
+            case OptionType.Run: return "달리기";
             default: return null;   // MessageSent 같은 진행 기록은 알림을 띄우지 않음
 
 
