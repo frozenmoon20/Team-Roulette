@@ -84,6 +84,8 @@ namespace TeamRoulette.UI
         RenderTexture backdrop;
         Material runtimeBlur;
 
+        public event Action<DialogueSequence> DialogueFinished;
+
         public bool IsPaused => pause;
         public bool IsDialogueOpen => currentDialogue != null;
 
@@ -354,21 +356,28 @@ namespace TeamRoulette.UI
             );
         }
 
-        public void AdvanceDialogue()
-        {
-            if (pause || !currentDialogue)
-                return;
+        
+        
+public void AdvanceDialogue()
+{
+    if (pause || !currentDialogue)
+        return;
 
-            if (++line < currentDialogue.lines.Length)
-            {
-                RenderLine();
-                return;
-            }
+    if (++line < currentDialogue.lines.Length)
+    {
+        RenderLine();
+        return;
+    }
 
-            currentDialogue = null;
-            dialoguePanel.SetActive(false);
-            content.onDialogueFinished.Invoke();
-        }
+    var finished = currentDialogue;
+
+    currentDialogue = null;
+    dialoguePanel.SetActive(false);
+
+    content.onDialogueFinished.Invoke();
+    DialogueFinished?.Invoke(finished);
+}
+
 
         public void OpenSettings()
         {

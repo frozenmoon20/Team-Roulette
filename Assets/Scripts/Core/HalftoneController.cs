@@ -3,12 +3,17 @@ using UnityEngine;
 
 // 해금된 옵션 개수에 비례하여 하프톤 셰이더의 _HalftoneBlend 값을 올리는 스크립트
 // _Systems 프리팹에 들어 있으므로 씬에 따로 붙이지 않는다
+// (연출용) SetOverride(값)으로 잠깐 다른 값을 보여 줄 수 있다. ClearOverride()로 원래대로.
 
 public class HalftoneController : MonoBehaviour
 {
     // 셰이더 프로퍼티 이름을 매번 문자열로 찾지 않도록 id로 캐싱작업
     static readonly int BlendId = Shader.PropertyToID("_HalftoneBlend");
     static HalftoneController active;
+
+    // 연출용 덮어쓰기 (미니게임 2 깨어남 등)
+    static bool overriding;
+    static float overrideValue;
 
     [Tooltip("초당 블렌드 변화량")]
     [SerializeField] float fadeSpeed = 0.08f;
@@ -21,6 +26,22 @@ public class HalftoneController : MonoBehaviour
 
     // 도달해야 할 값
     float target;
+
+    // 지금 원래(해금 기준) 하프톤 값. 연출이 끝나고 이 값으로 부드럽게 돌아가고 싶을 때 읽는다
+    public static float CurrentValue => active != null ? active.current : 0f;
+
+    // 연출용: 해금 상태와 상관없이 이 값(0~1)을 화면에 보여 준다
+    public static void SetOverride(float value)
+    {
+        overriding = true;
+        overrideValue = Mathf.Clamp01(value);
+    }
+
+    // 연출 끝: 다시 해금 상태 기준 값으로
+    public static void ClearOverride()
+    {
+        overriding = false;
+    }
 
     void Awake()
     {
@@ -41,6 +62,7 @@ public class HalftoneController : MonoBehaviour
         if (active == this)            // 진짜 컨트롤러가 꺼질 때만 초기화
         {
             active = null;
+            overriding = false;
             Shader.SetGlobalFloat(BlendId, 0f);
         }
     }
@@ -68,7 +90,7 @@ public class HalftoneController : MonoBehaviour
         int total = 0, unlockedCount = 0;
         foreach (OptionType t in System.Enum.GetValues(typeof(OptionType)))
         {
-            if (System.Array.IndexOf(excludedOptions, t) >= 0) continue;   
+            if (System.Array.IndexOf(excludedOptions, t) >= 0) continue;
             total++;
             if (OptionState.Instance.IsUnlocked(t)) unlockedCount++;
         }
@@ -82,7 +104,9 @@ public class HalftoneController : MonoBehaviour
     void Update()
     {
         current = Mathf.MoveTowards(current, target, fadeSpeed * Time.deltaTime);
-        Shader.SetGlobalFloat(BlendId, current);   // 매 프레임 적용 → 누가 값을 바꿔도 바로 복구
+
+        // 연출 중이면 연출 값을, 아니면 해금 기준 값을 매 프레임 적용 → 누가 값을 바꿔도 바로 복구
+        Shader.SetGlobalFloat(BlendId, overriding ? overrideValue : current);
     }
 
 

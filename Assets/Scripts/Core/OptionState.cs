@@ -4,28 +4,28 @@ using System.Collections.Generic;
 // 게임 내 각종 옵션(조작 기능)의 해금 상태를 관리한다.
 
 // OptionType에 새로운 해금 될 기능들을 추가하면 자동으로 이곳에 반영됨 
-public enum OptionType 
-{ 
-    // 조작 관련
-    Move, 
-    RotateCamera, 
-    Grab, 
-    Push, 
+
+public enum OptionType
+{
+    Move,
+    RotateCamera,
+    Grab,
+    Push,
     Pull,
-        
-    // 그래픽, 비디오
+
     Hand,
     Saturation,
     Blur,
 
-    // 사운드 관련
     SFX,
     BGM,
 
-    // 진행 기록 
-    MessageSent
+    MessageSent,
 
+    Jump,
+    Run
 }
+
 
 public class OptionState : MonoBehaviour
 {

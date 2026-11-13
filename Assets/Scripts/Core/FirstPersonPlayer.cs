@@ -141,5 +141,55 @@ public void SetLookPitch(float newPitch)
         cameraRoot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
 }
     
+    public static bool memoryJump;
+
+    [System.NonSerialized]
+    public bool externalCursorControl;
+
+    public float Pitch => pitch;
+
+    public void SetPitch(float value)
+    {
+        SetLookPitch(value);
+    }
+
+    public void StopMovement()
+    {
+        horizontalVelocity = Vector3.zero;
+    }
+
+    public void Teleport(
+        Vector3 position,
+        Quaternion rotation,
+        Quaternion cameraRotation)
+    {
+        if (controller == null)
+            controller = GetComponent<CharacterController>();
+
+        bool wasEnabled = controller != null && controller.enabled;
+
+        if (controller != null)
+            controller.enabled = false;
+
+        transform.SetPositionAndRotation(position, rotation);
+
+        pitch = Mathf.Clamp(
+            Mathf.DeltaAngle(0f, cameraRotation.eulerAngles.x),
+            -maxPitch,
+            maxPitch
+        );
+
+        if (cameraRoot != null)
+            cameraRoot.localRotation = cameraRotation;
+
+        horizontalVelocity = Vector3.zero;
+        verticalVelocity = 0f;
+
+        if (controller != null)
+            controller.enabled = wasEnabled;
+
+        Physics.SyncTransforms();
+    }
+
 }
 
