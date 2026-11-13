@@ -62,13 +62,10 @@ public sealed class MealGameController : MonoBehaviour
         if (carried.transform.parent != palm) return; // Wait for the hand animation.
         Vector3 forward = Vector3.ProjectOnPlane(player.transform.forward, Vector3.up).normalized;
         if (forward.sqrMagnitude < .5f) forward = Vector3.forward;
-        carried.transform.rotation = Quaternion.LookRotation(forward, Vector3.up);
-        var mesh = carried.GetComponent<MeshFilter>();
-        if (!mesh || !mesh.sharedMesh) return;
-        Bounds bounds = mesh.sharedMesh.bounds;
-        Vector3 bottom = new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
-        carried.transform.position = palm.position + player.transform.TransformVector(carried.positionOffset)
-            - carried.transform.TransformVector(bottom);
+        var geometry = carried.GetComponent<MealGeometry>();
+        carried.transform.rotation = Quaternion.LookRotation(forward, Vector3.up) *
+            Quaternion.Euler(geometry ? geometry.heldEuler : Vector3.zero);
+        MealGeometry.BottomAt(carried.gameObject, palm.position + player.transform.TransformVector(carried.positionOffset));
     }
 
     void Start()
@@ -141,6 +138,8 @@ public sealed class MealGameController : MonoBehaviour
             {
                 cookedToast.gameObject.SetActive(false);
                 jamToast.SetActive(true);
+                jamToast.transform.rotation = MealGeometry.FlatRotation(jamToast);
+                MealGeometry.BottomAt(jamToast, toastOnPlatePoint.position);
                 JamApplied = true;
                 Hint("잼 토스트가 완성됐다.");
             }
@@ -184,10 +183,10 @@ public sealed class MealGameController : MonoBehaviour
         {
             ConsumeHeld();
             // Use the same bottom point even if the two placeholder meshes differ in height.
-            Bounds emptyBounds = emptyCup.GetComponent<Renderer>().bounds;
+            Bounds emptyBounds = MealGeometry.BoundsOf(emptyCup);
             juiceCup.gameObject.SetActive(true);
             juiceCup.transform.rotation = emptyCup.transform.rotation;
-            Bounds fullBounds = juiceCup.GetComponent<Renderer>().bounds;
+            Bounds fullBounds = MealGeometry.BoundsOf(juiceCup.gameObject);
             juiceCup.transform.position += new Vector3(emptyBounds.center.x - fullBounds.center.x,
                 emptyBounds.min.y - fullBounds.min.y, emptyBounds.center.z - fullBounds.center.z);
             emptyCup.SetActive(false);
@@ -263,7 +262,14 @@ public sealed class MealGameController : MonoBehaviour
         item.transform.SetParent(transform, true);
         carried = null;
     }
-    void PlaceHeld(Transform point) { Hand.PlaceHeld(point, false); carried = null; }
+    void PlaceHeld(Transform point)
+    {
+        var item = Hand.Held;
+        Hand.PlaceHeld(point, false);
+        item.transform.rotation = point.rotation;
+        MealGeometry.BottomAt(item.gameObject, point.position);
+        carried = null;
+    }
 
     IEnumerator Toast()
     {
@@ -295,8 +301,8 @@ public sealed class MealGameController : MonoBehaviour
         blackScreen.blocksRaycasts = true;
         MovePlayerToTable();
         // All arrangement happens while the screen is black.
-        plate.PlaceAt(plateTablePoint);
-        juiceCup.PlaceAt(cupTablePoint);
+        plate.PlaceAt(plateTablePoint); MealGeometry.BottomAt(plate.gameObject, plateTablePoint.position);
+        juiceCup.PlaceAt(cupTablePoint); MealGeometry.BottomAt(juiceCup.gameObject, cupTablePoint.position);
         yield return new WaitForSeconds(blackoutSeconds);
         interactor.playerCamera.transform.SetPositionAndRotation(eatingView.position, eatingView.rotation);
         blackScreen.alpha = 0;
@@ -312,7 +318,7 @@ public sealed class MealGameController : MonoBehaviour
         juiceCup.gameObject.SetActive(false);
         emptyCup.SetActive(true);
         emptyCup.transform.rotation = cupTablePoint.rotation;
-        Bounds b = emptyCup.GetComponent<Renderer>().bounds;
+        Bounds b = MealGeometry.BoundsOf(emptyCup);
         emptyCup.transform.position += cupTablePoint.position - new Vector3(b.center.x, b.min.y, b.center.z);
         emptyCup.transform.SetParent(cupTablePoint, true);
         Completed = true;
@@ -329,12 +335,12 @@ public sealed class MealGameController : MonoBehaviour
         CookingStarted = ToastReady = JamOnCounter = ToastOnPlate = JamApplied = PlateOnTable = JuicePoured = CupOnTable = true;
         foreach (var item in new[] { rawToast, jam, juice, cookedToast, juiceCup }) item.gameObject.SetActive(false);
         plate.gameObject.SetActive(true);
-        plate.transform.SetPositionAndRotation(plateTablePoint.position, plateTablePoint.rotation);
+        plate.transform.SetPositionAndRotation(plateTablePoint.position, plateTablePoint.rotation); MealGeometry.BottomAt(plate.gameObject, plateTablePoint.position);
         jamToast.SetActive(false);
         bakingToast.SetActive(false);
         emptyCup.SetActive(true);
         emptyCup.transform.rotation = cupTablePoint.rotation;
-        Bounds bounds = emptyCup.GetComponent<Renderer>().bounds;
+        Bounds bounds = MealGeometry.BoundsOf(emptyCup);
         emptyCup.transform.position += cupTablePoint.position - new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
         timerPanel.SetActive(false);
         blackScreen.alpha = 0;

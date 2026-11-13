@@ -1,0 +1,23 @@
+노즈워크 구현 전 실제 씬 검사
+Player | world=(3.005, 0.730, -3.647) scale=(1.00, 1.00, 1.00) | Transform,CharacterController,FirstPersonPlayer,PlayerMotionFeel
+Camera | world=(3.005, 2.130, -3.647) scale=(1.00, 1.00, 1.00) | Transform,Camera,AudioListener,UniversalAdditionalCameraData
+carrot_snuffle_game | world=(4.155, 0.710, -3.647) scale=(2.00, 2.00, 2.00) | Transform
+Carrot_01 • pull upward | world=(4.357, 0.752, -3.944) scale=(200.00, 200.00, 200.00) | Transform,MeshFilter,MeshRenderer,NoseworkCarrot,BoxCollider
+Carrot_02 • pull upward | world=(4.357, 0.752, -3.746) scale=(200.00, 200.00, 217.17) | Transform,MeshFilter,MeshRenderer,NoseworkCarrot,BoxCollider
+Carrot_03 • pull upward | world=(4.357, 0.752, -3.548) scale=(200.00, 200.00, 200.00) | Transform,MeshFilter,MeshRenderer,NoseworkCarrot,BoxCollider
+Carrot_04 • pull upward | world=(4.357, 0.752, -3.350) scale=(200.00, 200.00, 200.00) | Transform,MeshFilter,MeshRenderer,NoseworkCarrot,BoxCollider
+Carrot_05 • pull upward | world=(4.155, 0.752, -3.944) scale=(200.00, 200.00, 200.00) | Transform,MeshFilter,MeshRenderer,NoseworkCarrot,BoxCollider
+Carrot_06 • pull upward | world=(4.155, 0.752, -3.746) scale=(200.00, 200.00, 200.00) | Transform,MeshFilter,MeshRenderer,NoseworkCarrot,BoxCollider
+Carrot_07 • pull upward | world=(4.155, 0.752, -3.548) scale=(200.00, 200.00, 200.00) | Transform,MeshFilter,MeshRenderer,NoseworkCarrot,BoxCollider
+Carrot_08 • pull upward | world=(4.155, 0.752, -3.350) scale=(200.00, 200.00, 200.00) | Transform,MeshFilter,MeshRenderer,NoseworkCarrot,BoxCollider
+Carrot_09 • pull upward | world=(3.953, 0.752, -3.944) scale=(200.00, 200.00, 200.00) | Transform,MeshFilter,MeshRenderer,NoseworkCarrot,BoxCollider
+Carrot_10 • pull upward | world=(3.953, 0.752, -3.746) scale=(200.00, 200.00, 200.00) | Transform,MeshFilter,MeshRenderer,NoseworkCarrot,BoxCollider
+Carrot_11 • pull upward | world=(3.953, 0.752, -3.548) scale=(200.00, 200.00, 200.00) | Transform,MeshFilter,MeshRenderer,NoseworkCarrot,BoxCollider
+Carrot_12 • pull upward | world=(3.953, 0.752, -3.350) scale=(200.00, 200.00, 200.00) | Transform,MeshFilter,MeshRenderer,NoseworkCarrot,BoxCollider
+Soil Cushion • 12 real recessed pockets | world=(4.155, 0.796, -3.647) scale=(200.00, 200.00, 200.00) | Transform,MeshFilter,MeshRenderer,NoseworkStartPoint,BoxCollider
+Spitz_anim_IP | world=(2.736, 0.700, -2.531) scale=(2.00, 2.00, 2.00) | Transform,Animator
+당근 수: 12 / 각 당근의 몸통과 잎은 한 MeshFilter로 구성됨
+씬 NavMeshAgent 수: 0
+NavMesh triangulation vertices: 0
+Interaction: PlayerInteractor / IInteractable / 왼쪽 클릭
+Room3 Manager: Resources/Room3GameManager, Flow.CompleteVisit(carrot_snuffle_game)

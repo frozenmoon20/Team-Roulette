@@ -1,0 +1,6 @@
+0: (-1.00, 0.03, 5.70) surface=Ground_45x45x
+1: (-1.00, 0.19, 5.00) surface=Entry / concrete step
+2: (-1.00, 0.36, 4.60) surface=Entry / concrete step.001
+3: (-1.00, 0.53, 4.20) surface=Entry / concrete step.002
+4: (-1.00, 0.70, 3.70) surface=Veranda / floor.001
+5: (-1.00, 0.70, 2.74) surface=Veranda / floor.001

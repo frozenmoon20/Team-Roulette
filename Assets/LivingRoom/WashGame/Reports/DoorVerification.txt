@@ -1,0 +1,1 @@
+PASS: Opens around vertical world axis without tipping. Door height and hinge preserved. Second click restores closed rotation; colliders enabled.

@@ -157,7 +157,12 @@ namespace TeamRoulette.Room3
             if (SceneManager.GetActiveScene().name == "Room3_LivingRoom" && manager.TryQueueOpeningDialogue())
                 PlayLines(Room3DialogueScript.Opening);
         }
-        void OnBegin(GameStage stage) { PlayLines(Room3DialogueScript.GetStart(stage)); }
+        void OnBegin(GameStage stage)
+        {
+            var lines = Room3DialogueScript.GetStart(stage);
+            // Curtain lines continue one at a time when Winter reaches each guide stop.
+            PlayLines(stage == GameStage.Curtain ? lines.Take(1).ToArray() : lines);
+        }
         void OnComplete(GameStage stage) { PlayLines(Room3DialogueScript.GetFinish(stage)); }
         public void PlayLines(string[] lines)
         {
@@ -199,3 +204,4 @@ namespace TeamRoulette.Room3
         }
     }
 }
+

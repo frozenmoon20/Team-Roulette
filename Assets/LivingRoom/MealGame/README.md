@@ -32,3 +32,13 @@ The three clips under `Audio` are original synthesized basic effects. Replace th
 `Tools > MealGame > 3 - Verify mouse pickup and return` opens a temporary fridge view for a real left click followed by a right click, then exits Play Mode automatically.
 
 The setup command is one-time only and refuses to overwrite an existing MealGame setup.
+
+## Purchased asset transfer (2026-11-12)
+
+The placed purchased assets are now wired to MealGame. Their authored visual transforms and materials are preserved. PurchasedItems contains pickup wrappers; LegacyObjects contains disabled placeholder objects for recovery. Kitchen furniture keeps its original hierarchy.
+
+Raw and cooked toast positions at the toaster are used as authored. The baking representation is a separate copy at the raw toast pose. Composite and child meshes use MealGeometry for palm support and placement. Shared hand/grab scripts and the Player prefab were not modified.
+
+The full sequence was verified twice in Play Mode, covering both jam-click orders, scene ray targeting, ten-second cooking, pickup cancellation, horizontal toast/plate, upright cup, purchased plate alignment, blackout, eating, empty dishes and the player position at the purchased table. The scene's existing Room3 progression integration is retained. Verification uses temporary standalone test state and does not save test unlocks or progress.
+
+BeforePurchasedSwap.unity.bak is the pre-transfer scene backup. PurchasedTransfer.txt records the selected scene objects and their world positions.

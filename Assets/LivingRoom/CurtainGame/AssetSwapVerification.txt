@@ -1,0 +1,1 @@
+Saved: Dog=Spitz_anim_IP; L=curtaina_static; R=curtainb_static. Static curtains active, original animated curtains inactive under WindowGame. Original model components retained.

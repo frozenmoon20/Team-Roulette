@@ -1,0 +1,5 @@
+PASS: Restroom/T_sink = Water; Butter = Soap; To_towel_hanging = Towel.
+PASS: Existing materials, transforms and prefab assets preserved.
+PASS: Each target active with collider. Old WashGame fixtures disabled.
+PASS: Invisible faucet hit area and water stream moved to sink.
+Faucet bounds: Center: (15.50, 1.79, 6.41), Extents: (0.55, 0.01, 0.11); outlet: (15.50, 1.64, 6.67)

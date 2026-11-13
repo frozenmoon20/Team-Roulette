@@ -59,8 +59,13 @@ namespace TeamRoulette.Room3
         public bool IsToyComplete(string id) => completedToys.Contains(id);
         internal void CompleteToyVisit(string id)
         {
-            if (CurrentStage != GameStage.Toys || !Room3FlowController.ToyIds.Contains(id) || !completedToys.Add(id)) return;
-            if (completedToys.Count == Room3FlowController.ToyIds.Length) ReportComplete(GameStage.Toys);
+            if (CurrentStage != GameStage.Toys) return;
+            RecordToyMemoryCompletion(id);
+        }
+        public void RecordToyMemoryCompletion(string id)
+        {
+            if (!Room3FlowController.ToyIds.Contains(id) || !completedToys.Add(id)) return;
+            if (CurrentStage == GameStage.Toys && completedToys.Count == Room3FlowController.ToyIds.Length) ReportComplete(GameStage.Toys);
             else Changed?.Invoke();
         }
         bool openingDialogueQueued;
@@ -172,6 +177,8 @@ namespace TeamRoulette.Room3
             var meal = Find<MealGameController>();
             var board = Find<BoardGameController>();
             if (IsComplete(GameStage.Curtain) && curtain) curtain.RestoreCompleted();
+            var window = Find<WindowGameController>();
+            if (IsComplete(GameStage.Window) && window) window.RestoreCompleted();
             if (IsComplete(GameStage.Calendar) && calendar) calendar.RestoreCompleted();
             if (IsComplete(GameStage.Wash) && wash) wash.RestoreCompleted();
             if (IsComplete(GameStage.Meal) && meal) meal.RestoreCompleted();

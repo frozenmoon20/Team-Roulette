@@ -1,0 +1,13 @@
+Toast_Sandwich_Version01 -> (12.6069, 1.7053, 4.1730)
+Jam01 -> (12.5751, 1.6244, 1.9030)
+MapleSyrup -> (12.5220, 1.6244, 1.3750)
+Toast_Sandwich_Version03 -> (12.6070, 1.7551, 4.1709)
+JamToast -> (0.0000, 0.0000, 0.0000)
+PlateBigBreakfast -> (12.5790, 1.6244, 1.6380)
+Glas -> (12.6090, 1.6244, 2.1140)
+Glas_Juice -> (12.5810, 1.6244, 2.3060)
+Toster_Prefab -> (12.5970, 1.6236, 4.1760)
+Fridge -> (16.6270, 0.7000, 0.5400)
+Kitcabinet_low_1½x_A (2) -> (12.2000, 0.7000, 2.4980)
+Kitchen_table_large -> (15.1070, 0.7006, 3.5870)
+TRANSFER COMPLETE

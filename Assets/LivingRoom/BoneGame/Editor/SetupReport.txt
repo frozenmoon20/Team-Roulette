@@ -1,0 +1,20 @@
+뼈다귀 캐치 설정 완료
+Player / Camera / Interaction / UI / Winter / mouth: 기존 인스턴스 재사용
+Controller: Assets/StoreAssets/Dog - Pomeranian Spitz/Red_Deer/Dogs/Spitz/Dog/FBX/Spitz_AContr_Demo.controller
+Bone: Bone_1 / prefab: Assets/StoreAssets/Dog - Pomeranian Spitz/Red_Deer/Dogs/Spitz/Object/Prefabs/Bone_1.prefab
+Input: 기존 Input System과 같은 Mouse 장치, 캐치 전용 클릭 액션
+NavMeshAgent: 0 / baked vertices: 0
+기존 NavMesh 경로가 있으면 회수에 사용, 없으면 가까운 평평한 마당에서 이동
+기존 테니스공 / 터그 실행 여부는 방문 ID로 분기. 씬 직접 실행은 뼈다귀 미리보기
+Room3 Manager: GameManager.Flow.CompleteVisit(뼈다귀 장난감)
+Squeak Clip: Assets/LivingRoom/BoneGame/Audio/BoneSqueak.wav (Inspector에서 교체 가능)
+기본 성공 횟수: 5 / 투척 시간: 0.36초
+기존 오브젝트 삭제 및 저장된 위치 변경: 0 / 추가 씬 루트: BoneGame
+Arm_Spitz|Idle_1: True
+Arm_Spitz|Attack_Bite_IP: True
+Arm_Spitz|Trot_R_IP: True
+Arm_Spitz|Trot_L_IP: True
+Arm_Spitz|Jump_Place_IP: True
+Arm_Spitz|Jump_F_IP: True
+Arm_Spitz|Pick_up: True
+Arm_Spitz|Trot_F_IP: True

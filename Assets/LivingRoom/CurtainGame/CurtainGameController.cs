@@ -11,16 +11,20 @@ public sealed class CurtainGameController : MonoBehaviour
     public Transform curtainL;
     public Transform curtainR;
     public GameObject dog;
+    public GameObject animatedCurtainA;
+    public GameObject animatedCurtainB;
     public CanvasGroup whiteScreen;
 
     [Header("Shrink (world Z)")]
     public float startZ = 10f;
     [Range(0.1f, 1f)] public float minimumScale = 0.2f;
-    public float shrinkPerUnit = 0.2f;
+    [HideInInspector] public float shrinkPerUnit = 0.2f;
+    [HideInInspector] public float scaleChangePerSecond = 0.25f;
     [Header("Guide")]
     public Vector3 dogStart = new Vector3(16.5f, 0.2f, 10f);
     public float dogEndZ = 15f;
-    [Min(0.01f)] public float dogStepSeconds = 0.5f;
+    [Min(0.01f)] public float dogStepSeconds = 1.5f;
+    public RuntimeAnimatorController guideAnimationController;
     [Header("Finale")]
     [Min(0.1f)] public float finaleSeconds = 2f;
     public float curtainTravel = 5f;
@@ -33,19 +37,31 @@ public sealed class CurtainGameController : MonoBehaviour
     CharacterController body;
     Camera[] cameras;
     float[] originalNear;
-    Vector3 originalScale, leftClosed, rightClosed, guideFrom, guideTo;
+    Vector3 originalScale, guideFrom, guideTo, guideDirection, guideEnd;
     float walk, sprint, jump, acceleration, deceleration, originalStep, guideTime;
     bool initialized, guideMoving, playerWasEnabled;
     PlayerMotionFeel motionFeel;
     bool feelWasEnabled;
+    int guideDialogueIndex = 1;
+    Animator guideAnimator;
+    RuntimeAnimatorController previousGuideController;
+    bool previousRootMotion;
 
     void Awake()
     {
-        if (!player || !startTrigger || !endTrigger || !curtainL || !curtainR || !dog || !whiteScreen)
+        if (!player || !startTrigger || !endTrigger || !curtainL || !curtainR || !dog || !whiteScreen || !animatedCurtainA || !animatedCurtainB)
         {
             Debug.LogError("CurtainGame: assign all scene references.", this);
             enabled = false;
             return;
+        }
+        guideAnimator = dog.GetComponentInChildren<Animator>(true);
+        if (guideAnimator)
+        {
+            previousGuideController = guideAnimator.runtimeAnimatorController;
+            previousRootMotion = guideAnimator.applyRootMotion;
+            if (guideAnimationController) guideAnimator.runtimeAnimatorController = guideAnimationController;
+            guideAnimator.applyRootMotion = false;
         }
         body = player.GetComponent<CharacterController>();
         originalScale = player.transform.localScale;
@@ -56,7 +72,15 @@ public sealed class CurtainGameController : MonoBehaviour
         cameras = player.GetComponentsInChildren<Camera>(true);
         originalNear = new float[cameras.Length];
         for (int i = 0; i < cameras.Length; i++) originalNear[i] = cameras[i].nearClipPlane;
-        leftClosed = curtainL.position; rightClosed = curtainR.position;
+        guideDirection = Vector3.ProjectOnPlane(endTrigger.bounds.center - startTrigger.bounds.center, Vector3.up).normalized;
+        if (guideDirection.sqrMagnitude < 0.5f) guideDirection = Vector3.forward;
+        float length = Vector3.ProjectOnPlane(endTrigger.bounds.center - startTrigger.bounds.center, Vector3.up).magnitude;
+        float height = dog.transform.position.y;
+        dogStart = startTrigger.bounds.center + guideDirection * Mathf.Min(1f, length);
+        dogStart.y = height;
+        guideEnd = endTrigger.bounds.center;
+        guideEnd.y = height;
+        SetCurtainsRevealed(false);
         dog.SetActive(false);
         whiteScreen.alpha = 0;
         whiteScreen.blocksRaycasts = false;
@@ -74,34 +98,58 @@ public sealed class CurtainGameController : MonoBehaviour
             Started = true;
             TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Curtain, TeamRoulette.Room3.ObjectiveStep.FollowDog);
             dog.transform.position = dogStart;
+            dog.transform.rotation = Quaternion.LookRotation(guideDirection, Vector3.up);
             guideFrom = guideTo = dogStart;
             dog.SetActive(true);
+            SetGuideWalking(false);
         }
         if (!Started) return;
 
-        float z = player.transform.position.z;
-        float retreatEdge = startTrigger.bounds.min.z - body.radius * Mathf.Abs(originalScale.z);
-        float scale = z < retreatEdge - 0.02f ? 1f :
-            Mathf.Clamp(1f - Mathf.Max(0, z - startZ) * shrinkPerUnit, minimumScale, 1f);
+        float progress = Vector3.Dot(player.transform.position - startTrigger.bounds.center, guideDirection);
+        // Spread the full shrink across the route, ending at the player's first End contact.
+        float routeLength = Vector3.Dot(endTrigger.bounds.center - startTrigger.bounds.center, guideDirection);
+        Vector3 extents = endTrigger.bounds.extents;
+        float endHalfDepth = Mathf.Abs(guideDirection.x) * extents.x + Mathf.Abs(guideDirection.z) * extents.z;
+        float finalRadius = body.radius * Mathf.Max(Mathf.Abs(originalScale.x), Mathf.Abs(originalScale.z)) * minimumScale;
+        float shrinkDistance = Mathf.Max(0.01f, routeLength - endHalfDepth - finalRadius);
+        float scale = Mathf.Lerp(1f, minimumScale, Mathf.Clamp01(progress / shrinkDistance));
         ApplyScale(scale);
-        UpdateGuide(z, Time.deltaTime);
+        UpdateGuide(Time.deltaTime);
         if (endTrigger.bounds.Intersects(body.bounds)) StartCoroutine(Finale());
     }
 
-    void UpdateGuide(float playerZ, float dt)
+    void UpdateGuide(float dt)
     {
-        if (!guideMoving && playerZ >= guideTo.z && guideTo.z < dogEndZ)
+        if (!guideMoving && Vector3.Dot(player.transform.position - guideTo, guideDirection) >= 0f && Vector3.Dot(guideEnd - guideTo, guideDirection) > 0.001f)
         {
             guideFrom = dog.transform.position;
-            guideTo = new Vector3(dogStart.x, dogStart.y, Mathf.Min(dogEndZ, guideTo.z + 1f));
+            guideTo += guideDirection * Mathf.Min(1f, Vector3.Dot(guideEnd - guideTo, guideDirection));
             guideTime = 0;
             guideMoving = true;
+            SetGuideWalking(true);
         }
         if (!guideMoving) return;
-        guideTime += dt;
+        guideTime += Mathf.Min(dt, 0.05f);
         float t = Mathf.Clamp01(guideTime / Mathf.Max(0.01f, dogStepSeconds));
         dog.transform.position = Vector3.Lerp(guideFrom, guideTo, Mathf.SmoothStep(0, 1, t));
-        if (t >= 1) guideMoving = false;
+        if (t >= 1)
+        {
+            guideMoving = false;
+            SetGuideWalking(false);
+            var lines = TeamRoulette.Room3.Room3DialogueScript.CurtainStart;
+            if (guideDialogueIndex < lines.Length)
+            {
+                var dialogue = Object.FindFirstObjectByType<TeamRoulette.Room3.DialogueManager>();
+                if (dialogue) dialogue.PlayLines(new[] { lines[guideDialogueIndex++] });
+            }
+        }
+    }
+
+    void SetGuideWalking(bool walking)
+    {
+        if (!guideAnimator || !guideAnimator.runtimeAnimatorController) return;
+        int state = Animator.StringToHash("Base Layer.Arm_Spitz|" + (walking ? "Walk_F_IP" : "Idle_1"));
+        if (guideAnimator.HasState(0, state)) guideAnimator.CrossFadeInFixedTime(state, 0.12f, 0);
     }
 
     void ApplyScale(float scale)
@@ -136,9 +184,7 @@ public sealed class CurtainGameController : MonoBehaviour
             // Fade to white, open under the light, then reveal the window.
             whiteScreen.alpha = t < 0.25f ? Mathf.SmoothStep(0, 1, t / 0.25f) :
                 t < 0.7f ? 1 : 1 - Mathf.SmoothStep(0, 1, (t - 0.7f) / 0.3f);
-            float open = Mathf.SmoothStep(0, 1, Mathf.InverseLerp(0.15f, 0.75f, t));
-            curtainL.position = leftClosed + Vector3.left * curtainTravel * open;
-            curtainR.position = rightClosed + Vector3.right * curtainTravel * open;
+            if (t >= 0.5f) SetCurtainsRevealed(true);
             if (t >= 0.5f && CurrentScale != 1f) ApplyScale(1f);
             player.transform.position = fixedPosition;
             yield return null;
@@ -153,14 +199,21 @@ public sealed class CurtainGameController : MonoBehaviour
         TeamRoulette.Room3.GameManager.ReportComplete(TeamRoulette.Room3.GameStage.Curtain);
     }
 
+    void SetCurtainsRevealed(bool revealed)
+    {
+        curtainL.gameObject.SetActive(!revealed);
+        curtainR.gameObject.SetActive(!revealed);
+        animatedCurtainA.SetActive(revealed);
+        animatedCurtainB.SetActive(revealed);
+    }
+
     public void RestoreCompleted()
     {
         if (!initialized) return;
         Started = Completed = true;
         PlayingFinale = false;
         ApplyScale(1f);
-        curtainL.position = leftClosed + Vector3.left * curtainTravel;
-        curtainR.position = rightClosed + Vector3.right * curtainTravel;
+        SetCurtainsRevealed(true);
         dog.SetActive(false);
         whiteScreen.alpha = 0;
         whiteScreen.blocksRaycasts = false;
@@ -170,16 +223,25 @@ public sealed class CurtainGameController : MonoBehaviour
     {
         if (!initialized) return;
         StopAllCoroutines();
+        if (guideAnimator)
+        {
+            guideAnimator.runtimeAnimatorController = previousGuideController;
+            guideAnimator.applyRootMotion = previousRootMotion;
+        }
         if (player) ApplyScale(1f);
         if (whiteScreen) { whiteScreen.alpha = 0; whiteScreen.blocksRaycasts = false; }
         if (PlayingFinale)
         {
             if (player) player.enabled = playerWasEnabled;
             if (motionFeel) motionFeel.enabled = feelWasEnabled;
-            curtainL.position = leftClosed + Vector3.left * curtainTravel;
-            curtainR.position = rightClosed + Vector3.right * curtainTravel;
+            SetCurtainsRevealed(true);
             Completed = true;
             PlayingFinale = false;
         }
     }
 }
+
+
+
+
+

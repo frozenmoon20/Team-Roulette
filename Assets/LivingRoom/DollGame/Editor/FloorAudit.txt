@@ -1,0 +1,27 @@
+Room3_LivingRoom houseActive=True colliders=1 enabled=1 meshes=217
+1F bathroom / Door_interior enabled=True active=True trigger=False
+Player pos=(19.00, 0.73, 5.50)
+FLOOR Player hit=(19.00, 2.35, 5.50)
+FLOOR HouseCollision_1F hit=(19.00, 0.70, 5.50)
+Room3_OldLivingRoom houseActive=True colliders=1 enabled=1 meshes=217
+1F bathroom / Door_interior enabled=True active=True trigger=False
+Player pos=(3.01, 1.00, -3.65)
+FLOOR Player hit=(3.01, 2.62, -3.65)
+Chase Entry pos=(2.60, 0.73, -4.90)
+Room3_Toy houseActive=True colliders=219 enabled=219 meshes=219
+1F bathroom / corner enabled=True active=True trigger=False
+1F bathroom / Door_interior enabled=True active=True trigger=False
+1F bathroom / doorway enabled=True active=True trigger=False
+1F bathroom / kitchen side 1 enabled=True active=True trigger=False
+1F bathroom / kitchen side 2 enabled=True active=True trigger=False
+2F bathroom / corner enabled=True active=True trigger=False
+2F bathroom / Door_interior enabled=True active=True trigger=False
+2F bathroom / doorway enabled=True active=True trigger=False
+2F bathroom / front end 1 enabled=True active=True trigger=False
+2F bathroom / stair side 1 enabled=True active=True trigger=False
+2F bathroom / stair side 2 enabled=True active=True trigger=False
+2F bedroom / corner enabled=True active=True trigger=False
+Player pos=(-2.83, 0.00, -2.22)
+FLOOR Ground_45x45x hit=(-2.83, 0.00, -2.22)
+FLOOR Player hit=(-2.83, 1.62, -2.22)
+FLOOR Yard Collision Floor hit=(-2.83, -0.02, -2.22)

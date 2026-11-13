@@ -1,0 +1,8 @@
+PASS: First shrink frame does not snap to target size
+PASS: Shrink progresses gradually across frames
+PASS: Guide animation controller connected; root motion cannot override path
+PASS: Original walking state available
+PASS: Even a long frame advances guide incrementally, without teleporting
+PASS: Guide walks the full one unit and stops
+PASS: One completed step still queues exactly one dialogue
+ALL CHECKS PASSED

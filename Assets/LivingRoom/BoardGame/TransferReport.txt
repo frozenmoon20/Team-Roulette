@@ -1,0 +1,2 @@
+Targets: Painting_H / KP_coffee_mug. Board metres: (3.20, 1.64). Floor items grounded.
+PASS: new targets, 21 items within board, board start at Board progression stage, mug discard/retrieve, reattach, completion.
