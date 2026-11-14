@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1959a926c5d6c3418787cabe798da3c, type: 3}
+  m_Name: Reality_FriendPhone_Dialogue
+  m_EditorClassIdentifier: Assembly-CSharp::TeamRoulette.UI.DialogueSequence
+  lines:
+  - "\uCE5C\uAD6C: \uC5EC\uBCF4\uC138\uC694? \uBA54\uC2DC\uC9C0 \uBCF4\uACE0 \uC804\uD654\uD588\uC5B4.
+    \uBAA9\uC18C\uB9AC \uB4E4\uC73C\uB2C8\uAE4C \uB2E4\uD589\uC774\uB2E4."
+  - "\uC8FC\uC778\uACF5: \u2026\u2026\uC751. \uADF8\uB54C\uB294 \uBBF8\uC548\uD588\uC5B4.
+    \uB124 \uB9C8\uC74C\uB3C4 \uBAA8\uB974\uACE0."
+  - "\uCE5C\uAD6C: \uAD1C\uCC2E\uC544. \uB098\uB3C4 \uACA8\uC6B8\uC774\uB97C \uB9CE\uC774
+    \uC544\uAF08\uC73C\uB2C8\uAE4C\u2026\u2026 \uB124 \uB9C8\uC74C \uC774\uD574\uD574."
+  - "\uC8FC\uC778\uACF5: \u2026\u2026\uACA8\uC6B8\uC774\uAC00 \uB9CE\uC774 \uBCF4\uACE0
+    \uC2F6\uC5B4."
+  - "\uCE5C\uAD6C: \u2026\u2026\uB098\uB3C4. \uBA54\uC2DC\uC9C0\uC5D0 \uB9CC\uB098\uC11C
+    \uC598\uAE30\uD558\uACE0 \uC2F6\uB2E4\uACE0 \uD588\uC9C0? \uC9C0\uAE08 \uAC00\uB3C4
+    \uB420\uAE4C?"
+  - "\uC8FC\uC778\uACF5: \uC751  \uC900\uBE44\uD574\uC11C \uB098\uAC08\uAC8C."
+  colorCodes:
+  - '#FFFFFF'
+  - '#FFFFFF'
+  - '#FFFFFF'
+  - '#FFFFFF'
+  - '#FFFFFF'
+  - '#FFFFFF'
