@@ -30,6 +30,13 @@ public class SokobanGameManager : MonoBehaviour
     [Header("맵2 클리어 후 열릴 다음 길")]
     public GameObject nextPath;
 
+    [Header("맵1 효과음")]
+    public AudioClip map1ClearSound;
+    public AudioClip separatorWallSound;
+
+    [Range(0f, 1f)]
+    public float soundVolume = 0.8f;
+
     public bool IsCleared { get; private set; }
 
     bool gameStarted;
@@ -79,7 +86,6 @@ public class SokobanGameManager : MonoBehaviour
 
     bool AllGoalsCorrect(SokobanGoal[] targetGoals)
     {
-        // 발판이 없으면 클리어되지 않음
         if (targetGoals == null ||
             targetGoals.Length == 0)
             return false;
@@ -95,9 +101,16 @@ public class SokobanGameManager : MonoBehaviour
 
     void ClearMap1()
     {
+        // 기존 단계 전환
         currentStage = 2;
 
-        // 맵1의 정답 상자는 고정
+        // 추가: 맵1 클리어 효과음
+        AudioManager.Play(
+            map1ClearSound,
+            soundVolume
+        );
+
+        // 기존 맵1 상자 고정
         if (map1Boxes != null)
         {
             foreach (SokobanPushBox box in map1Boxes)
@@ -107,7 +120,7 @@ public class SokobanGameManager : MonoBehaviour
             }
         }
 
-        // 맵1과 맵2 사이의 벽이 부드럽게 내려가도록 변경
+        // 기존 구분 벽 하강
         if (separatorWall != null)
         {
             StartCoroutine(DisappearWall());
@@ -134,7 +147,6 @@ public class SokobanGameManager : MonoBehaviour
 
         Vector3 startPosition = wall.position;
 
-        // 벽의 실제 높이를 기준으로 이동 거리 계산
         Renderer wallRenderer =
             separatorWall.GetComponentInChildren<Renderer>();
 
@@ -143,18 +155,31 @@ public class SokobanGameManager : MonoBehaviour
             : 3f;
 
         Vector3 targetPosition =
-            startPosition + Vector3.down * (wallHeight + 0.2f);
+            startPosition +
+            Vector3.down * (wallHeight + 0.2f);
 
-        float duration = Mathf.Max(0.01f, wallDisappearDuration);
+        float duration = Mathf.Max(
+            0.01f,
+            wallDisappearDuration
+        );
+
         float elapsed = 0f;
 
+        // 추가: 벽이 내려가기 시작할 때 효과음
+        AudioManager.Play(
+            separatorWallSound,
+            soundVolume
+        );
+
+        // 기존 벽 하강 애니메이션
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
 
-            float t = Mathf.Clamp01(elapsed / duration);
+            float t = Mathf.Clamp01(
+                elapsed / duration
+            );
 
-            // 부드럽게 시작하고 끝나는 움직임
             t = Mathf.SmoothStep(0f, 1f, t);
 
             wall.position = Vector3.Lerp(
@@ -168,29 +193,27 @@ public class SokobanGameManager : MonoBehaviour
 
         wall.position = targetPosition;
 
-        // 연출 종료 후 벽 완전히 비활성화
         separatorWall.SetActive(false);
     }
 
-public void CompleteMap2()
-{
-    if (IsCleared)
-        return;
-
-    if (!gameStarted || currentStage != 2)
+    public void CompleteMap2()
     {
-        Debug.LogWarning(
-            "소코반 맵2 완료 요청이 들어왔지만 " +
-            "아직 맵2 진행 단계가 아닙니다.",
-            this
-        );
-        return;
+        if (IsCleared)
+            return;
+
+        if (!gameStarted || currentStage != 2)
+        {
+            Debug.LogWarning(
+                "소코반 맵2 완료 요청이 들어왔지만 " +
+                "아직 맵2 진행 단계가 아닙니다.",
+                this
+            );
+            return;
+        }
+
+        Debug.Log("소코반 맵2 클리어 신호 수신!");
+        ClearGame();
     }
-
-    Debug.Log("소코반 맵2 클리어 신호 수신!");
-    ClearGame();
-}
-
 
     void ClearGame()
     {

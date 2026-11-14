@@ -241,6 +241,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4273459}
   - component: {fileID: 4273460}
+  - component: {fileID: 4273461}
   m_Layer: 0
   m_Name: SokobanMap2Manager
   m_TagString: Untagged
@@ -301,6 +302,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &4273461
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4273458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27092a7dee417164daf6f9cde7ccfa21, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SokobanMap2ClearSound
+  gameManager: {fileID: 1152748370}
+  clearSound: {fileID: 8300000, guid: ba33f9fb02b14c54fb571c13a07e9360, type: 3}
+  soundVolume: 0.8
 --- !u!1 &5271930
 GameObject:
   m_ObjectHideFlags: 0
@@ -3044,7 +3060,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &67401640
 Transform:
   m_ObjectHideFlags: 0
@@ -3808,6 +3824,12 @@ MonoBehaviour:
   boxColor: 1
   pushDistance: 1
   pushSpeed: 5
+  maxPushReach: 0.9
+  sideTolerance: 0.35
+  pushSound: {fileID: 0}
+  blockedSound: {fileID: 0}
+  soundVolume: 0.8
+  blockedSoundCooldown: 0.3
 --- !u!1001 &86088025
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6019,6 +6041,12 @@ MonoBehaviour:
   boxColor: 2
   pushDistance: 1
   pushSpeed: 5
+  maxPushReach: 0.9
+  sideTolerance: 0.35
+  pushSound: {fileID: 8300000, guid: d7cb23965d0c94d488e53b1bf9d2c095, type: 3}
+  blockedSound: {fileID: 8300000, guid: 14b4a154cd6591c4f8dc163bb4584545, type: 3}
+  soundVolume: 0.8
+  blockedSoundCooldown: 0.3
 --- !u!1 &156837691
 GameObject:
   m_ObjectHideFlags: 0
@@ -9634,6 +9662,12 @@ MonoBehaviour:
   boxColor: 1
   pushDistance: 1
   pushSpeed: 5
+  maxPushReach: 0.9
+  sideTolerance: 0.35
+  pushSound: {fileID: 8300000, guid: d7cb23965d0c94d488e53b1bf9d2c095, type: 3}
+  blockedSound: {fileID: 8300000, guid: 14b4a154cd6591c4f8dc163bb4584545, type: 3}
+  soundVolume: 0.8
+  blockedSoundCooldown: 0.3
 --- !u!1 &301496697
 GameObject:
   m_ObjectHideFlags: 0
@@ -12387,6 +12421,12 @@ MonoBehaviour:
   boxColor: 1
   pushDistance: 1
   pushSpeed: 5
+  maxPushReach: 0.9
+  sideTolerance: 0.35
+  pushSound: {fileID: 8300000, guid: d7cb23965d0c94d488e53b1bf9d2c095, type: 3}
+  blockedSound: {fileID: 8300000, guid: 14b4a154cd6591c4f8dc163bb4584545, type: 3}
+  soundVolume: 0.8
+  blockedSoundCooldown: 0.3
 --- !u!4 &387268043 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: de355114dcb847b45860f23938a1c640, type: 3}
@@ -18428,6 +18468,118 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1430706803}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
+--- !u!1 &623762626
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 623762627}
+  - component: {fileID: 623762630}
+  - component: {fileID: 623762629}
+  - component: {fileID: 623762628}
+  m_Layer: 0
+  m_Name: Sokoban_Puzzle_Map_01
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &623762627
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 623762626}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.7071068, y: -0.7071068, z: -0, w: 0}
+  m_LocalPosition: {x: 0.01446997, y: -0.54, z: 0.028461454}
+  m_LocalScale: {x: 0.5, y: 0.62014216, z: 0.23076922}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1161757948}
+  m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
+--- !u!65 &623762628
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 623762626}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &623762629
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 623762626}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: cd28f3d8e931d4540a9db0b9c2661160, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &623762630
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 623762626}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &624950125
 GameObject:
   m_ObjectHideFlags: 0
@@ -19335,8 +19487,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CorridorRuleBoard
   displayName: "\uADDC\uCE59 \uC77D\uAE30"
-  rulePanel: {fileID: 0}
-  ruleText: {fileID: 0}
+  rulePanel: {fileID: 891518888}
+  ruleText: {fileID: 23555760}
   ruleMessage: "\uBC18\uBCF5 \uBCF5\uB3C4\uC758 \uADDC\uCE59\n\n\uC774 \uBCF5\uB3C4\uC5D0\uC11C\uB294
     \uC8FC\uBCC0\uC744 \uC798 \uC0B4\uD3B4\uC57C \uD55C\uB2E4.\n\n\uCC98\uC74C \uB9C8\uC8FC\uD558\uB294
     \uBCF5\uB3C4\uB294 \uBC18\uB4DC\uC2DC \uC815\uC0C1\uC801\uC778 \uBCF5\uB3C4\uB2E4.\n\uC774\uB54C
@@ -19349,8 +19501,8 @@ MonoBehaviour:
     \uBC97\uC5B4\uB0A0 \uC218 \uC788\uB2E4.\n\n\uB2E8, \uD55C \uBC88\uC774\uB77C\uB3C4
     \uC798\uBABB \uC120\uD0DD\uD558\uBA74 \uCC98\uC74C\uBD80\uD130 \uB2E4\uC2DC \uC2DC\uC791\uD574\uC57C
     \uD55C\uB2E4."
-  player: {fileID: 0}
-  interactor: {fileID: 0}
+  player: {fileID: 34162653}
+  interactor: {fileID: 1494173897}
 --- !u!1 &647856138
 GameObject:
   m_ObjectHideFlags: 0
@@ -22816,6 +22968,12 @@ MonoBehaviour:
   boxColor: 3
   pushDistance: 1
   pushSpeed: 5
+  maxPushReach: 0.9
+  sideTolerance: 0.35
+  pushSound: {fileID: 8300000, guid: d7cb23965d0c94d488e53b1bf9d2c095, type: 3}
+  blockedSound: {fileID: 8300000, guid: 14b4a154cd6591c4f8dc163bb4584545, type: 3}
+  soundVolume: 0.8
+  blockedSoundCooldown: 0.3
 --- !u!1 &784530316
 GameObject:
   m_ObjectHideFlags: 0
@@ -32495,7 +32653,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &891518889
 RectTransform:
   m_ObjectHideFlags: 0
@@ -37767,6 +37925,12 @@ MonoBehaviour:
   boxColor: 0
   pushDistance: 1
   pushSpeed: 5
+  maxPushReach: 0.9
+  sideTolerance: 0.35
+  pushSound: {fileID: 8300000, guid: d7cb23965d0c94d488e53b1bf9d2c095, type: 3}
+  blockedSound: {fileID: 8300000, guid: 14b4a154cd6591c4f8dc163bb4584545, type: 3}
+  soundVolume: 0.8
+  blockedSoundCooldown: 0.3
 --- !u!4 &1066493183 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 21b2936705c009e428241450a9f8652e, type: 3}
@@ -40022,6 +40186,9 @@ MonoBehaviour:
   separatorWall: {fileID: 1161757947}
   wallDisappearDuration: 1.5
   nextPath: {fileID: 0}
+  map1ClearSound: {fileID: 8300000, guid: ba33f9fb02b14c54fb571c13a07e9360, type: 3}
+  separatorWallSound: {fileID: 8300000, guid: 5e3dbc0576f056948a440c1c6d65bfbb, type: 3}
+  soundVolume: 0.8
 --- !u!1 &1154962335
 GameObject:
   m_ObjectHideFlags: 0
@@ -40252,7 +40419,8 @@ Transform:
   m_LocalPosition: {x: -0.069999695, y: 2.39, z: 10.449997}
   m_LocalScale: {x: 4.8376, y: 0.19999999, z: 13}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 623762627}
   m_Father: {fileID: 1152748369}
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 90}
 --- !u!65 &1161757949
@@ -41888,6 +42056,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1224105923}
   - component: {fileID: 1224105924}
+  - component: {fileID: 1224105926}
+  - component: {fileID: 1224105925}
   m_Layer: 0
   m_Name: Anomaly_LightFlicker
   m_TagString: Untagged
@@ -41927,6 +42097,117 @@ MonoBehaviour:
   maxInterval: 0.35
   minIntensity: 0
   maxIntensity: 2
+--- !u!114 &1224105925
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1224105922}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f070d1072b0766740b27165c61b22541, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CorridorFlickerSound
+  flickerSound: {fileID: 8300000, guid: 097576c96ab293349b460701bde4f5fc, type: 3}
+  volume: 0.6
+--- !u!82 &1224105926
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1224105922}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1 &1228787682
 GameObject:
   m_ObjectHideFlags: 0
@@ -47137,7 +47418,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 678844034513598893, guid: 55228a54e526f1f4b93adf5be603b91e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 16
+      value: 19
       objectReference: {fileID: 0}
     - target: {fileID: 678844034513598893, guid: 55228a54e526f1f4b93adf5be603b91e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -47145,7 +47426,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 678844034513598893, guid: 55228a54e526f1f4b93adf5be603b91e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 40
+      value: 57
       objectReference: {fileID: 0}
     - target: {fileID: 678844034513598893, guid: 55228a54e526f1f4b93adf5be603b91e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -47749,6 +48030,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 1733714055}
   - {fileID: 4273459}
   - {fileID: 61522197}
   - {fileID: 1363888630}
@@ -48192,6 +48474,12 @@ MonoBehaviour:
   boxColor: 0
   pushDistance: 1
   pushSpeed: 5
+  maxPushReach: 0.9
+  sideTolerance: 0.35
+  pushSound: {fileID: 0}
+  blockedSound: {fileID: 0}
+  soundVolume: 0.8
+  blockedSoundCooldown: 0.3
 --- !u!1 &1506956544
 GameObject:
   m_ObjectHideFlags: 0
@@ -49125,7 +49413,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1530779180
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -51934,6 +52222,12 @@ MonoBehaviour:
   boxColor: 2
   pushDistance: 1
   pushSpeed: 5
+  maxPushReach: 0.9
+  sideTolerance: 0.35
+  pushSound: {fileID: 0}
+  blockedSound: {fileID: 0}
+  soundVolume: 0.8
+  blockedSoundCooldown: 0.3
 --- !u!1001 &1658064562
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -52056,6 +52350,12 @@ MonoBehaviour:
   boxColor: 3
   pushDistance: 1
   pushSpeed: 5
+  maxPushReach: 0.9
+  sideTolerance: 0.35
+  pushSound: {fileID: 0}
+  blockedSound: {fileID: 0}
+  soundVolume: 0.8
+  blockedSoundCooldown: 0.3
 --- !u!1001 &1669606780
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -52152,6 +52452,12 @@ MonoBehaviour:
   boxColor: 2
   pushDistance: 1
   pushSpeed: 5
+  maxPushReach: 0.9
+  sideTolerance: 0.35
+  pushSound: {fileID: 8300000, guid: d7cb23965d0c94d488e53b1bf9d2c095, type: 3}
+  blockedSound: {fileID: 8300000, guid: 14b4a154cd6591c4f8dc163bb4584545, type: 3}
+  soundVolume: 0.8
+  blockedSoundCooldown: 0.3
 --- !u!4 &1669606783 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 5ae8da1dc17c5114ba1d38fe91e2be32, type: 3}
@@ -53630,6 +53936,118 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 437776, guid: 28a82ccd1f9d22f42a975fbefef653d0, type: 3}
   m_PrefabInstance: {fileID: 1281151305}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1733714054
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1733714055}
+  - component: {fileID: 1733714058}
+  - component: {fileID: 1733714057}
+  - component: {fileID: 1733714056}
+  m_Layer: 0
+  m_Name: Sokoban_Puzzle_Map_02
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1733714055
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1733714054}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -6.49, y: 2.38, z: 0.85}
+  m_LocalScale: {x: 0.1, y: 3, z: 3.3759003}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1483724019}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &1733714056
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1733714054}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!23 &1733714057
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1733714054}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2100000, guid: 741249b0e12386e429a42a45d6f234b0, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!33 &1733714058
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1733714054}
+  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
 --- !u!1 &1737659197
 GameObject:
   m_ObjectHideFlags: 0
@@ -56830,13 +57248,14 @@ GameObject:
   m_Component:
   - component: {fileID: 1853917545}
   - component: {fileID: 1853917546}
+  - component: {fileID: 1853917547}
   m_Layer: 0
   m_Name: CorridorLoop
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1853917545
 Transform:
   m_ObjectHideFlags: 0
@@ -56898,6 +57317,21 @@ MonoBehaviour:
   objectiveId: corridor_loop
   objectiveMessage: "\uBC18\uBCF5\uB418\uB294 \uBCF5\uB3C4\uC758 \uC774\uC0C1 \uD604\uC0C1\uC744
     \uD655\uC778\uD558\uC790."
+--- !u!114 &1853917547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1853917544}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d46bc19e7ab80b0449e37e48ec441cc6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CorridorLoopExitSound
+  manager: {fileID: 1853917546}
+  doorOpenSound: {fileID: 8300000, guid: 44e52d720eeb46b469f215e9441906ba, type: 3}
+  volume: 0.8
 --- !u!1001 &1860153185
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -56994,6 +57428,12 @@ MonoBehaviour:
   boxColor: 3
   pushDistance: 1
   pushSpeed: 5
+  maxPushReach: 0.9
+  sideTolerance: 0.35
+  pushSound: {fileID: 8300000, guid: d7cb23965d0c94d488e53b1bf9d2c095, type: 3}
+  blockedSound: {fileID: 8300000, guid: 14b4a154cd6591c4f8dc163bb4584545, type: 3}
+  soundVolume: 0.8
+  blockedSoundCooldown: 0.3
 --- !u!4 &1860153188 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 71bdeec5cb3999c4ea489af59c97e1ac, type: 3}
@@ -57948,6 +58388,12 @@ MonoBehaviour:
   boxColor: 0
   pushDistance: 1
   pushSpeed: 5
+  maxPushReach: 0.9
+  sideTolerance: 0.35
+  pushSound: {fileID: 8300000, guid: d7cb23965d0c94d488e53b1bf9d2c095, type: 3}
+  blockedSound: {fileID: 8300000, guid: 14b4a154cd6591c4f8dc163bb4584545, type: 3}
+  soundVolume: 0.8
+  blockedSoundCooldown: 0.3
 --- !u!1001 &1944969850
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -60280,7 +60726,7 @@ MonoBehaviour:
   safeDistance: 1.5
   player: {fileID: 1449109737}
   doorOpenSound: {fileID: 8300000, guid: 44e52d720eeb46b469f215e9441906ba, type: 3}
-  doorCloseSound: {fileID: 8300000, guid: a3e4ac98bd2bc3344bc9eeb65e5e1352, type: 3}
+  doorCloseSound: {fileID: 8300000, guid: 44e52d720eeb46b469f215e9441906ba, type: 3}
   soundVolume: 0.8
 --- !u!1 &2061100361
 GameObject:
@@ -63638,6 +64084,8 @@ MonoBehaviour:
   door: {fileID: 1395589423}
   openAngle: 90
   openDuration: 1.5
+  doorOpenSound: {fileID: 8300000, guid: 55fb9438bbec6cf4aa1762f9f21b390e, type: 3}
+  soundVolume: 0.8
 --- !u!1 &3092993790328882577
 GameObject:
   m_ObjectHideFlags: 0

@@ -14,6 +14,12 @@ public class SokobanExitDoor : MonoBehaviour
     public float openAngle = 90f;
     public float openDuration = 1.5f;
 
+    [Header("문 열림 효과음")]
+    public AudioClip doorOpenSound;
+
+    [Range(0f, 1f)]
+    public float soundVolume = 0.8f;
+
     private Quaternion closedRotation;
     private bool opened;
 
@@ -39,18 +45,28 @@ public class SokobanExitDoor : MonoBehaviour
         if (opened)
             return;
 
+        // 중복 재생 방지
         opened = true;
+
         StartCoroutine(OpenRoutine());
     }
 
     private IEnumerator OpenRoutine()
     {
         Quaternion targetRotation =
-            closedRotation * Quaternion.Euler(0f, openAngle, 0f);
+            closedRotation *
+            Quaternion.Euler(0f, openAngle, 0f);
 
         float elapsed = 0f;
         float duration = Mathf.Max(0.01f, openDuration);
 
+        // 실제 문 회전이 시작되는 시점에 재생
+        AudioManager.Play(
+            doorOpenSound,
+            soundVolume
+        );
+
+        // 기존 문 열기 애니메이션
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
