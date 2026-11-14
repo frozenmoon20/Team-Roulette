@@ -21,6 +21,12 @@ public class TeddyBearStandUp : MonoBehaviour, IInteractable, IHasName
     public float cameraLookWeight = 0.8f;
     public float maxLookAngle = 35f;
 
+    [Header("곰인형 효과음")]
+    public AudioClip teddyMoveSound;
+
+    [Range(0f, 1f)]
+    public float soundVolume = 0.8f;
+
     public string DisplayName => completed
         ? "정리된 곰인형"
         : displayName;
@@ -58,7 +64,10 @@ public class TeddyBearStandUp : MonoBehaviour, IInteractable, IHasName
         if (direction.sqrMagnitude < 0.001f)
             return cameraRoot.rotation;
 
-        return Quaternion.LookRotation(direction.normalized, Vector3.up);
+        return Quaternion.LookRotation(
+            direction.normalized,
+            Vector3.up
+        );
     }
 
     IEnumerator StandUpRoutine()
@@ -120,17 +129,22 @@ public class TeddyBearStandUp : MonoBehaviour, IInteractable, IHasName
 
         float time = 0f;
 
+        // 1. 손을 곰인형 쪽으로 뻗기
         while (time < reachDuration)
         {
             time += Time.deltaTime;
 
             float t = Mathf.SmoothStep(
-                0f, 1f, Mathf.Clamp01(time / Mathf.Max(0.01f, reachDuration))
+                0f, 1f,
+                Mathf.Clamp01(
+                    time / Mathf.Max(0.01f, reachDuration)
+                )
             );
 
             cameraRoot.localPosition = Vector3.Lerp(
                 cameraStartPos,
-                cameraStartPos + Vector3.down * cameraLowerAmount,
+                cameraStartPos +
+                    Vector3.down * cameraLowerAmount,
                 t
             );
 
@@ -147,11 +161,14 @@ public class TeddyBearStandUp : MonoBehaviour, IInteractable, IHasName
             );
 
             Vector3 targetLocalPos = handBone.parent != null
-                ? handBone.parent.InverseTransformPoint(grabPoint.position)
+                ? handBone.parent.InverseTransformPoint(
+                    grabPoint.position
+                )
                 : grabPoint.position;
 
             Quaternion targetLocalRot = handBone.parent != null
-                ? Quaternion.Inverse(handBone.parent.rotation) * grabPoint.rotation
+                ? Quaternion.Inverse(handBone.parent.rotation)
+                    * grabPoint.rotation
                 : grabPoint.rotation;
 
             handBone.localPosition = Vector3.Lerp(
@@ -169,18 +186,29 @@ public class TeddyBearStandUp : MonoBehaviour, IInteractable, IHasName
             yield return null;
         }
 
+        // 2. 곰인형 잡기
         playerHand.SetGrip(0.75f);
 
         yield return new WaitForSeconds(gripPause);
 
+        // 3. 곰인형을 일으키는 순간 효과음 재생
+        AudioManager.Play(
+            teddyMoveSound,
+            soundVolume
+        );
+
         time = 0f;
 
+        // 4. 곰인형 일으키기 애니메이션
         while (time < standDuration)
         {
             time += Time.deltaTime;
 
             float t = Mathf.SmoothStep(
-                0f, 1f, Mathf.Clamp01(time / Mathf.Max(0.01f, standDuration))
+                0f, 1f,
+                Mathf.Clamp01(
+                    time / Mathf.Max(0.01f, standDuration)
+                )
             );
 
             transform.position = Vector3.Lerp(
@@ -220,16 +248,21 @@ public class TeddyBearStandUp : MonoBehaviour, IInteractable, IHasName
 
         time = 0f;
 
+        // 5. 손과 카메라 원래 위치로 복귀
         while (time < returnDuration)
         {
             time += Time.deltaTime;
 
             float t = Mathf.SmoothStep(
-                0f, 1f, Mathf.Clamp01(time / Mathf.Max(0.01f, returnDuration))
+                0f, 1f,
+                Mathf.Clamp01(
+                    time / Mathf.Max(0.01f, returnDuration)
+                )
             );
 
             cameraRoot.localPosition = Vector3.Lerp(
-                cameraStartPos + Vector3.down * cameraLowerAmount,
+                cameraStartPos +
+                    Vector3.down * cameraLowerAmount,
                 cameraStartPos,
                 t
             );
@@ -264,7 +297,10 @@ public class TeddyBearStandUp : MonoBehaviour, IInteractable, IHasName
         if (handPose != null)
         {
             for (int i = 0; i < 5; i++)
-                handPose.SetFinger((HandPose.Finger)i, oldFingers[i]);
+                handPose.SetFinger(
+                    (HandPose.Finger)i,
+                    oldFingers[i]
+                );
         }
 
         playerHand.enabled = oldHand;
@@ -280,6 +316,8 @@ public class TeddyBearStandUp : MonoBehaviour, IInteractable, IHasName
         completed = true;
         playing = false;
 
-        PlayerInteractor.ShowHint("곰인형을 제자리에 세웠다.");
+        PlayerInteractor.ShowHint(
+            "곰인형을 제자리에 세웠다."
+        );
     }
 }

@@ -19,6 +19,13 @@ public class LoopStartDoor : MonoBehaviour, IInteractable, IHasName
     [Header("플레이어")]
     public Transform player;
 
+    [Header("문 효과음")]
+    public AudioClip doorOpenSound;
+    public AudioClip doorCloseSound;
+
+    [Range(0f, 1f)]
+    public float soundVolume = 0.8f;
+
     Quaternion closedRotation;
     Quaternion openRotation;
 
@@ -72,6 +79,12 @@ public class LoopStartDoor : MonoBehaviour, IInteractable, IHasName
     {
         isMoving = true;
 
+        // 문 열기 시작
+        AudioManager.Play(
+            doorOpenSound,
+            soundVolume
+        );
+
         yield return RotateDoor(
             openRotation,
             openDuration
@@ -87,10 +100,22 @@ public class LoopStartDoor : MonoBehaviour, IInteractable, IHasName
 
         isMoving = true;
 
+        // 자동 닫힘 시작
+        AudioManager.Play(
+            doorCloseSound,
+            soundVolume
+        );
+
         while (true)
         {
             if (IsPlayerNearDoor())
             {
+                // 플레이어가 접근하면 다시 열기
+                AudioManager.Play(
+                    doorOpenSound,
+                    soundVolume
+                );
+
                 yield return RotateDoor(
                     openRotation,
                     openDuration
@@ -102,6 +127,12 @@ public class LoopStartDoor : MonoBehaviour, IInteractable, IHasName
                     yield return null;
 
                 isMoving = true;
+
+                // 플레이어가 멀어지면 다시 닫기
+                AudioManager.Play(
+                    doorCloseSound,
+                    soundVolume
+                );
             }
 
             if (Quaternion.Angle(
