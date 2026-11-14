@@ -53,6 +53,40 @@ public class PlayerInteractor : MonoBehaviour
             PlayerHand hand = PlayerHand.Instance;
             bool holding = hand != null && hand.Held != null;
 
+
+if (Input.GetMouseButtonDown(0))
+{
+    Ray debugRay = playerCamera.ViewportPointToRay(
+        new Vector3(0.5f, 0.5f, 0f)
+    );
+
+    if (Physics.SphereCast(
+        debugRay,
+        aimRadius,
+        out RaycastHit debugHit,
+        InteractRange))
+    {
+        Debug.Log(
+            "[문 클릭 검사] 충돌 오브젝트: " +
+            debugHit.collider.name +
+            " / 상호작용 대상: " +
+            (hoveredComponent != null
+                ? hoveredComponent.name
+                : "없음") +
+            " / 손에 든 물건: " +
+            (PlayerHand.Instance != null &&
+             PlayerHand.Instance.Held != null
+                ? PlayerHand.Instance.Held.name
+                : "없음")
+        );
+    }
+    else
+    {
+        Debug.Log("[문 클릭 검사] 광선에 닿은 Collider 없음");
+    }
+}
+
+
             // 좌클릭 상호작용
             if (Input.GetMouseButtonDown(0) && hovered != null)
             {

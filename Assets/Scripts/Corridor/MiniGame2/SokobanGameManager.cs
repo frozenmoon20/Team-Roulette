@@ -172,6 +172,26 @@ public class SokobanGameManager : MonoBehaviour
         separatorWall.SetActive(false);
     }
 
+public void CompleteMap2()
+{
+    if (IsCleared)
+        return;
+
+    if (!gameStarted || currentStage != 2)
+    {
+        Debug.LogWarning(
+            "소코반 맵2 완료 요청이 들어왔지만 " +
+            "아직 맵2 진행 단계가 아닙니다.",
+            this
+        );
+        return;
+    }
+
+    Debug.Log("소코반 맵2 클리어 신호 수신!");
+    ClearGame();
+}
+
+
     void ClearGame()
     {
         IsCleared = true;

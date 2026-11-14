@@ -482,16 +482,6 @@ public void OpenEndingDoor()
                 false,
                 Color.white
             );
-
-
-            SceneFader.Go(
-                realitySceneName,
-                whiteFadeOutTime,
-                whiteFadeInTime,
-                0.35f,
-                false,
-                Color.white
-            );
         }
 
         private void LockControls()
