@@ -1493,7 +1493,7 @@ Transform:
   m_GameObject: {fileID: 42492416}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.76, y: -0.227, z: -11.822}
+  m_LocalPosition: {x: -0.76, y: -0.227, z: -12.927}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3989,7 +3989,7 @@ Transform:
   m_GameObject: {fileID: 87832459}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -1.614, y: 1.211, z: -0.234}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4045,6 +4045,7 @@ MonoBehaviour:
   jumpHeight: 0.6
   clearanceMargin: 0.25
   animationSpeed: 1
+  neverJumpForEnding: 0
 --- !u!4 &96185625
 Transform:
   m_ObjectHideFlags: 0
@@ -7345,7 +7346,7 @@ Transform:
   m_GameObject: {fileID: 203166373}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.7600002, y: 0, z: 0}
+  m_LocalPosition: {x: -1.22, y: -0.683, z: -17.01}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -8698,7 +8699,7 @@ Transform:
   m_GameObject: {fileID: 276200730}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.7600002, y: 0.4, z: -5.92}
+  m_LocalPosition: {x: -0.3770008, y: -0.014000028, z: -15.690004}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -11652,7 +11653,7 @@ Transform:
   m_GameObject: {fileID: 368916368}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -1.614, y: 1.211, z: -0.234}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -20534,6 +20535,7 @@ MonoBehaviour:
   jumpHeight: 0.6
   clearanceMargin: 0.25
   animationSpeed: 1
+  neverJumpForEnding: 0
 --- !u!1 &716651702
 GameObject:
   m_ObjectHideFlags: 0
@@ -20598,6 +20600,7 @@ MonoBehaviour:
   jumpHeight: 0.6
   clearanceMargin: 0.25
   animationSpeed: 1
+  neverJumpForEnding: 0
 --- !u!1001 &722029247
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -37521,7 +37524,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6ca0efcc8d20c954a89a8134c208be34, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.2421
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6ca0efcc8d20c954a89a8134c208be34, type: 3}
       propertyPath: m_LocalPosition.x
@@ -37529,7 +37532,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6ca0efcc8d20c954a89a8134c208be34, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 3.68
+      value: 3.673
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 6ca0efcc8d20c954a89a8134c208be34, type: 3}
       propertyPath: m_LocalPosition.z
@@ -44749,7 +44752,7 @@ Transform:
   m_GameObject: {fileID: 1392430429}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.7600002, y: 0, z: -5.92}
+  m_LocalPosition: {x: -0.377, y: -0.414, z: -15.69}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -51067,6 +51070,7 @@ MonoBehaviour:
   jumpHeight: 0.6
   clearanceMargin: 0.25
   animationSpeed: 1
+  neverJumpForEnding: 0
 --- !u!1 &1678938351
 GameObject:
   m_ObjectHideFlags: 0
@@ -54478,6 +54482,7 @@ MonoBehaviour:
   jumpHeight: 0.6
   clearanceMargin: 0.25
   animationSpeed: 1
+  neverJumpForEnding: 0
 --- !u!1001 &1834535538
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -55442,7 +55447,7 @@ Transform:
   m_GameObject: {fileID: 1877842685}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.0492685, y: 3.963, z: -22.902}
+  m_LocalPosition: {x: -2.0492685, y: 3.963, z: -22.628}
   m_LocalScale: {x: 1.4200302, y: 1.2421, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -32,6 +32,12 @@ public class GyeoulHurdleJump : MonoBehaviour
     public float clearanceMargin = 0.25f;
     public float animationSpeed = 1f;
 
+
+    [Header("마지막 허들 엔딩 설정")]
+    [Tooltip("체크하면 겨울이가 이 허들을 절대 점프하지 않습니다.")]
+    public bool neverJumpForEnding = false;
+
+
     private bool completed;
     private bool jumping;
 
@@ -76,8 +82,24 @@ public class GyeoulHurdleJump : MonoBehaviour
         return next;
     }
 
-    public void TryJump()
+    
+public void TryJump()
+{
+    // 마지막 허들은 클릭커를 눌러도 겨울이가 넘지 않는다.
+    if (neverJumpForEnding)
     {
+        Debug.Log(
+            "[마지막 엔딩] 겨울이는 허들 앞에 남아 있습니다.",
+            this
+        );
+        return;
+    }
+
+    if (!enabled || completed || jumping)
+        return;
+
+    // 아래는 기존 코드 그대로 유지
+
         if (!enabled || completed || jumping)
             return;
 

@@ -362,28 +362,30 @@ yield return LookAt(dogLookTarget, 1f);
             model.SetPositionAndRotation(memorialClickerPlacePoint.position, memorialClickerPlacePoint.rotation);
         }
 
-        public void OpenEndingDoor()
-        {
-            if (!CanOpenDoor || SceneFader.IsBusy)
-                return;
+       
+public void OpenEndingDoor()
+{
+    if (!CanOpenDoor)
+    {
+        Debug.LogWarning(
+            "아직 문을 열 수 있는 엔딩 단계가 아닙니다.",
+            this
+        );
+        return;
+    }
 
-            if (string.IsNullOrWhiteSpace(realitySceneName) ||
-                !Application.CanStreamedLevelBeLoaded(realitySceneName))
-            {
-                Debug.LogError("현실 복도 씬을 Build Profiles의 Scene List에 추가하고 Reality Scene Name을 설정하세요.", this);
-                PlayerInteractor.ShowHint("현실 복도 씬 연결을 확인해야 한다.");
-                return;
-            }
+    if (SceneFader.IsBusy)
+        return;
 
-            if (telephoneRing == null)
-            {
-                Debug.LogError("전화벨 오디오 클립이 연결되지 않았습니다.", this);
-                return;
-            }
+    Debug.Log(
+        "[엔딩] 마지막 문 상호작용 성공! 문 열기 연출 시작.",
+        this
+    );
 
-            phase = EndingPhase.PlayingDoor;
-            StartCoroutine(DoorScene());
-        }
+    phase = EndingPhase.PlayingDoor;
+    StartCoroutine(DoorScene());
+}
+
 
         private IEnumerator DoorScene()
         {
@@ -431,15 +433,56 @@ yield return LookAt(dogLookTarget, 1f);
             yield return EndingDialogueBridge.Play(gameUI, goodbyeDialogue);
             yield return new WaitForSeconds(Mathf.Max(0f, waitAfterGoodbye));
 
-            transitionRequested = true;
+            
+            // 문 열기와 겨울이의 마지막 대사가 끝난 상태
             phase = EndingPhase.Transitioning;
-            EndingPhoneRing.Begin(
-                telephoneRing,
-                telephoneStartVolume,
-                telephoneFinalVolume,
-                telephoneFadeInDuration,
-                telephoneInitialLowPass
+
+            // 현실 복도 씬이 준비되었는지 확인
+            bool hasRealityScene =
+                !string.IsNullOrWhiteSpace(realitySceneName) &&
+                Application.CanStreamedLevelBeLoaded(realitySceneName);
+
+            if (!hasRealityScene)
+            {
+                Debug.LogWarning(
+                    "[엔딩 테스트] 문 열기와 마지막 대사 완료! " +
+                    "현실 복도 씬이 아직 연결되지 않아 " +
+                    "여기서 테스트를 종료합니다.",
+                    this
+                );
+
+                PlayerInteractor.ShowHint(
+                    "엔딩 연출 테스트 완료."
+                );
+
+                RestoreControls();
+                yield break;
+            }
+
+            // 전화벨은 연결된 경우에만 재생
+            if (telephoneRing != null)
+            {
+                EndingPhoneRing.Begin(
+                    telephoneRing,
+                    telephoneStartVolume,
+                    telephoneFinalVolume,
+                    telephoneFadeInDuration,
+                    telephoneInitialLowPass
+                );
+            }
+
+            transitionRequested = true;
+
+            // 현실 복도 씬으로 전환
+            SceneFader.Go(
+                realitySceneName,
+                whiteFadeOutTime,
+                whiteFadeInTime,
+                0.35f,
+                false,
+                Color.white
             );
+
 
             SceneFader.Go(
                 realitySceneName,
