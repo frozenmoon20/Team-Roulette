@@ -72,6 +72,7 @@ namespace TeamRoulette.CorridorEnding
         [Header("추억의 클릭커 내려놓기")]
         public GameObject memorialClickerVisual;
         public Transform memorialClickerPlacePoint;
+        public Transform memorialClickerGripPoint;
         public Vector3 memorialClickerHeldOffset = new Vector3(0f, 0f, 0.05f);
         public float memorialPlacementDuration = 0.55f;
 
@@ -391,48 +392,88 @@ ShowHandAt(handStartPoint);
                 }
             }
 
-            yield return EndingDialogueBridge.Play(gameUI, petDogDialogue);
-            yield return MoveHandTo(handPocketPoint, handMoveDuration);
-            yield return LeaveMemorialClicker();
-            HideHand();
+            
+yield return MoveHandTo(
+    handPocketPoint,
+    handMoveDuration
+);
+
+// 클릭커를 쥐고 바닥까지 함께 이동
+yield return LeaveMemorialClicker();
+
+// 클릭커는 바닥에 남기고 손만 다시 올라옴
+yield return MoveHandTo(
+    handPocketPoint,
+    handMoveDuration
+);
+
+HideHand();
+
             phase = EndingPhase.WaitingForDoor;
             RestoreControls();
         }
 
-        private IEnumerator LeaveMemorialClicker()
-        {
-            if (memorialClickerVisual == null || memorialClickerPlacePoint == null ||
-                cutsceneHandVisual == null || handPocketPoint == null || handLeavePoint == null)
-            {
-                Debug.LogWarning("클릭커를 내려놓는 시각 연출 참조가 비어 있습니다.", this);
-                yield break;
-            }
+        
+private IEnumerator LeaveMemorialClicker()
+{
+    if (memorialClickerVisual == null ||
+        memorialClickerPlacePoint == null ||
+        memorialClickerGripPoint == null ||
+        cutsceneHandVisual == null)
+    {
+        Debug.LogWarning(
+            "[엔딩] 클릭커 내려놓기 참조가 비어 있습니다.",
+            this
+        );
+        yield break;
+    }
 
-            Transform model = memorialClickerVisual.transform;
-            model.SetParent(cutsceneHandVisual.transform, false);
-            model.localPosition = memorialClickerHeldOffset;
-            model.localRotation = Quaternion.identity;
-            memorialClickerVisual.SetActive(true);
+    Transform clicker = memorialClickerVisual.transform;
+    Transform hand = cutsceneHandVisual.transform;
 
-            yield return MoveHandTo(handLeavePoint, handMoveDuration);
+    // 1. 클릭커를 손바닥 아래 기준점에 부착
+    // 기존 월드 크기는 유지한다.
+    clicker.SetParent(memorialClickerGripPoint, true);
 
-            model.SetParent(null, true);
-            Vector3 from = model.position;
-            Quaternion initialRotation = model.rotation;
-            float elapsed = 0f;
-            float duration = Mathf.Max(0.02f, memorialPlacementDuration);
+    clicker.SetPositionAndRotation(
+        memorialClickerGripPoint.position,
+        memorialClickerGripPoint.rotation
+    );
 
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
-                model.position = Vector3.Lerp(from, memorialClickerPlacePoint.position, t);
-                model.rotation = Quaternion.Slerp(initialRotation, memorialClickerPlacePoint.rotation, t);
-                yield return null;
-            }
+    memorialClickerVisual.SetActive(true);
 
-            model.SetPositionAndRotation(memorialClickerPlacePoint.position, memorialClickerPlacePoint.rotation);
-        }
+    // 잠깐 손에 쥐고 있는 모습 유지
+    yield return new WaitForSeconds(0.2f);
+
+    // 2. 클릭커가 바닥의 목표 위치까지 가려면
+    // 손 전체가 얼마나 이동해야 하는지 계산
+    Vector3 offset =
+        memorialClickerPlacePoint.position -
+        clicker.position;
+
+    Vector3 targetHandPosition =
+        hand.position + offset;
+
+    // 3. 클릭커를 손에 붙인 상태로 함께 내려놓기
+    yield return MoveHandPosition(
+        targetHandPosition,
+        memorialPlacementDuration
+    );
+
+    // 4. 손이 목표 위치에 도착한 후에만 분리
+    clicker.SetParent(null, true);
+
+    clicker.SetPositionAndRotation(
+        memorialClickerPlacePoint.position,
+        memorialClickerPlacePoint.rotation
+    );
+
+    Debug.Log(
+        "[엔딩] 클릭커를 손과 함께 내려놓았습니다.",
+        this
+    );
+}
+
 
        
 public void OpenEndingDoor()
