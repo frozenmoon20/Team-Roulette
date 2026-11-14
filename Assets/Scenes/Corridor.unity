@@ -289,9 +289,9 @@ MonoBehaviour:
   onClear:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1152748370}
-        m_TargetAssemblyTypeName: SokobanGameManager, Assembly-CSharp
-        m_MethodName: CompleteMap2
+      - m_Target: {fileID: 3072348848310945028}
+        m_TargetAssemblyTypeName: SokobanExitDoor, Assembly-CSharp
+        m_MethodName: OpenDoor
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -590,12 +590,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 16391057}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.7600002, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.0006, y: 0.3011, z: 0.149}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 323362161}
+  m_Father: {fileID: 1255776434}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &19753590
 PrefabInstance:
@@ -7357,12 +7357,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 203166373}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.091, y: -0.683, z: -13.184988}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.18, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 323362161}
+  m_Father: {fileID: 1255776434}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &203844586
 GameObject:
@@ -10484,11 +10484,6 @@ Transform:
   - {fileID: 42492417}
   - {fileID: 1392430430}
   - {fileID: 276200731}
-  - {fileID: 1822406674}
-  - {fileID: 16391058}
-  - {fileID: 969896114}
-  - {fileID: 658208198}
-  - {fileID: 203166374}
   - {fileID: 1087322218}
   m_Father: {fileID: 322026345}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -15740,6 +15735,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3486111961589683427, guid: e7d0e3e507b648c48adcfa1a5842fb63, type: 3}
       insertIndex: -1
       addedObject: {fileID: 813378736}
+    - targetCorrespondingSourceObject: {fileID: 3486111961589683427, guid: e7d0e3e507b648c48adcfa1a5842fb63, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 16391058}
+    - targetCorrespondingSourceObject: {fileID: 3486111961589683427, guid: e7d0e3e507b648c48adcfa1a5842fb63, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 658208198}
+    - targetCorrespondingSourceObject: {fileID: 3486111961589683427, guid: e7d0e3e507b648c48adcfa1a5842fb63, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 203166374}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 4263493738199469657, guid: e7d0e3e507b648c48adcfa1a5842fb63, type: 3}
       insertIndex: -1
@@ -17475,7 +17479,7 @@ Transform:
   m_GameObject: {fileID: 610233581}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -9.51}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -19067,12 +19071,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 658208197}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.7600002, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -0.18, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 323362161}
+  m_Father: {fileID: 1255776434}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &658726947
 PrefabInstance:
@@ -33654,12 +33658,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 969896113}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.7600002, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.45, y: -0.8, z: 0.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 323362161}
+  m_Father: {fileID: 1851873626}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &974251334
 GameObject:
@@ -37316,7 +37320,7 @@ Transform:
   m_GameObject: {fileID: 1087322217}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.296, y: 1.081, z: 0}
+  m_LocalPosition: {x: -1.296, y: 1.081, z: -0.17}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -41637,15 +41641,15 @@ MonoBehaviour:
   - {fileID: 1829045023}
   - {fileID: 709884618}
   - {fileID: 716651704}
-  followDistance: 1.8
-  trotDistance: 3
-  runDistance: 5
-  walkSpeed: 0.8
-  trotSpeed: 1.5
-  runSpeed: 5.5
-  acceleration: 6
-  deceleration: 8
-  rotationSpeed: 8
+  followDistance: 1.5
+  trotDistance: 25
+  runDistance: 3.5
+  walkSpeed: 1.5
+  trotSpeed: 3
+  runSpeed: 6.5
+  acceleration: 10
+  deceleration: 12
+  rotationSpeed: 10
   autoSit: 1
   sitDelay: 2.5
 --- !u!4 &1255776434 stripped
@@ -44801,6 +44805,38 @@ Transform:
   - {fileID: 1050250899}
   m_Father: {fileID: 1080006537}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1395589422
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1395589423}
+  m_Layer: 0
+  m_Name: Sokoban Exit Door p
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1395589423
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1395589422}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.356, z: -0.537}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4518438565648185696}
+  m_Father: {fileID: 2443480233326141369}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1401753136
 GameObject:
   m_ObjectHideFlags: 0
@@ -45879,7 +45915,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 678844034513598893, guid: 55228a54e526f1f4b93adf5be603b91e, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 85
+      value: 101
       objectReference: {fileID: 0}
     - target: {fileID: 678844034513598893, guid: 55228a54e526f1f4b93adf5be603b91e, type: 3}
       propertyPath: m_LocalRotation.w
@@ -45931,6 +45967,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5476534504487877076, guid: 55228a54e526f1f4b93adf5be603b91e, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1392766854}
+    - targetCorrespondingSourceObject: {fileID: 6724605862048962414, guid: 55228a54e526f1f4b93adf5be603b91e, type: 3}
+      insertIndex: 0
+      addedObject: {fileID: 1822406674}
+    - targetCorrespondingSourceObject: {fileID: 6724605862048962414, guid: 55228a54e526f1f4b93adf5be603b91e, type: 3}
+      insertIndex: 1
+      addedObject: {fileID: 969896114}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 8642947870728388089, guid: 55228a54e526f1f4b93adf5be603b91e, type: 3}
       insertIndex: -1
@@ -54365,12 +54407,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1822406673}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.7600002, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0.35, y: -0.65, z: 0.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 323362161}
+  m_Father: {fileID: 1851873626}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1827145336
 PrefabInstance:
@@ -55147,6 +55189,11 @@ MeshFilter:
 --- !u!20 &1851873623 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 1580274548577863577, guid: 55228a54e526f1f4b93adf5be603b91e, type: 3}
+  m_PrefabInstance: {fileID: 1449109736}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &1851873626 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6724605862048962414, guid: 55228a54e526f1f4b93adf5be603b91e, type: 3}
   m_PrefabInstance: {fileID: 1449109736}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1853917544
@@ -61325,7 +61372,7 @@ Transform:
   - {fileID: 6161011200033082986}
   - {fileID: 7948175428304855435}
   - {fileID: 4414300500078877131}
-  - {fileID: 4518438565648185696}
+  - {fileID: 1395589423}
   m_Father: {fileID: 1152748369}
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: 0}
 --- !u!4 &2457235416912767333
@@ -61513,7 +61560,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SokobanExitDoor
   gameManager: {fileID: 1152748370}
-  door: {fileID: 4518438565648185696}
+  door: {fileID: 1395589423}
   openAngle: 90
   openDuration: 1.5
 --- !u!1 &3190443807345400389
@@ -62099,8 +62146,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4617828240989913287}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.356, z: 0.537}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -62108,7 +62155,7 @@ Transform:
   - {fileID: 9135536470891360733}
   - {fileID: 544385557394302333}
   - {fileID: 7969012493892022493}
-  m_Father: {fileID: 2443480233326141369}
+  m_Father: {fileID: 1395589423}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &4563118902641062503
 MeshFilter:

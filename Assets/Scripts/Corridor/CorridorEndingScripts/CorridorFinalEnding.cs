@@ -102,6 +102,7 @@ namespace TeamRoulette.CorridorEnding
         private bool savedClickerEnabled;
         private bool hasSavedControls;
         private bool controlsLocked;
+        private CorridorCutsceneWalkSilencer walkSilencer;
         private bool transitionRequested;
         private bool savedOriginalHandVisible;
         private CursorLockMode savedCursorLock;
@@ -200,13 +201,22 @@ private void Update()
 
         private IEnumerator FirstScene()
         {
+
 LockControls();
+
 dogFollower.enabled = false;
 
-// 겨울이를 이동시키지 않고,
-// 마지막 허들 앞에서 그대로 앉게 한다.
 dogAnimator.Interrupt();
+
+// 겨울이의 최종 위치를 지정된 SitPoint로 고정
+dog.SetPositionAndRotation(
+    dogSitPoint.position,
+    dogSitPoint.rotation
+);
+
+// 겨울이가 고정된 위치에서 앉기
 dogAnimator.Sit();
+
 
 // 카메라가 실제 겨울이의 위치를 바라보게 한다.
 dogLookTarget.position = dog.position + Vector3.up * 0.5f;
@@ -501,6 +511,13 @@ public void OpenEndingDoor()
 
             controlsLocked = true;
             player.StopMovement();
+
+walkSilencer =
+    CorridorCutsceneWalkSilencer.GetOrCreate(player);
+
+if (walkSilencer != null)
+    walkSilencer.Begin();
+
             player.enabled = false;
             interactor.enabled = false;
             clickerController.enabled = false;
@@ -514,6 +531,14 @@ public void OpenEndingDoor()
                 return;
 
             controlsLocked = false;
+
+// 마지막 엔딩 컷신이 끝나면 걷기 효과 복구
+if (walkSilencer != null)
+{
+    walkSilencer.End();
+    walkSilencer = null;
+}
+
             player.enabled = savedPlayerEnabled;
             interactor.enabled = savedInteractorEnabled;
             clickerController.enabled = false;

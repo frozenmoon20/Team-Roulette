@@ -43,6 +43,7 @@ public class GyeoulClickerReunion : MonoBehaviour
     private bool joined;
     private bool playingCutscene;
     private bool playingBark;
+    private CorridorCutsceneWalkSilencer walkSilencer;
 
     public bool HasJoined => joined;
 
@@ -129,6 +130,13 @@ public class GyeoulClickerReunion : MonoBehaviour
     private IEnumerator PlayReunionCutscene()
     {
         playingCutscene = true;
+
+walkSilencer =
+    CorridorCutsceneWalkSilencer.GetOrCreate(player);
+
+if (walkSilencer != null)
+    walkSilencer.Begin();
+
 
         bool previousPlayerEnabled = player.enabled;
 
@@ -279,9 +287,18 @@ public class GyeoulClickerReunion : MonoBehaviour
             Mathf.Max(0f, lookDuration)
         );
 
-        joined = true;
+        
+joined = true;
 
-        player.enabled = previousPlayerEnabled;
+// 겨울이 재회 컷신 종료: 걷기 효과 복구
+if (walkSilencer != null)
+{
+    walkSilencer.End();
+    walkSilencer = null;
+}
+
+player.enabled = previousPlayerEnabled;
+
 
         if (interactor != null)
             interactor.enabled = previousInteractorEnabled;
