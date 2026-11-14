@@ -436,6 +436,7 @@ private IEnumerator PettingScene()
         
 
 
+
 private IEnumerator LeaveMemorialClicker()
 {
     if (cutsceneHandVisual == null ||
@@ -443,9 +444,10 @@ private IEnumerator LeaveMemorialClicker()
         memorialClickerVisual == null ||
         memorialClickerGripPoint == null ||
         memorialClickerPlacePoint == null ||
+        handPocketPoint == null ||
         handLeavePoint == null)
     {
-        Debug.LogWarning(
+        Debug.LogError(
             "[엔딩] 클릭커 내려놓기 참조가 비어 있습니다.",
             this
         );
@@ -455,38 +457,60 @@ private IEnumerator LeaveMemorialClicker()
     Transform hand = cutsceneHandVisual.transform;
     Transform clicker = memorialClickerVisual.transform;
 
+    // GripPoint가 손 아래에 있는지 검증
+    if (!memorialClickerGripPoint.IsChildOf(hand))
+    {
+        Debug.LogError(
+            "[엔딩] MemorialClickerGripPoint는 " +
+            "CutsceneHandVisual의 자식이어야 합니다.",
+            this
+        );
+        yield break;
+    }
+
     Transform originalParent = clicker.parent;
 
-    // 1. 쓰다듬기용 손 활성화
+    // 쓰다듬기용 손만 사용
     SelectHandModel(false);
     cutsceneHandVisual.SetActive(true);
 
-    // 2. 클릭커를 손바닥에 완전히 고정
-    clicker.SetParent(memorialClickerGripPoint, false);
-    clicker.localPosition = Vector3.zero;
-    clicker.localRotation = Quaternion.identity;
+    // 처음에는 클릭커 숨기기
+    memorialClickerVisual.SetActive(false);
 
+    // 손이 주머니 위치에 도착했는지 확인
+    yield return MoveHandTo(
+        handPocketPoint,
+        handMoveDuration
+    );
+
+    // 클릭커를 손에 부착
+    // true: 기존 월드 크기를 최대한 유지
+    clicker.SetParent(memorialClickerGripPoint, true);
+
+    clicker.SetPositionAndRotation(
+        memorialClickerGripPoint.position,
+        memorialClickerGripPoint.rotation
+    );
+
+    // 손바닥에 부착한 다음 표시
     memorialClickerVisual.SetActive(true);
 
-    // 클릭커를 쥔 손을 잠시 보여줌
-    yield return new WaitForSeconds(0.35f);
+    yield return new WaitForSeconds(0.25f);
 
-    // 3. 손과 클릭커를 함께 겨울이 옆으로 이동
+    // 손과 클릭커가 같이 이동
     yield return MoveHandTo(
         handLeavePoint,
         handMoveDuration
     );
 
-    // 4. 손이 바닥까지 내려가는 거리 계산
-    // 클릭커는 GripPoint의 자식이므로 손을 따라 움직임
-    Vector3 startHandPosition = hand.position;
+    // 클릭커가 바닥 목표점에 도착하도록
+    // 손 전체의 이동 거리 계산
+    Vector3 handStart = hand.position;
 
-    Vector3 offset =
-        memorialClickerPlacePoint.position -
-        clicker.position;
-
-    Vector3 endHandPosition =
-        startHandPosition + offset;
+    Vector3 handEnd =
+        handStart +
+        (memorialClickerPlacePoint.position -
+         clicker.position);
 
     float duration = Mathf.Max(
         0.3f,
@@ -495,8 +519,6 @@ private IEnumerator LeaveMemorialClicker()
 
     float elapsed = 0f;
 
-    // 5. 손만 움직임
-    // 클릭커는 손에 붙어 있으므로 같은 프레임에 이동
     while (elapsed < duration)
     {
         elapsed += Time.deltaTime;
@@ -507,29 +529,35 @@ private IEnumerator LeaveMemorialClicker()
             Mathf.Clamp01(elapsed / duration)
         );
 
+        // 손만 이동한다.
+        // 클릭커는 손의 자식이므로 자동으로 따라간다.
         hand.position = Vector3.Lerp(
-            startHandPosition,
-            endHandPosition,
+            handStart,
+            handEnd,
             t
         );
 
         yield return null;
     }
 
-    hand.position = endHandPosition;
+    hand.position = handEnd;
 
-    // 클릭커와 손이 모두 도착한 상태 유지
-    yield return new WaitForSeconds(0.3f);
+    // 손과 클릭커가 도착한 상태 잠깐 유지
+    yield return new WaitForSeconds(0.25f);
 
-    // 6. 손 이동이 완전히 끝난 다음 클릭커 분리
-    // 여기서는 클릭커 위치를 다시 강제로 변경하지 않음
+    // 손을 완전히 내린 후 클릭커 분리
     clicker.SetParent(originalParent, true);
 
+    // 이때 클릭커 Position을 다시 바꾸지 않는다.
+    // 이미 손과 함께 바닥 목표점에 도착했기 때문.
+
     Debug.Log(
-        "[엔딩] 클릭커와 손 동시 이동 완료.",
+        "[엔딩] 클릭커 내려놓기 완료. " +
+        "클릭커 최종 위치: " + clicker.position,
         this
     );
 }
+
 
 
 
