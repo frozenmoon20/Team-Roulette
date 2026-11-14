@@ -33,6 +33,19 @@ public class DrawerPuzzleManager : MonoBehaviour
     public UnityEvent onPuzzleCleared;
     public UnityEvent onClickerCollected;
 
+    [Header("서랍 효과음")]
+    public AudioClip drawerOpenSound;
+    public AudioClip drawerCloseSound;
+
+    [Range(0f, 1f)]
+    public float drawerSoundVolume = 0.8f;
+
+    [Header("서랍 퍼즐 클리어 효과음")]
+public AudioClip puzzleClearSound;
+
+[Range(0f, 1f)]
+public float clearSoundVolume = 0.8f;
+
     /*
      * 실제 서랍 배치
      *
@@ -61,9 +74,6 @@ public class DrawerPuzzleManager : MonoBehaviour
 
     /*
      * 서랍 연결 규칙
-     *
-     * 기본: 실제 배치의 상하좌우
-     * 특별: A와 D는 대각선이지만 서로 연결
      *
      * A - B, C, D
      * B - A, D
@@ -138,6 +148,7 @@ public class DrawerPuzzleManager : MonoBehaviour
             );
 
         // 초기 서랍 상태 적용
+        // 게임 시작 시 효과음은 재생하지 않음
         for (int i = 0; i < 6; i++)
         {
             drawers[i].MoveToState(
@@ -204,6 +215,19 @@ public class DrawerPuzzleManager : MonoBehaviour
         return false;
     }
 
+    // 서랍 열기/닫기 효과음 재생
+    void PlayDrawerMoveSound(bool opening)
+    {
+        AudioClip clip = opening
+            ? drawerOpenSound
+            : drawerCloseSound;
+
+        AudioManager.Play(
+            clip,
+            drawerSoundVolume
+        );
+    }
+
     // 서랍 클릭
     public void PullDrawer(int index)
     {
@@ -224,6 +248,9 @@ public class DrawerPuzzleManager : MonoBehaviour
             );
         }
 
+        // 클릭한 서랍이 열리는지 닫히는지 확인
+        bool opening = !states[index];
+
         // 클릭한 서랍 상태 반전
         states[index] = !states[index];
 
@@ -232,6 +259,9 @@ public class DrawerPuzzleManager : MonoBehaviour
         {
             states[neighbor] = !states[neighbor];
         }
+
+        // 연동 서랍이 여러 개여도 효과음은 한 번만 재생
+        PlayDrawerMoveSound(opening);
 
         moveRoutine = StartCoroutine(MoveDrawers());
     }
@@ -281,6 +311,9 @@ public class DrawerPuzzleManager : MonoBehaviour
 
         isAnimating = true;
 
+        // 초기화 시 닫기 효과음 한 번 재생
+        PlayDrawerMoveSound(false);
+
         // 처음 상태로 복구
         for (int i = 0; i < 6; i++)
         {
@@ -326,41 +359,48 @@ public class DrawerPuzzleManager : MonoBehaviour
         CompletePuzzle();
     }
 
-    // 퍼즐 클리어
-    void CompletePuzzle()
+    
+void CompletePuzzle()
+{
+    if (isCleared)
+        return;
+
+    isCleared = true;
+
+    Debug.Log("서랍 퍼즐 클리어!");
+
+    // 추가: 모든 서랍을 열었을 때 클리어 효과음
+    // isCleared로 중복 재생 방지
+    AudioManager.Play(
+        puzzleClearSound,
+        clearSoundVolume
+    );
+
+    // 기존 금고 잠금 해제
+    // 문은 플레이어가 직접 클릭해야 열림
+    if (rewardDrawer != null)
     {
-        if (isCleared)
-            return;
-
-        isCleared = true;
-
-        Debug.Log("서랍 퍼즐 클리어!");
-
-        // 금고 잠금 해제
-        // 문은 플레이어가 직접 클릭해야 열림
-        if (rewardDrawer != null)
-        {
-            rewardDrawer.OpenDrawer();
-        }
-        else
-        {
-            Debug.LogWarning(
-                "보상 금고가 연결되지 않았습니다.", this
-            );
-        }
-
-        // 기존 클리어 이벤트 유지
-        onPuzzleCleared?.Invoke();
-
-        PlayerInteractor.ShowHint(
-            "어디선가 잠금장치가 풀리는 소리가 들린다."
-        );
-
-        // 4초 후 모든 서랍 닫기
-        closeRoutine = StartCoroutine(
-            CloseAllDrawersAfterDelay()
+        rewardDrawer.OpenDrawer();
+    }
+    else
+    {
+        Debug.LogWarning(
+            "보상 금고가 연결되지 않았습니다.", this
         );
     }
+
+    // 기존 클리어 이벤트 유지
+    onPuzzleCleared?.Invoke();
+
+    PlayerInteractor.ShowHint(
+        "어디선가 잠금장치가 풀리는 소리가 들린다."
+    );
+
+    // 4초 후 모든 서랍 자동 닫힘
+    closeRoutine = StartCoroutine(
+        CloseAllDrawersAfterDelay()
+    );
+}
 
     IEnumerator CloseAllDrawersAfterDelay()
     {
@@ -369,6 +409,9 @@ public class DrawerPuzzleManager : MonoBehaviour
         );
 
         isAnimating = true;
+
+        // 자동 닫힘 시 닫기 효과음 한 번 재생
+        PlayDrawerMoveSound(false);
 
         // 모든 서랍을 닫힌 상태로 변경
         for (int i = 0; i < 6; i++)

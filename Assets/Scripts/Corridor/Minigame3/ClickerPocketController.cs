@@ -26,6 +26,18 @@ public class ClickerPocketController : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip clickSound;
 
+    [Header("클릭커 최초 획득 효과음")]
+    public AudioClip pickupSound;
+
+    [Range(0f, 1f)]
+    public float pickupSoundVolume = 0.8f;
+
+    [Header("클릭커 획득 후 통로 개방 효과음")]
+    public AudioClip pathOpenSound;
+
+    [Range(0f, 1f)]
+    public float pathSoundVolume = 0.8f;
+
     [Header("클릭커를 눌렀을 때 실행")]
     public UnityEvent onClickerPressed;
 
@@ -51,14 +63,33 @@ public class ClickerPocketController : MonoBehaviour
         if (clicker == null || hand == null)
             return;
 
-        // 보상 서랍에서 처음 클릭커를 집었는지 확인
+        // 금고에서 클릭커를 최초로 획득
         if (!owned && hand.Held == clicker)
         {
             owned = true;
             inPocket = false;
 
+            // 최초 획득 효과음
+            AudioManager.Play(
+                pickupSound,
+                pickupSoundVolume
+            );
+
+            // 기존 퍼즐 완료 및 통로 개방 처리
             if (puzzleManager != null)
+            {
                 puzzleManager.CollectClicker();
+
+                // 통로 개방 효과음
+                if (puzzleManager.HasClicker &&
+                    puzzleManager.nextPath != null)
+                {
+                    AudioManager.Play(
+                        pathOpenSound,
+                        pathSoundVolume
+                    );
+                }
+            }
 
             PlayerInteractor.ShowHint(
                 "E키로 클릭커를 주머니에 넣을 수 있다."
@@ -71,7 +102,7 @@ public class ClickerPocketController : MonoBehaviour
         if (Cursor.lockState != CursorLockMode.Locked)
             return;
 
-        // E키: 넣기 / 꺼내기
+        // E키: 주머니에 넣기 / 꺼내기
         if (Input.GetKeyDown(pocketKey))
         {
             if (inPocket)
@@ -91,7 +122,7 @@ public class ClickerPocketController : MonoBehaviour
             return;
         }
 
-        // 클릭커를 손에 든 상태에서 왼쪽 클릭
+        // 손에 클릭커를 들고 좌클릭
         if (IsHoldingClicker &&
             Input.GetKeyDown(clickKey))
         {
@@ -190,8 +221,7 @@ public class ClickerPocketController : MonoBehaviour
 
     void LateUpdate()
     {
-        // 기존 PlayerHand 손 움직임에
-        // 주머니 방향 이동을 덧붙임
+        // 기존 손 움직임에 주머니 방향 이동 추가
         if (handBone == null || pocketBlend <= 0f)
             return;
 
@@ -206,6 +236,7 @@ public class ClickerPocketController : MonoBehaviour
 
     void PressClicker()
     {
+        // 기존 클릭커 딸깍 효과음 유지
         if (audioSource != null && clickSound != null)
             audioSource.PlayOneShot(clickSound);
 
