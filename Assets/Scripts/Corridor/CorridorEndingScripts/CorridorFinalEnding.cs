@@ -138,29 +138,45 @@ namespace TeamRoulette.CorridorEnding
                 whiteLightBehindDoor.SetActive(false);
         }
 
-        private void Update()
-        {
-            if (phase != EndingPhase.WaitingForHurdle)
-                return;
+        
+private void Update()
+{
+    if (phase != EndingPhase.WaitingForHurdle)
+        return;
 
-            if (player == null || finalHurdle == null || endingStartPoint == null || dog == null)
-                return;
+    if (player == null || finalHurdle == null ||
+        endingStartPoint == null || dog == null ||
+        dogFollower == null)
+        return;
 
-            if (!finalHurdle.IsCompleted)
-                return;
+    // 마지막 허들은 겨울이가 넘어서는 안 된다.
+    if (finalHurdle.IsCompleted)
+        return;
 
-            if (HorizontalDistance(player.transform.position, endingStartPoint.position) > startDistance)
-                return;
+    // 플레이어는 허들을 넘고, 겨울이는 반대편에 남아 있어야 한다.
+    if (!finalHurdle.ShouldWait(player.transform, dog))
+        return;
 
-            if (dogSitPoint != null && HorizontalDistance(dog.position, dogSitPoint.position) > dogStartDistance)
-                return;
+    // 플레이어가 엔딩 시작 지점에 도착했는지 확인
+    if (HorizontalDistance(
+        player.transform.position,
+        endingStartPoint.position) > startDistance)
+        return;
 
-            if (!ReferencesReady())
-                return;
+    // 겨울이가 마지막 허들 앞에서 기다리고 있는지 확인
+    if (finalHurdle.approachPoint == null ||
+        HorizontalDistance(
+            dog.position,
+            finalHurdle.approachPoint.position) > 1.5f)
+        return;
 
-            phase = EndingPhase.PlayingFirstCutscene;
-            StartCoroutine(FirstScene());
-        }
+    if (!ReferencesReady())
+        return;
+
+    phase = EndingPhase.PlayingFirstCutscene;
+    StartCoroutine(FirstScene());
+}
+
 
         private bool ReferencesReady()
         {
@@ -184,12 +200,18 @@ namespace TeamRoulette.CorridorEnding
 
         private IEnumerator FirstScene()
         {
-            LockControls();
-            dogFollower.enabled = false;
-            yield return MoveDogToSitPoint();
-            dogAnimator.Interrupt();
-            dogAnimator.Sit();
-            yield return LookAt(dogLookTarget, 1f);
+LockControls();
+dogFollower.enabled = false;
+
+// 겨울이를 이동시키지 않고,
+// 마지막 허들 앞에서 그대로 앉게 한다.
+dogAnimator.Interrupt();
+dogAnimator.Sit();
+
+// 카메라가 실제 겨울이의 위치를 바라보게 한다.
+dogLookTarget.position = dog.position + Vector3.up * 0.5f;
+yield return LookAt(dogLookTarget, 1f);
+
 
             yield return PlayClick();
             yield return EndingDialogueBridge.Play(gameUI, callDogDialogue);
