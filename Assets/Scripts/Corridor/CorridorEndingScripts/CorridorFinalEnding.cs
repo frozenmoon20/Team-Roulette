@@ -96,6 +96,12 @@ namespace TeamRoulette.CorridorEnding
         public float telephoneFadeInDuration = 3.5f;
         public float telephoneInitialLowPass = 700f;
 
+
+[Header("컷신 손 모델 구분")]
+public GameObject petHandModel;
+public GameObject doorHandModel;
+
+
         private EndingPhase phase = EndingPhase.WaitingForHurdle;
         private bool savedPlayerEnabled;
         private bool savedInteractorEnabled;
@@ -114,6 +120,17 @@ namespace TeamRoulette.CorridorEnding
 
         public bool CanPet => phase == EndingPhase.WaitingForPet;
         public bool CanOpenDoor => phase == EndingPhase.WaitingForDoor;
+
+
+private void SelectHandModel(bool useDoorHand)
+{
+    if (petHandModel != null)
+        petHandModel.SetActive(!useDoorHand);
+
+    if (doorHandModel != null)
+        doorHandModel.SetActive(useDoorHand);
+}
+
 
         private void Awake()
         {
@@ -210,56 +227,76 @@ private void Update()
             return good;
         }
 
-        private IEnumerator FirstScene()
-        {
+        
+private IEnumerator FirstScene()
+{
+    LockControls();
 
+    // 겨울이가 더 이상 움직이지 않도록 중지
+    dogFollower.enabled = false;
 
-LockControls();
+    // 진행 중인 행동 초기화
+    dogAnimator.Interrupt();
 
-// 겨울이가 더 이상 움직이지 않도록 추적 중지
-dogFollower.enabled = false;
+    // 이동이 안정될 때까지 잠시 대기
+    yield return new WaitForSeconds(0.25f);
 
-// 진행 중이던 행동 초기화
-dogAnimator.Interrupt();
+    // 겨울이가 플레이어 카메라를 바라보게 설정
+    Transform cameraTarget =
+        interactor != null && interactor.playerCamera != null
+        ? interactor.playerCamera.transform
+        : player.cameraRoot;
 
-// 겨울이의 위치는 절대로 순간이동시키지 않는다.
-// 마지막 허들 앞에서 멈춘 현재 위치를 유지한다.
+    Vector3 lookDirection =
+        cameraTarget.position - dog.position;
 
-// 이동 속도 판정이 안정될 때까지 잠시 대기
-yield return new WaitForSeconds(0.25f);
+    // 머리나 몸이 위아래로 기울지 않도록 Y축만 회전
+    lookDirection.y = 0f;
 
-// 현재 위치에서 앉기
-dogAnimator.Sit();
+    if (lookDirection.sqrMagnitude > 0.001f)
+    {
+        dog.rotation =
+            Quaternion.LookRotation(lookDirection);
+    }
 
-// 실제 겨울이 위치를 바라보도록 카메라 목표 갱신
-dogLookTarget.position =
-    dog.position + Vector3.up * 0.5f;
+    // 정면을 바라보는 상태에서 앉기
+    dogAnimator.Sit();
 
-yield return LookAt(dogLookTarget, 1f);
+    // 플레이어 카메라도 겨울이를 바라보도록 회전
+    dogLookTarget.position =
+        dog.position + Vector3.up * 0.5f;
 
+    yield return LookAt(dogLookTarget, 1f);
 
+    // 기존 클릭커와 대사 연출 유지
+    yield return PlayClick();
+    yield return EndingDialogueBridge.Play(
+        gameUI, callDogDialogue
+    );
 
-// 카메라가 실제 겨울이의 위치를 바라보게 한다.
-dogLookTarget.position = dog.position + Vector3.up * 0.5f;
-yield return LookAt(dogLookTarget, 1f);
+    foreach (float interval in repeatClickIntervals)
+    {
+        yield return new WaitForSeconds(
+            Mathf.Max(0.05f, interval)
+        );
 
+        yield return PlayClick();
+    }
 
-            yield return PlayClick();
-            yield return EndingDialogueBridge.Play(gameUI, callDogDialogue);
+    yield return new WaitForSeconds(
+        Mathf.Max(0f, silenceAfterClicks)
+    );
 
-            foreach (float interval in repeatClickIntervals)
-            {
-                yield return new WaitForSeconds(Mathf.Max(0.05f, interval));
-                yield return PlayClick();
-            }
+    yield return EndingDialogueBridge.Play(
+        gameUI, acceptRealityDialogue
+    );
 
-            yield return new WaitForSeconds(Mathf.Max(0f, silenceAfterClicks));
-            yield return EndingDialogueBridge.Play(gameUI, acceptRealityDialogue);
+    PutClickerAway();
 
-            PutClickerAway();
-            phase = EndingPhase.WaitingForPet;
-            RestoreControls();
-        }
+    phase = EndingPhase.WaitingForPet;
+    RestoreControls();
+}
+
 
         private IEnumerator MoveDogToSitPoint()
         {
@@ -334,9 +371,13 @@ yield return LookAt(dogLookTarget, 1f);
 
         private IEnumerator PettingScene()
         {
-            LockControls();
-            yield return LookAt(dogLookTarget, 0.65f);
-            ShowHandAt(handStartPoint);
+            
+LockControls();
+yield return LookAt(dogLookTarget, 0.65f);
+
+SelectHandModel(false); // 쓰다듬기용 손 선택
+ShowHandAt(handStartPoint);
+
             yield return MoveHandTo(handPetPoint, handMoveDuration);
 
             if (cutsceneHandVisual != null && handPetPoint != null)
@@ -420,9 +461,13 @@ public void OpenEndingDoor()
 
         private IEnumerator DoorScene()
         {
-            LockControls();
-            yield return LookAt(doorLookTarget, 0.65f);
-            ShowHandAt(handStartPoint);
+            
+LockControls();
+yield return LookAt(doorLookTarget, 0.65f);
+
+SelectHandModel(true); // 문 열기용 손 선택
+ShowHandAt(handStartPoint);
+
             yield return MoveHandTo(handDoorPoint, handMoveDuration);
 
             Transform handOriginalParent = cutsceneHandVisual != null
