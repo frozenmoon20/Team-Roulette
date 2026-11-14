@@ -10498,7 +10498,7 @@ MonoBehaviour:
   finalHurdle: {fileID: 716651704}
   endingStartPoint: {fileID: 42492417}
   startDistance: 2.5
-  dogStartDistance: 4
+  dogStartDistance: 6
   dog: {fileID: 1255776434}
   dogFollower: {fileID: 1255776432}
   dogAnimator: {fileID: 1255776435}
@@ -38454,7 +38454,7 @@ Transform:
   m_GameObject: {fileID: 1126502199}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -33.6, z: 0.459}
+  m_LocalPosition: {x: 0, y: -2.48, z: 0.459}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -56610,11 +56610,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: abeb009e29056bd4daaa7cefc862e32c, type: 3}
       propertyPath: m_LocalScale.x
-      value: 1.5
+      value: 1.1667
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: abeb009e29056bd4daaa7cefc862e32c, type: 3}
       propertyPath: m_LocalScale.y
-      value: 1.5
+      value: 1.21425
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: abeb009e29056bd4daaa7cefc862e32c, type: 3}
       propertyPath: m_LocalScale.z
@@ -56622,11 +56622,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: abeb009e29056bd4daaa7cefc862e32c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 1.6015301
+      value: 1.01
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: abeb009e29056bd4daaa7cefc862e32c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.9640801
+      value: -0.97
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: abeb009e29056bd4daaa7cefc862e32c, type: 3}
       propertyPath: m_LocalPosition.z
