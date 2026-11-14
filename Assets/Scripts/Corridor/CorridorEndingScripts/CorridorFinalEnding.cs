@@ -156,7 +156,18 @@ private void Update()
 
     // 플레이어는 허들을 넘고, 겨울이는 반대편에 남아 있어야 한다.
     if (!finalHurdle.ShouldWait(player.transform, dog))
+         return;
+
+    // 플레이어가 공중에 있을 때는 엔딩을 시작하지 않는다.
+    // 착지 후에만 이별 컷신을 진행한다.
+    CharacterController playerController =
+        player.GetComponent<CharacterController>();
+
+    if (playerController == null ||
+        !playerController.enabled ||
+        !playerController.isGrounded)
         return;
+
 
     // 플레이어가 엔딩 시작 지점에 도착했는지 확인
     if (HorizontalDistance(
@@ -202,20 +213,30 @@ private void Update()
         private IEnumerator FirstScene()
         {
 
+
 LockControls();
 
+// 겨울이가 더 이상 움직이지 않도록 추적 중지
 dogFollower.enabled = false;
 
+// 진행 중이던 행동 초기화
 dogAnimator.Interrupt();
 
-// 겨울이의 최종 위치를 지정된 SitPoint로 고정
-dog.SetPositionAndRotation(
-    dogSitPoint.position,
-    dogSitPoint.rotation
-);
+// 겨울이의 위치는 절대로 순간이동시키지 않는다.
+// 마지막 허들 앞에서 멈춘 현재 위치를 유지한다.
 
-// 겨울이가 고정된 위치에서 앉기
+// 이동 속도 판정이 안정될 때까지 잠시 대기
+yield return new WaitForSeconds(0.25f);
+
+// 현재 위치에서 앉기
 dogAnimator.Sit();
+
+// 실제 겨울이 위치를 바라보도록 카메라 목표 갱신
+dogLookTarget.position =
+    dog.position + Vector3.up * 0.5f;
+
+yield return LookAt(dogLookTarget, 1f);
+
 
 
 // 카메라가 실제 겨울이의 위치를 바라보게 한다.
