@@ -634,6 +634,12 @@ namespace TeamRoulette.Room3.BallPlay
             Play(barkState); yield return new WaitForSeconds(Mathf.Min(2.5f, ClipDuration(barkState, 1.5f)));
             Play(sitStartState); yield return new WaitForSeconds(ClipDuration(sitStartState, .8f));
             Play(sitState); yield return new WaitForSeconds(.7f);
+            CompleteGame();
+            yield return new WaitForSeconds(completionDisplaySeconds);
+            if (returnToLivingRoomOnComplete) ReturnToLivingRoom();
+        }
+        void CompleteGame()
+        {
             Phase = FetchPhase.Completed;
             if (!finishedEventRaised)
             {
@@ -641,9 +647,16 @@ namespace TeamRoulette.Room3.BallPlay
                 onCompleted.Invoke(); Completed?.Invoke();
                 Debug.Log("[BallGame] 완료 이벤트: 마지막 공 내려놓기와 반응 종료", this);
             }
-            yield return new WaitForSeconds(completionDisplaySeconds);
-            if (returnToLivingRoomOnComplete) ReturnToLivingRoom();
         }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        public void DebugComplete()
+        {
+            StopAllCoroutines();
+            SuccessCount = requiredSuccesses;
+            CompleteGame();
+            ReturnToLivingRoom();
+        }
+#endif
 
         public void ReturnToLivingRoom()
         {

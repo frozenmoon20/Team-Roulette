@@ -313,6 +313,10 @@ public sealed class MealGameController : MonoBehaviour
             actionAudio.Play();
         }
         yield return new WaitForSeconds(eatingSeconds);
+        CompleteMeal();
+    }
+    void CompleteMeal()
+    {
         if (actionAudio) { actionAudio.Stop(); actionAudio.loop = false; }
         jamToast.SetActive(false);
         juiceCup.gameObject.SetActive(false);
@@ -328,6 +332,16 @@ public sealed class MealGameController : MonoBehaviour
         RestoreControls();
         TeamRoulette.Room3.GameManager.ReportComplete(TeamRoulette.Room3.GameStage.Meal);
     }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public void DebugComplete()
+    {
+        StopAllCoroutines();
+        if (IsHoldingMealItem) ReturnHeld();
+        MovePlayerToTable();
+        RestoreCompleted();
+        CompleteMeal();
+    }
+#endif
 
     public void RestoreCompleted()
     {

@@ -54,6 +54,13 @@ namespace TeamRoulette.Room3
                     node.gameObject.SetActive(!IsToyComplete(target.ObjectId));
             }
         }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        internal void RefreshToyDisplayForDebug()
+        {
+            var scene = SceneManager.GetSceneByName(LivingRoom);
+            if (scene.IsValid() && scene.isLoaded) RefreshToyDisplay(scene);
+        }
+#endif
         public bool IsTransitioning { get; private set; }
         public string VisitingObject { get; private set; }
         public bool EndingVisible { get; private set; }

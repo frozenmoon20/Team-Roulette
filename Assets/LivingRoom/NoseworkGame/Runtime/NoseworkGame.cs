@@ -177,9 +177,23 @@ namespace TeamRoulette.Room3.Nosework
         {
             SetHint("잘했어, 겨울아."); yield return petting.Play();
             if(!petting.WasPetted) { WaitingForPetting=true; SetHint("겨울이를 클릭해 쓰다듬어 주세요."); yield break; }
+            CompleteGame();
+        }
+        void CompleteGame()
+        {
+            if (Completed) return;
             Completed=true; Restore(false); onCompleted.Invoke();
             if(Flow && Flow.VisitingObject==ToyId && !Flow.CompleteVisit(ToyId)) Debug.LogError("노즈워크 복귀 요청이 거절되었습니다.",this);
         }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        public void DebugComplete()
+        {
+            if (!Running) Begin();
+            StopAllCoroutines();
+            Stage = 3;
+            CompleteGame();
+        }
+#endif
         IEnumerator Wrong()
         {
             SetHint("다시 한번 기억해 볼까요?"); yield return winter.Mistake(playerCamera.transform.position);

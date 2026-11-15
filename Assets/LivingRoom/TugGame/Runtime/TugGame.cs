@@ -388,17 +388,34 @@ namespace TeamRoulette.Room3.TugPlay
             headYaw = 0; Play(barkState);
             if (barkSource && barkClip) barkSource.PlayOneShot(barkClip);
             yield return Wait(.85f); Play(idleState);
+            CompleteGame();
+            yield return Wait(.8f);
+            ReturnAfterCompletion();
+        }
+        void CompleteGame()
+        {
             Phase = TugPhase.Completed; RefreshUI(); SetStatus("겨울이와 터그놀이를 마쳤어요.");
             if (!completedRaised)
             {
                 completedRaised = true; onCompleted.Invoke();
                 Debug.Log("[TugGame] 완료 이벤트 1회 호출 / 성공 " + TotalSuccesses + "회", this);
             }
-            yield return Wait(.8f);
+        }
+        void ReturnAfterCompletion()
+        {
             Restore();
             if (returnToLivingRoom && GameManager.Instance && GameManager.Instance.Flow.VisitingObject == ToyId)
                 GameManager.Instance.Flow.CompleteVisit(ToyId);
         }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        public void DebugComplete()
+        {
+            StopAllCoroutines();
+            RoundIndex = roundCount; RoundSuccesses = successesPerRound; TotalSuccesses = roundCount * successesPerRound;
+            CompleteGame();
+            ReturnAfterCompletion();
+        }
+#endif
 
         IEnumerator Wait(float seconds)
         {

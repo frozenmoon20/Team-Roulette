@@ -313,6 +313,26 @@ namespace TeamRoulette.Room3.DollMemory
             { DollMemoryCompletion.Pending=true; SceneManager.LoadScene(Room3FlowController.LivingRoom); }
             yield break;
         }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        public void DebugComplete()
+        {
+            if (completed) return;
+            if (!Running) Begin();
+            StopAllCoroutines();
+            StartCoroutine(DebugCompleteMemory());
+        }
+        IEnumerator DebugCompleteMemory()
+        {
+            // The memory may currently own an additional yard scene. Leave it before
+            // taking the same final cleanup/completion path as the normal sequence.
+            if (memoryScene.IsValid() && memoryScene.isLoaded) SceneManager.SetActiveScene(memoryScene);
+            if (ownsYard && yardScene.IsValid() && yardScene.isLoaded)
+                yield return SceneManager.UnloadSceneAsync(yardScene);
+            State = DollMemoryState.Complete;
+            StateChanged?.Invoke(State);
+            yield return Complete();
+        }
+#endif
         IEnumerator CameraMove(Vector3 position,Quaternion rotation,float duration)
         {
             Vector3 start=film.transform.position; Quaternion from=film.transform.rotation;

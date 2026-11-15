@@ -335,12 +335,24 @@ namespace TeamRoulette.Room3.BonePlay
             });
             winter.SetPositionAndRotation(center, Quaternion.LookRotation(Vector3.ProjectOnPlane(player.transform.position - center, Vector3.up)));
             Play(idleState); yield return Wait(.5f);
+            CompleteGame();
+            cycle = null;
+        }
+        void CompleteGame()
+        {
             Phase = CatchPhase.Completed; RefreshObjective();
             if (!completedRaised) { completedRaised = true; onCompleted.Invoke(); }
             if (returnToLivingRoom && GameManager.Instance && GameManager.Instance.Flow.VisitingObject == ToyId)
                 GameManager.Instance.Flow.CompleteVisit(ToyId);
-            cycle = null;
         }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        public void DebugComplete()
+        {
+            StopAllCoroutines();
+            SuccessCount = requiredSuccesses;
+            CompleteGame();
+        }
+#endif
         Vector3 Ground(Vector3 p)
         {
             p.y = home.y;

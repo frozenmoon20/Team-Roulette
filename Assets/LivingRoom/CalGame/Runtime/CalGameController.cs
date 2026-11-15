@@ -43,10 +43,17 @@ public sealed class CalGameController : MonoBehaviour
         }
         else
         {
-            Marked = true; ShowPage();
-            GameManager.ReportComplete(GameStage.Calendar);
+            CompleteCalendar();
         }
     }
+    void CompleteCalendar()
+    {
+        RestoreCompleted();
+        GameManager.ReportComplete(GameStage.Calendar);
+    }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public void DebugComplete() { CompleteCalendar(); }
+#endif
 }
 
 

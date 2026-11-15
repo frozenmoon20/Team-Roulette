@@ -249,6 +249,18 @@ public sealed class BoardGameController : MonoBehaviour
         TeamRoulette.Room3.GameManager.ReportComplete(TeamRoulette.Room3.GameStage.Board);
         return true;
     }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public void DebugComplete()
+    {
+        if (!Active) Begin();
+        if (!Active) return;
+        // Discarding everything is an existing valid board solution.
+        if (Held) Discard();
+        foreach (var item in items.Where(i => i.state == BoardItemState.Floor || i.state == BoardItemState.Board).ToArray())
+        { Pick(item); Discard(); }
+        TryFinish();
+    }
+#endif
     public void RestoreCompleted(TeamRoulette.Room3.BoardItemRecord[] records)
     {
         Completed = true;

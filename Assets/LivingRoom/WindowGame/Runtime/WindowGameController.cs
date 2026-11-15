@@ -138,14 +138,22 @@ public sealed class WindowGameController : MonoBehaviour
             slidingWindow.localRotation = Quaternion.Slerp(fromRotation, targetRotation, t);
             yield return null;
         }
+        CompleteWindow();
+    }
+    void CompleteWindow()
+    {
+        if (WindowOpened || !initialized) return;
         slidingWindow.localPosition = openPosition;
-        slidingWindow.localRotation = targetRotation;
+        slidingWindow.localRotation = Quaternion.Euler(openRotation);
         WindowOpened = true;
         ApplyWind();
         IsOpening = false;
         ReleaseInput();
         GameManager.ReportComplete(GameStage.Window);
     }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public void DebugComplete() { StopAllCoroutines(); CompleteWindow(); }
+#endif
     void ApplyWind()
     {
         foreach (var curtain in staticCurtains) curtain.SetActive(false);

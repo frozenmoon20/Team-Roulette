@@ -188,6 +188,14 @@ namespace TeamRoulette.Room3
         {
             if (state == State.Playing) StartCoroutine(ReturnToRoom(true));
         }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        public void DebugComplete()
+        {
+            if (!initialized || IsComplete) return;
+            StopAllCoroutines();
+            StartCoroutine(ReturnToRoom(true));
+        }
+#endif
 
         void Failed(VideoPlayer source, string error)
         {

@@ -189,15 +189,22 @@ public sealed class CurtainGameController : MonoBehaviour
             player.transform.position = fixedPosition;
             yield return null;
         }
-        ApplyScale(1f);
-        whiteScreen.alpha = 0;
-        whiteScreen.blocksRaycasts = false;
-        Completed = true;
-        PlayingFinale = false;
-        player.enabled = playerWasEnabled;
-        if (motionFeel) motionFeel.enabled = feelWasEnabled;
+        CompleteCurtain();
+    }
+    void CompleteCurtain()
+    {
+        if (Completed || !initialized) return;
+        if (PlayingFinale)
+        {
+            player.enabled = playerWasEnabled;
+            if (motionFeel) motionFeel.enabled = feelWasEnabled;
+        }
+        RestoreCompleted();
         TeamRoulette.Room3.GameManager.ReportComplete(TeamRoulette.Room3.GameStage.Curtain);
     }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public void DebugComplete() { StopAllCoroutines(); CompleteCurtain(); }
+#endif
 
     void SetCurtainsRevealed(bool revealed)
     {
