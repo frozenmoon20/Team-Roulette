@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: D_TurnBack
   m_EditorClassIdentifier: Assembly-CSharp::TeamRoulette.UI.DialogueSequence
   lines:
-  - "\u2026\uC774\uC81C\uB294 \uAC70\uC2E4\uB85C \uAC00\uC57C \uD574."
+  - "\u2026\uCE68\uC2E4\uB85C \uAC08 \uC774\uC720\uB294 \uC5C6\uB2E4."
   colorCodes:
   - '#FFFFFF'
