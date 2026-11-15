@@ -63,3 +63,57 @@ public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
             if (wrongItemDialogue != null)
             {
                 if (!wrongItemDialogue.IsPlaying) wrongItemDialogue.Play();   // 대화창으로
+            }
+            else PlayerInteractor.ShowHint(wrongItemMessage);                 // 대사가 없으면 예전처럼 글자로
+            return;
+        }
+
+        Transform targetPoint = GetNextPlacePoint();
+        GrabbableItem placedItem = hand.Held;
+
+        if (useExactPlacement && !hideOnPlace)
+        {
+            GrabbableItem item = hand.Held;
+            hand.PlaceHeld(targetPoint, false);
+            item.PlaceExactlyAt(targetPoint);
+        }
+        else
+        {
+            hand.PlaceHeld(targetPoint, hideOnPlace);
+        }
+
+        // 놓은 물건의 충돌체 끄기: 켜져 있으면 다음에 이 통을 클릭할 때 안에 든 물건이 먼저 맞아서
+        //   통 이름·대사가 안 나오고, 놓은 물건을 다시 집을 수도 있음
+        if (disablePlacedColliders && placedItem != null)
+            foreach (Collider c in placedItem.GetComponentsInChildren<Collider>()) c.enabled = false;
+
+        PlacedCount++;
+        AudioManager.Play(placeClip, placeVolume);   // 효과음 (효과음 해금 전엔 안 남, 설정 볼륨 따름)
+        onPlaced.Invoke();
+
+        // 다 놓아도 이 컴포넌트는 끄지 않음 (끄면 마우스를 대도 이름이 안 뜨고 Done Dialogue도 안 나옴)
+        //   다 놓은 뒤 클릭은 위쪽의 "이미 다 놓았으면" 검사에서 Done Dialogue로 처리됨
+        if (PlacedCount >= acceptItems.Length)
+            onAllPlaced.Invoke();
+    }
+
+    static void PlayDialogue(DialogueStep step)
+    {
+        if (step != null && !step.IsPlaying) step.Play();
+    }
+
+    Transform GetNextPlacePoint()
+    {
+        if (placePoints != null &&
+            PlacedCount < placePoints.Length &&
+            placePoints[PlacedCount] != null)
+        {
+            return placePoints[PlacedCount];
+        }
+
+        if (placePoint != null)
+            return placePoint;
+
+        return transform;
+    }
+}

@@ -23289,7 +23289,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: df77984383038e141a2fa77f2043c9ae, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -23330,7 +23330,7 @@ Transform:
   m_GameObject: {fileID: 367671168}
   serializedVersion: 2
   m_LocalRotation: {x: 0.01929302, y: 0.019293023, z: 0.70684355, w: 0.70684355}
-  m_LocalPosition: {x: -0.2599, y: 0.8447, z: -2.9367}
+  m_LocalPosition: {x: -0.2599, y: 0.8511, z: -2.9367}
   m_LocalScale: {x: 0.04, y: 0.06, z: 0.04}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -29839,8 +29839,8 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: "\uB208\uC744 \uAC10\uC740 \uCC44 \uB9C8\uC6B0\uC2A4\uB85C
-            \uC18C\uB9AC\uB97C \uCC3E\uACE0, \uC815\uBA74\uC5D0\uC11C \uB4E4\uB9AC\uBA74
+          m_StringArgument: "\uB9C8\uC6B0\uC2A4\uB97C \uD68C\uC804\uD574\uC11C \uC18C\uB9AC\uC758
+            \uADFC\uC6D0\uC744 \uCC3E\uAE30, \uC815\uBA74\uC5D0\uC11C \uB4E4\uB9AC\uBA74
             \uD074\uB9AD"
           m_BoolArgument: 0
         m_CallState: 2
@@ -53856,16 +53856,32 @@ MonoBehaviour:
   topLid: {fileID: 0}
   bottomLid: {fileID: 0}
   ringBeforeLock: 0.5
-  shakeBuildTime: 4
-  afterDialogue: 1
+  beforeFall: 0.8
+  fearTime: 9
+  peakHold: 1.5
   closeTime: 4
   darkHold: 2
+  fallDepth: 0.7
+  fallTime: 0.45
+  fallPitch: -6
+  fallRoll: 5
+  fallJolt: 2.5
+  fallClip: {fileID: 0}
+  fallVolume: 0.8
   maxShakeAngle: 1.2
   maxShakeMove: 0.008
   shakeSpeed: 18
   heartPitchFrom: 0.9
   heartPitchTo: 1.5
+  heartStartVolume: 0.05
   soundVolume: 1
+  halftoneFlicker: 1
+  flickerLight: 0.35
+  flickerDark: 0.45
+  flickerSlow: 2.5
+  flickerFast: 0.3
+  flickerRecover: 5
+  darkDrift: 0.6
   warpStart: 0.4
   ringPitchEnd: 0.5
   heartPitchEnd: 0.55
@@ -53880,6 +53896,7 @@ MonoBehaviour:
   onClosed:
     m_PersistentCalls:
       m_Calls: []
+  fear: 0
 --- !u!1001 &915290493
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -53995,7 +54012,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: abc00000000008293069865286781041, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -106815,6 +106832,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  useExactPlacement: 0
 --- !u!4 &1833193720 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 474954, guid: 9356a77a7984f1449848e3e36312ce98, type: 3}
@@ -112090,6 +112108,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  useExactPlacement: 0
 --- !u!4 &1900089724
 Transform:
   m_ObjectHideFlags: 0
@@ -125994,6 +126013,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  useExactPlacement: 0
 --- !u!65 &2128867122
 BoxCollider:
   m_ObjectHideFlags: 0

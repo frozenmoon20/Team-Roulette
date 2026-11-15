@@ -97,4 +97,75 @@ public class PlayerInteractor : MonoBehaviour
     {
         if (hovered == null) return;
 
-        // 물건을
+        // 물건을 들고 있으면 놓을 자리(PlaceSpot)만 클릭 가능
+        PlayerHand hand = PlayerHand.Instance;
+        if (hand != null && hand.Held != null && !(hovered is PlaceSpot))
+        {
+            ShowHint(handBusyMessage);
+            return;
+        }
+
+        hovered.Interact();
+    }
+
+    void TryReturnHeld()
+    {
+        PlayerHand hand = PlayerHand.Instance;
+        if (hand == null || hand.Held == null) return;
+
+        // (복도 미니게임3) 클릭커는 우클릭으로 내려놓을 수 없고, E키로 주머니에 넣는다
+        ClickerPocketController pocketController = FindFirstObjectByType<ClickerPocketController>();
+        if (pocketController != null && hand.Held == pocketController.clicker)
+        {
+            ShowHint("클릭커는 E키를 눌러 주머니에 넣자.");
+            return;
+        }
+
+        // (복도 미니게임1) 들고 있는 게 캡슐 장난감이면, 열 수 있을 때는 돌려놓지 않고 연다
+        CapsuleToy capsule = hand.Held.GetComponent<CapsuleToy>();
+        if (capsule != null && capsule.TryOpen()) return;
+
+        hand.ReturnHeld();
+    }
+
+    void UpdateUI()
+    {
+        bool showHand = false;
+        string label = "";
+
+        if (hovered != null)
+        {
+            GrabbableItem item = hovered as GrabbableItem;
+            showHand = item != null && item.CanGrab;
+
+            IHasName named = hoveredComponent != null ? hoveredComponent.GetComponentInParent<IHasName>() : null;
+            if (named != null) label = named.DisplayName;
+        }
+        if (Time.time < hintUntil) label = hintText;   // 안내 문구가 이름보다 우선
+
+        // 대사 중에는 이름·안내 문구를 숨김 (대사창과 같은 자리라 겹침)
+        if (ui == null) ui = FindFirstObjectByType<GameUI>();
+        if (ui != null && ui.IsDialogueOpen) label = "";
+
+        if (crosshairDot != null) crosshairDot.SetActive(!Blocked && !showHand);
+        if (handIcon != null) handIcon.SetActive(!Blocked && showHand);
+
+        if (nameText != null)
+        {
+            // (복도) 소파를 조준했을 때만 이름을 크게 (안내 문구가 떠 있을 땐 보통 크기)
+            if (originalNameFontSize <= 0f) originalNameFontSize = nameText.fontSize;
+            bool isSofaName = hovered is SofaPeekInteraction && Time.time >= hintUntil;
+            nameText.fontSize = originalNameFontSize * (isSofaName ? SofaNameScale : 1f);
+            nameText.text = label;
+        }
+    }
+
+    // 화면 아래에 짧은 안내 문구 표시. 어느 스크립트에서나 호출 가능.
+    // 사용 예: PlayerInteractor.ShowHint("잠겨 있다.");
+    public static void ShowHint(string message)
+    {
+        if (instance == null || string.IsNullOrEmpty(message)) return;
+        instance.hintText = message;
+        instance.hintUntil = Time.time + instance.hintDuration;
+    }
+}

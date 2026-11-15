@@ -3571,9 +3571,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uB85C\uD504 \uC7A5\uB09C\uAC10"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0.01, y: 0.05, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!1 &79895578
 GameObject:
   m_ObjectHideFlags: 0
@@ -8475,9 +8477,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uC539\uB294 \uC7A5\uB09C\uAC10"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0, y: 0, z: -0.12}
   rotationOffset: {x: 0, y: 0, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!54 &267824183
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -15063,9 +15067,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uC091\uC091\uC774 \uACF5"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0.05, y: -0.04, z: -0.15}
   rotationOffset: {x: 0, y: 0, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!135 &532539619
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -16381,9 +16387,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uC624\uB9AC \uC778\uD615"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0, y: 0, z: 0}
   rotationOffset: {x: -90, y: 0, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!54 &588226642
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -19207,9 +19215,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uB2ED \uC778\uD615"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0, y: 0, z: 0}
   rotationOffset: {x: -90, y: 0, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!54 &665010567
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -20285,9 +20295,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uCFE0\uC158"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0.2, y: 0.03, z: -0.3}
   rotationOffset: {x: 0, y: 90, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!4 &696190736
 Transform:
   m_ObjectHideFlags: 0
@@ -31756,6 +31768,15 @@ MonoBehaviour:
   - {fileID: 1449916129}
   hideOnPlace: 0
   wrongItemMessage: "\uC5EC\uAE30\uC5D0 \uB458 \uAC74 \uC544\uB2C8\uB2E4."
+  wrongItemDialogue: {fileID: 0}
+  emptyHandDialogue: {fileID: 0}
+  doneDialogue: {fileID: 0}
+  disablePlacedColliders: 1
+  placeClip: {fileID: 0}
+  placeVolume: 0.8
+  onPlaced:
+    m_PersistentCalls:
+      m_Calls: []
   onAllPlaced:
     m_PersistentCalls:
       m_Calls: []
@@ -33661,9 +33682,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uAC8C \uC778\uD615"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0, y: 0, z: 0}
   rotationOffset: {x: -90, y: 0, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!54 &968880869
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -34315,9 +34338,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uAC15\uC544\uC9C0 \uC7A5\uB09C\uAC10"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0, y: 0, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!54 &980913048
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -41180,9 +41205,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uAC70\uBD81\uC774 \uC778\uD615"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0, y: 0, z: 0}
   rotationOffset: {x: -90, y: 0, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!54 &1238977999
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -41390,9 +41417,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uCFE0\uC158"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0, y: -0.2, z: 0.1}
   rotationOffset: {x: 0, y: 90, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!54 &1252530568
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -46341,9 +46370,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uB85C\uD504 \uC7A5\uB09C\uAC10"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0.01, y: 0.05, z: 0}
   rotationOffset: {x: 0, y: 0, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!64 &1460005181
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -51105,9 +51136,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uD14C\uB2C8\uC2A4 \uACF5"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0, y: 0, z: -0.12}
   rotationOffset: {x: 0, y: 0, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!54 &1675098726
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -56068,6 +56101,15 @@ MonoBehaviour:
   placePoints: []
   hideOnPlace: 0
   wrongItemMessage: "\uC5EC\uAE30\uC5D0 \uB458 \uAC74 \uC544\uB2C8\uB2E4."
+  wrongItemDialogue: {fileID: 0}
+  emptyHandDialogue: {fileID: 0}
+  doneDialogue: {fileID: 0}
+  disablePlacedColliders: 1
+  placeClip: {fileID: 0}
+  placeVolume: 0.8
+  onPlaced:
+    m_PersistentCalls:
+      m_Calls: []
   onAllPlaced:
     m_PersistentCalls:
       m_Calls: []
@@ -59310,9 +59352,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uD6C8\uB828 \uD074\uB9AD"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: -0.02, y: -0.01, z: 0.039}
   rotationOffset: {x: 60, y: 180, z: -10}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!65 &2083118016
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -59446,6 +59490,15 @@ MonoBehaviour:
   placePoints: []
   hideOnPlace: 0
   wrongItemMessage: "\uC5EC\uAE30\uC5D0 \uB458 \uAC74 \uC544\uB2C8\uB2E4."
+  wrongItemDialogue: {fileID: 0}
+  emptyHandDialogue: {fileID: 0}
+  doneDialogue: {fileID: 0}
+  disablePlacedColliders: 1
+  placeClip: {fileID: 0}
+  placeVolume: 0.8
+  onPlaced:
+    m_PersistentCalls:
+      m_Calls: []
   onAllPlaced:
     m_PersistentCalls:
       m_Calls: []
@@ -64806,9 +64859,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uD130\uD06C\uB85C\uD504"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0, y: 0, z: 0}
   rotationOffset: {x: -90, y: 0, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!54 &8487008323599088232
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -64980,9 +65035,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GrabbableItem
   displayName: "\uBF08 \uC778\uD615"
+  holdStyle: 0
+  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
+  lockedDialogue: {fileID: 0}
   positionOffset: {x: 0, y: 0, z: 0}
   rotationOffset: {x: -90, y: 0, z: 0}
-  lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
 --- !u!54 &8705020744359682091
 Rigidbody:
   m_ObjectHideFlags: 0
