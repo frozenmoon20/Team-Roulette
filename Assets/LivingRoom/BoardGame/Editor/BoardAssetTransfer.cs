@@ -120,6 +120,7 @@ public static class BoardAssetTransfer
         {
             Check(game.boardTarget.name=="Painting_H" && game.trashTarget.name=="KP_coffee_mug","New references");
             Check(game.items.Length==21,"21 items");
+            Check(game.items.All(i=>!i.outline.enabled),"No outlines before game");
             // Test the migrated target at its actual progression stage; this only changes Play mode.
             var manager=TeamRoulette.Room3.GameManager.Instance;
             if(manager) typeof(TeamRoulette.Room3.GameManager).GetProperty("CurrentStage").SetValue(manager,TeamRoulette.Room3.GameStage.Board);
@@ -137,8 +138,12 @@ public static class BoardAssetTransfer
                 Check(Vector2.Distance(new Vector2(before[n].x,before[n].y),new Vector2(after.x,after.y))<.0001f,"Existing item shifted on placement: "+anchors[n].id);
             }
             Check(Vector2.Distance(game.surface.InverseTransformPoint(item.transform.position),Vector2.zero)<.0001f,"Placed item missed cursor coordinates");
+            var other=game.items.First(i=>i!=item && i.state==BoardItemState.Board);
+            game.Pick(other);Check(game.Place(Vector2.zero),"Overlapping placement allowed");
+            Check(game.RefreshOverlap() && item.outline.enabled && other.outline.enabled,"Red outlines during game only");
             foreach(var i in game.items){game.Pick(i);game.Discard();}
             Check(game.TryFinish() && game.Completed && !game.Active,"Completion returns controls");
+            Check(game.items.All(i=>!i.outline.enabled),"No outlines after game");
             File.WriteAllText(Folder+"/PlacementVerification.txt","PASS: board start, trash retrieve, placement at requested coordinates; all other items retain their horizontal and vertical positions after scene/group edits; completion.\n");
         }
         catch(Exception e){File.AppendAllText(Folder+"/TransferReport.txt","FAILED: "+e);Debug.LogException(e);}

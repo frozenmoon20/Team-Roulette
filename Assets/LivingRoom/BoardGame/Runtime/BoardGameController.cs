@@ -96,6 +96,7 @@ public sealed class BoardGameController : MonoBehaviour
     {
         if(!Active && blocked.Count==0) return;
         Active=false; finishHold=0;
+        foreach(var item in items) if(item) item.SetOutline(false);
         if(overlay) overlay.SetActive(false);
         var restore=blocked.ToArray();
         blocked.Clear();
@@ -211,7 +212,7 @@ public sealed class BoardGameController : MonoBehaviour
             var x=items[a]; var y=items[b];
             if(x.state!=BoardItemState.Board || y.state!=BoardItemState.Board) continue;
             if(BoardGeometry.Overlap(x.boardPosition,x.size,x.angle,y.boardPosition,y.size,y.angle)<=overlapLimit) continue;
-            x.SetOutline(true); y.SetOutline(true); bad=true;
+            x.SetOutline(Active && !Completed); y.SetOutline(Active && !Completed); bad=true;
         }
         if(Active && !Completed)
         {

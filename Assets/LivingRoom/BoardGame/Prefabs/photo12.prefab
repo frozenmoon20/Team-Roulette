@@ -27,8 +27,8 @@ Transform:
   m_GameObject: {fileID: 3193724609483026308}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.42, y: 0.18, z: 0.008}
+  m_LocalPosition: {x: 0, y: 0, z: 0.0075889956}
+  m_LocalScale: {x: 1.5177993, y: 1.5177991, z: 1.5177991}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7253858031774183029}
@@ -40,7 +40,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3193724609483026308}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  m_Mesh: {fileID: 4300000, guid: 1a4327dc2cbed6c4ba1b7c876b92aa84, type: 2}
 --- !u!23 &8539885846950178048
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -49,7 +49,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3193724609483026308}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -66,7 +66,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 34cab7269ea15404584270fcde33da53, type: 2}
+  - {fileID: 2100000, guid: 5206138c9b6a43b499f1e379a72de92d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -172,10 +172,10 @@ LineRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Positions:
-  - {x: -0.21, y: -0.09, z: 0.009}
-  - {x: 0.21, y: -0.09, z: 0.009}
-  - {x: 0.21, y: 0.09, z: 0.009}
-  - {x: -0.21, y: 0.09, z: 0.009}
+  - {x: -0.26561487, y: -0.17540953, z: 0.013660192}
+  - {x: 0.26561487, y: -0.17540953, z: 0.013660192}
+  - {x: 0.26561487, y: 0.17540953, z: 0.013660192}
+  - {x: -0.26561487, y: 0.17540953, z: 0.013660192}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 0.009
@@ -251,7 +251,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &8389014962150606537
 RectTransform:
   m_ObjectHideFlags: 0
@@ -367,7 +367,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 1.5
+  m_fontSize: 1.05
   m_fontSizeBase: 1.5
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -441,9 +441,9 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7117751573191760395}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.11320321, w: 0.9935719}
-  m_LocalPosition: {x: 25.5, y: 1.52, z: 1.146}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: 0.037007112, y: -0.70613766, z: -0.03700712, w: 0.7061378}
+  m_LocalPosition: {x: 27.755978, y: 2.23075, z: 4.3289986}
+  m_LocalScale: {x: 0.6588487, y: 0.6588487, z: 0.6588487}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 652202662028313308}
@@ -464,11 +464,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoardItem
   id: photo12
-  size: {x: 0.42, y: 0.18}
+  size: {x: 0.35, y: 0.23113668}
   state: 1
-  boardPosition: {x: -0.000000029802322, y: -0.48}
-  angle: -13
-  order: 11
+  boardPosition: {x: -1.0000015, y: 0.008750287}
+  angle: -6
+  order: 5
   outline: {fileID: 4672096691535098198}
   hitbox: {fileID: 6617195692508802405}
 --- !u!65 &6617195692508802405
@@ -490,5 +490,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.42, y: 0.18, z: 0.012}
+  m_Size: {x: 0.53122973, y: 0.35081905, z: 0.01821359}
   m_Center: {x: 0, y: 0, z: 0}

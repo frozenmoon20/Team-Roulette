@@ -10,159 +10,123 @@ using UnityEngine.SceneManagement;
 public static class CalGameSetup
 {
     const string Folder = "Assets/LivingRoom/CalGame";
-    const string ScenePath = "Assets/Scenes/Room3_LivingRoom.unity";
-    const string Request = Folder + "/Editor/Setup.request";
+    static double ready;
     static CalGameController test;
     static int step;
-    static double next;
-
     static CalGameSetup()
     {
+        ready = EditorApplication.timeSinceStartup + 8;
         EditorApplication.update += Poll;
         EditorApplication.playModeStateChanged += OnPlay;
     }
-
     static void Poll()
     {
-        if (!File.Exists(Request) || EditorApplication.isCompiling || EditorApplication.isUpdating || EditorApplication.isPlayingOrWillChangePlaymode) return;
-        File.Delete(Request);
+        const string request = Folder + "/Editor/SetupPNG.request";
+        if (EditorApplication.timeSinceStartup < ready || EditorApplication.isCompiling || EditorApplication.isUpdating || EditorApplication.isPlayingOrWillChangePlaymode || !File.Exists(request)) return;
+        File.Delete(request);
         try { BuildAndVerify(); }
-        catch (Exception e) { File.WriteAllText(Folder + "/Verification.txt", "FAILED: " + e); Debug.LogException(e); }
+        catch (Exception e) { Report("FAILED: " + e); Debug.LogException(e); }
     }
-
+    static void Report(string text) { File.WriteAllText(Folder + "/Verification.txt", text); }
     [MenuItem("Tools/LivingRoom/CalGame/Set up scene")]
     public static void Build()
     {
-        if (EditorApplication.isPlayingOrWillChangePlaymode) throw new Exception("Stop Play mode first.");
         var scene = SceneManager.GetActiveScene();
-        if (scene.path != ScenePath) throw new Exception("Open Room3_LivingRoom before setting up CalGame.");
+        if (EditorApplication.isPlayingOrWillChangePlaymode || scene.path != "Assets/Scenes/Room3_LivingRoom.unity") throw new Exception("Open Room3_LivingRoom in Edit mode first.");
         var items = scene.GetRootGameObjects().SelectMany(x => x.GetComponentsInChildren<Transform>(true)).ToArray();
-        Func<string, GameObject> find = name => items.Single(t => t.name == name).gameObject;
-        var win = find("CalenderWin");
-        var spr = find("CalenderSpr");
-        var circle = find("Circle");
-        var root = items.SingleOrDefault(t => t.name == "CalGame")?.gameObject;
-        if (!root) { root = new GameObject("CalGame"); Undo.RegisterCreatedObjectUndo(root, "Create CalGame"); }
-        foreach (var obj in new[] { win, spr, circle }) Undo.SetTransformParent(obj.transform, root.transform, "Group CalGame");
+        var root = items.Single(x => x.name == "CalGame");
+        var calendar = items.Single(x => x.name == "Calender").gameObject;
         var game = root.GetComponent<CalGameController>();
-        if (!game) game = Undo.AddComponent<CalGameController>(root);
-        Undo.RecordObject(game, "Configure CalGame");
-        game.calenderWin = win; game.calenderSpr = spr; game.circle = circle;
-        game.pageAudio = root.GetComponent<AudioSource>();
-        if (!game.pageAudio) game.pageAudio = Undo.AddComponent<AudioSource>(root);
-        Undo.RecordObject(game.pageAudio, "Configure page sound");
-        game.pageAudio.playOnAwake = false;
-        game.pageAudio.spatialBlend = 0;
-        game.pageAudio.volume = 0.65f;
-        if (!game.pageTurnSound) game.pageTurnSound = MakeSound();
-        foreach (var obj in new[] { win, spr })
+        var textures = new[] { "DecemberCal", "MayCal", "MayCal_circle" }.Select(name => AssetDatabase.LoadAssetAtPath<Texture2D>(Folder + "/" + name + ".png")).ToArray();
+        if (textures.Any(x => !x) || !game || !calendar.GetComponent<MeshRenderer>()) throw new Exception("Missing calendar, controller or PNG.");
+        Undo.RecordObject(game, "Connect PNG calendar");
+        Undo.SetTransformParent(calendar.transform, root, "Group calendar");
+        Undo.RecordObject(calendar.transform, "Fit PNG aspect ratio");
+        var scale = calendar.transform.localScale;
+        scale.x = scale.y * textures[0].width / textures[0].height;
+        calendar.transform.localScale = scale;
+        var renderer = calendar.GetComponent<MeshRenderer>();
+        const string materialPath = Folder + "/CalendarPNG.mat";
+        var material = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+        if (!material)
         {
-            var target = obj.GetComponent<CalGameTarget>();
-            if (!target) target = Undo.AddComponent<CalGameTarget>(obj);
-            Undo.RecordObject(target, "Connect calendar click");
-            target.game = game; target.springPage = obj == spr;
-            if (!obj.GetComponentsInChildren<Collider>(true).Any()) throw new Exception(obj.name + " needs a Collider covering the calendar.");
-            EditorUtility.SetDirty(target);
+            var shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (!shader) shader = Shader.Find("Unlit/Transparent Cutout");
+            material = new Material(shader); AssetDatabase.CreateAsset(material, materialPath);
         }
-        foreach (var collider in circle.GetComponentsInChildren<Collider>(true))
-        { Undo.RecordObject(collider, "Make Circle nonblocking"); collider.enabled = false; }
-        Undo.RecordObjects(new UnityEngine.Object[] { win, spr, circle }, "Set initial calendar state");
-        win.SetActive(true); spr.SetActive(false); circle.SetActive(false);
-        EditorUtility.SetDirty(game);
+        material.mainTexture = textures[0];
+        if (material.HasProperty("_AlphaClip")) { material.SetFloat("_AlphaClip", 1); material.EnableKeyword("_ALPHATEST_ON"); }
+        if (material.HasProperty("_Cutoff")) material.SetFloat("_Cutoff", 0.1f);
+        if (material.HasProperty("_Cull")) material.SetFloat("_Cull", 0);
+        EditorUtility.SetDirty(material);
+        Undo.RecordObject(renderer, "Assign calendar material"); renderer.sharedMaterial = material;
+        game.calendarRenderer = renderer;
+        game.decemberCal = textures[0]; game.mayCal = textures[1]; game.mayCalCircle = textures[2];
+        foreach (var name in new[] { "CalenderWin", "CalenderSpr", "Circle" })
+        {
+            var old = root.GetComponentsInChildren<Transform>(true).SingleOrDefault(x => x.name == name);
+            if (old) Undo.DestroyObjectImmediate(old.gameObject);
+        }
+        var target = calendar.GetComponent<CalGameTarget>();
+        if (!target) target = Undo.AddComponent<CalGameTarget>(calendar);
+        Undo.RecordObject(target, "Connect calendar click"); target.game = game;
+        Undo.RecordObject(calendar, "Enable calendar"); calendar.SetActive(true);
+        if (!calendar.GetComponent<Collider>()) throw new Exception("Calendar collider missing.");
+        EditorUtility.SetDirty(target); EditorUtility.SetDirty(game);
         EditorSceneManager.MarkSceneDirty(scene);
-        if (!EditorSceneManager.SaveScene(scene)) throw new Exception("Scene save failed.");
+        if (!EditorSceneManager.SaveScene(scene)) throw new Exception("Save failed.");
         AssetDatabase.SaveAssets();
     }
-
-    static AudioClip MakeSound()
-    {
-        const string path = Folder + "/Audio/PageTurn_Placeholder.wav";
-        Directory.CreateDirectory(Folder + "/Audio");
-        if (!File.Exists(path))
-        {
-            const int rate = 44100, count = 22050;
-            var random = new System.Random(51);
-            using (var writer = new BinaryWriter(File.Create(path)))
-            {
-                writer.Write(System.Text.Encoding.ASCII.GetBytes("RIFF")); writer.Write(36 + count * 2);
-                writer.Write(System.Text.Encoding.ASCII.GetBytes("WAVEfmt ")); writer.Write(16);
-                writer.Write((short)1); writer.Write((short)1); writer.Write(rate); writer.Write(rate * 2);
-                writer.Write((short)2); writer.Write((short)16);
-                writer.Write(System.Text.Encoding.ASCII.GetBytes("data")); writer.Write(count * 2);
-                double low = 0;
-                for (int i = 0; i < count; i++)
-                {
-                    double t = (double)i / count, noise = random.NextDouble() * 2 - 1;
-                    low += 0.18 * (noise - low);
-                    double envelope = Math.Sin(Math.PI * t) * Math.Exp(-2 * t);
-                    double flutter = 0.6 + 0.4 * Math.Sin(t * 95 + t * t * 110);
-                    writer.Write((short)((noise - low) * envelope * flutter * 14000));
-                }
-            }
-        }
-        AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
-        return AssetDatabase.LoadAssetAtPath<AudioClip>(path);
-    }
-
     [MenuItem("Tools/LivingRoom/CalGame/Set up and verify")]
-    public static void BuildAndVerify()
-    {
-        Build();
-        SessionState.SetBool("CalGame.Verify", true);
-        EditorApplication.EnterPlaymode();
-    }
-
+    public static void BuildAndVerify() { Build(); SessionState.SetBool("CalGame.VerifyPNG", true); EditorApplication.EnterPlaymode(); }
     static void OnPlay(PlayModeStateChange state)
     {
-        if (state != PlayModeStateChange.EnteredPlayMode || !SessionState.GetBool("CalGame.Verify", false)) return;
-        SessionState.SetBool("CalGame.Verify", false);
+        if (state != PlayModeStateChange.EnteredPlayMode || !SessionState.GetBool("CalGame.VerifyPNG", false)) return;
+        SessionState.SetBool("CalGame.VerifyPNG", false);
         test = UnityEngine.Object.FindFirstObjectByType<CalGameController>();
-        step = 0; next = EditorApplication.timeSinceStartup + 0.3;
-        EditorApplication.update += VerifyStep;
+        step = 0; ready = EditorApplication.timeSinceStartup + 1;
+        EditorApplication.update += Verify;
     }
-
-    static void Check(bool ok, string message) { if (!ok) throw new Exception(message); }
-    static void VerifyStep()
+    static void Check(bool ok, string label) { if (!ok) throw new Exception(label); }
+    static void Verify()
     {
-        if (EditorApplication.timeSinceStartup < next) return;
-        next = EditorApplication.timeSinceStartup + 0.15;
+        if (EditorApplication.timeSinceStartup < ready) return;
+        ready = EditorApplication.timeSinceStartup + 0.2;
         try
         {
+            var manager = TeamRoulette.Room3.GameManager.Instance;
             if (step == 0)
             {
-                Check(test && test.enabled && test.calenderWin.activeSelf && !test.calenderSpr.activeSelf && !test.circle.activeSelf, "Initial state");
-                Check(test.pageTurnSound && test.pageTurnSound.samples > 0, "Sound imported");
-                foreach (var page in new[] { test.calenderWin, test.calenderSpr })
-                {
-                    var collider = page.GetComponent<Collider>();
-                    Check(collider && collider.enabled && collider.GetComponentInParent<IInteractable>(true) is CalGameTarget, "Calendar collider routes to CalGameTarget");
-                }
-                test.calenderWin.GetComponent<CalGameTarget>().Interact();
-                Check(test.Turned && !test.Marked && !test.circle.activeSelf && !test.calenderWin.activeSelf && test.calenderSpr.activeSelf, "First click only turns page");
-                Check(test.pageAudio.isPlaying, "Page sound plays");
-                test.calenderSpr.GetComponent<CalGameTarget>().Interact();
-                Check(!test.Marked, "Same input frame cannot also mark date");
+                // Only alter the temporary Play-mode state to test this game in isolation.
+                if (manager) typeof(TeamRoulette.Room3.GameManager).GetProperty("CurrentStage").SetValue(manager, TeamRoulette.Room3.GameStage.Calendar);
+                Time.timeScale = 1;
+                Check(test && test.enabled && test.CurrentPage == test.decemberCal, "December initial page");
+                Check(test.calendarRenderer.GetComponent<Collider>().GetComponentInParent<IInteractable>() is CalGameTarget, "Calendar collider interaction");
+                test.calendarRenderer.GetComponent<CalGameTarget>().Interact();
+                Check(test.Turned && !test.Marked && test.CurrentPage == test.mayCal, "First click May");
+                Check(test.pageAudio.isPlaying, "Paper audio");
+                test.Click(); Check(!test.Marked, "Same frame guard");
             }
             else if (step == 1)
             {
-                test.calenderSpr.GetComponent<CalGameTarget>().Interact();
-                Check(test.Marked && test.circle.activeSelf, "Second click shows Circle");
+                Time.timeScale = 1;
+                test.calendarRenderer.GetComponent<CalGameTarget>().Interact();
+                Check(test.Marked && test.CurrentPage == test.mayCalCircle, "Second click marked May");
+                Check(!manager || manager.IsComplete(TeamRoulette.Room3.GameStage.Calendar), "Game completion");
             }
             else
             {
-                test.calenderSpr.GetComponent<CalGameTarget>().Interact();
-                test.enabled = false; test.enabled = true;
-                Check(test.Marked && test.circle.activeSelf && test.calenderSpr.activeSelf && !test.calenderWin.activeSelf, "Repeated clicks and disable/enable preserve result");
-                File.WriteAllText(Folder + "/Verification.txt", "PASS: initial state; collider interaction routing; imported sound playback; separate clicks; Circle visibility; repeated clicks; enable/disable persistence.\n");
+                test.Click(); test.RestoreCompleted();
+                var block = new MaterialPropertyBlock(); test.calendarRenderer.GetPropertyBlock(block);
+                Check(block.GetTexture("_BaseMap") == test.mayCalCircle && test.calendarRenderer.gameObject.activeInHierarchy, "Final renderer texture and restore");
+                Check(!test.GetComponentsInChildren<Transform>(true).Any(x => x.name == "CalenderWin" || x.name == "CalenderSpr" || x.name == "Circle"), "Unused objects removed");
+                Report("PASS: December initial PNG; same-object collider; first click May; paper sound; separate-click guard; second click marked May; game completion; final texture persistence and restore; unused objects removed.");
                 Finish();
             }
             step++;
         }
-        catch (Exception e)
-        {
-            File.WriteAllText(Folder + "/Verification.txt", "FAILED: " + e);
-            Debug.LogException(e); Finish();
-        }
+        catch (Exception e) { Report("FAILED: " + e); Debug.LogException(e); Finish(); }
     }
-    static void Finish() { EditorApplication.update -= VerifyStep; EditorApplication.ExitPlaymode(); }
+    static void Finish() { EditorApplication.update -= Verify; EditorApplication.ExitPlaymode(); }
 }
+

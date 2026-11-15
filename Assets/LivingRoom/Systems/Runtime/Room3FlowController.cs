@@ -2,11 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using TeamRoulette.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace TeamRoulette.Room3
 {
@@ -87,7 +85,7 @@ namespace TeamRoulette.Room3
                 if (home && IsStoredToy(node)) continue;
                 string id = ToyIdentity(node.name);
                 bool toy = Array.IndexOf(ToyIds, id) >= 0;
-                bool target = home ? toy || id == "WindowClose" || id == "TV" || id == "Door" : toy || id == "TV";
+                bool target = home ? toy || id == "WindowClose" : toy;
                 if (!target) continue;
                 EnsureCollider(node.gameObject);
                 var binding = node.GetComponent<Room3FlowTarget>();
@@ -174,12 +172,8 @@ namespace TeamRoulette.Room3
                     var windowGame = Find<WindowGameController>(target.gameObject.scene);
                     if (windowGame) windowGame.Interact();
                     break;
-                case "Door":
-                    if (!GameManager.TryBegin(GameStage.Entrance)) return;
-                    if (GameManager.ReportComplete(GameStage.Entrance)) ShowEnding();
-                    break;
                 case "TV":
-                    BeginVisit(target, GameStage.TV, ToyRoom);
+                    // TV playback is handled locally by TVGameTarget on Screen.
                     break;
                 default:
                     if (Array.IndexOf(ToyIds, target.ObjectId) < 0 || IsToyComplete(target.ObjectId)) return;
@@ -270,45 +264,7 @@ namespace TeamRoulette.Room3
             Physics.SyncTransforms();
         }
 
-        void ShowEnding()
-        {
-            EndingVisible = true;
-            var ui = FindFirstObjectByType<GameUI>();
-            var font = ui && ui.objectiveText ? ui.objectiveText.font : TMP_Settings.defaultFontAsset;
-            // Suspend the whole room so movement, settings, hands and other click handlers stop.
-            foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects()) root.SetActive(false);
-            var screen = new GameObject("Room3 Ending", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            screen.transform.SetParent(transform, false);
-            var canvas = screen.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = short.MaxValue;
-            var scaler = screen.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            var background = new GameObject("Black", typeof(RectTransform), typeof(Image));
-            background.transform.SetParent(screen.transform, false);
-            Stretch(background.GetComponent<RectTransform>());
-            background.GetComponent<Image>().color = Color.black;
-            var label = new GameObject("Game Over", typeof(RectTransform), typeof(TextMeshProUGUI));
-            label.transform.SetParent(background.transform, false);
-            Stretch(label.GetComponent<RectTransform>());
-            var text = label.GetComponent<TextMeshProUGUI>();
-            text.font = font;
-            text.text = "게임 종료";
-            text.fontSize = 64;
-            text.color = Color.white;
-            text.alignment = TextAlignmentOptions.Center;
-            Time.timeScale = 0;
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = false;
-        }
-
-        static void Stretch(RectTransform rect)
-        {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = rect.offsetMax = Vector2.zero;
-        }
+        public void BeginEnding() { EndingVisible = true; }
 
         void OnDestroy() { if (EndingVisible) Time.timeScale = 1; }
     }

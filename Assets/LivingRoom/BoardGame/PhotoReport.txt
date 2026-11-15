@@ -1,0 +1,22 @@
+PASS: 21 unique images assigned; aspect ratios and alpha bounds preserved; 21 click areas and outlines fitted; labels hidden; stable item IDs and initial board/floor states preserved.
+photo1 -> 겨울이_클로즈업 : Gyeoul_Close_Up; size=(0.34, 0.37); crop=0,0,1193,1316
+photo2 -> 겨울이_공놀이 : Gyeoul_Ball; size=(0.30, 0.37); crop=0,0,1121,1401
+photo3 -> 겨울이_생일파티 : Gyeoul_Birthday_Party; size=(0.37, 0.28); crop=0,0,1447,1085
+photo4 -> 겨울이_간식 : Gyeoul_Eating_Treat; size=(0.37, 0.28); crop=0,0,1447,1085
+photo5 -> 겨울이_배꼽낮잠 : Gyeoul_Sleeping; size=(0.37, 0.28); crop=0,0,1447,1085
+photo6 -> 겨울이_방석낮잠 : Gyeoul_Sleeping_In_Bed; size=(0.37, 0.28); crop=0,0,1447,1085
+photo7 -> 겨울이_침대낮잠 : Gyeoul_Sleeping_On_Bed; size=(0.37, 0.28); crop=0,0,1447,1085
+photo8 -> 겨울이_목욕 : Gyeoul_Soaking_We; size=(0.37, 0.28); crop=0,0,1447,1085
+photo9 -> 겨울이_산책 : Gyeoul_Walking_With_Harness; size=(0.37, 0.28); crop=0,0,1447,1085
+photo10 -> 겨울이_어질리티 : GyeoulFrame; size=(0.37, 0.30); crop=0,0,1401,1121
+photo11 -> 겨울이_손에올린앞발 : 11_Gyeoul_With_One_Hand; size=(0.37, 0.28); crop=0,0,1447,1085
+photo12 -> 여행_기념카드 : 12_Travel_Card; size=(0.35, 0.23); crop=49,40,1482,986
+photo13 -> 공연_티켓 : 13_Concert_Tickets; size=(0.34, 0.14); crop=113,73,1762,758
+photo14 -> 계곡_여행계획 : 14_Valley_Plan; size=(0.35, 0.25); crop=115,47,1420,963
+photo15 -> 겨울이_유치원상장 : 15_Kindergarten_Award; size=(0.29, 0.39); crop=146,46,1052,1256
+photo16 -> 겨울이_어질리티메달 : 16_Agility_Medal; size=(0.14, 0.25); crop=206,38,943,1347
+photo17 -> 겨울이_약시간메모 : 17_Medicine_Schedule; size=(0.23, 0.28); crop=122,67,1070,1243
+photo18 -> 겨울이_병원메모 : 18_Hospital_Memo_February_Transparent; size=(0.28, 0.15); crop=59,123,1475,871
+photo19 -> 친구메모_겨울이귀여워 : 19_Cute_Note; size=(0.27, 0.28); crop=96,77,1156,1164
+photo20 -> 친구메모_다음엔늦지마 : 20_Late_Note; size=(0.28, 0.13); crop=63,66,1709,822
+photo21 -> 겨울이_발도장 : 21_Paw_Print; size=(0.20, 0.28); crop=57,33,1028,1416

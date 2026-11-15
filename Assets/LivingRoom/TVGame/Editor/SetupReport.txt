@@ -1,0 +1,10 @@
+TVGame 설치 완료
+씬: Assets/Scenes/Room3_LivingRoom.unity
+화면: TVGame/Screen
+Screen 위치/회전/크기 유지: 확인
+영상: Assets/LivingRoom/TVGame/Winter_TV.mp4
+썸네일: Assets/LivingRoom/TVGame/Thumbnail.png
+이전 TV 클릭 컴포넌트 제거: 0
+목표 완료: 최초 loopPointReached → GameManager.ReportComplete(GameStage.TV)
+재시청: 확인창 생략, Esc 허용
+실제 영상 재생 검증: 별도 필요
