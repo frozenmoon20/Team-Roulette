@@ -1,0 +1,1 @@
+Saved water outlet: (15.50, 1.84, 6.67) -> (15.50, 1.79, 6.55). Water click area aligned.

@@ -1,0 +1,4 @@
+PASS: manual walk; collider-only washer button; removed drum overlay; aperture material; actual exterior door hinges and camera anchors
+Washer view=(-4.33, 1.57, -0.77)
+Old door=(-1.00, 0.70, 1.89)
+Yard door=(-1.00, 0.50, 1.89)

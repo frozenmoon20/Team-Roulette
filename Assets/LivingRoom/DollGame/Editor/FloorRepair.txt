@@ -1,0 +1,6 @@
+Added floor colliders: 38
+PASS: Player floor=(3.01, 0.73, -3.65) collider=Stairwell surround / Floor_12x_8x.001 / 1
+PASS: Chase Entry floor=(2.60, 0.73, -4.90) collider=Stairwell surround / Floor_12x_8x.001 / 1
+PASS: Chase A floor=(2.80, 0.73, -1.80) collider=Stairwell surround / Floor_12x_8x.001 / 1
+PASS: Chase B floor=(1.20, 0.73, -1.80) collider=Stairwell surround / Floor_12x_8x.001 / 1
+PASS: Chase C floor=(1.60, 0.73, -4.40) collider=Stairwell surround / Floor_12x_8x.001 / 1

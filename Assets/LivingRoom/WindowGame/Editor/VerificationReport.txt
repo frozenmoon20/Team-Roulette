@@ -1,0 +1,31 @@
+WindowGame Play mode integration verification
+PASS: Real scene controllers and shared AudioManager initialized
+PASS: Existing CurtainGame enabled without rewriting its controller
+PASS: No animated curtain or wind before opening
+PASS: Interaction before curtain completion rejected
+PASS: Existing manager advances Curtain -> Window
+PASS: Curtain finale exposes static end curtains and unlocks Window
+DIAGNOSTIC: window bounds=Center: (24.10, 2.10, 0.29), Extents: (1.10, 1.40, 0.03); camera=(24.10, 2.10, 1.49); ray=Origin: (24.10, 2.10, 1.44), Dir: (0.00, 0.00, -1.00)
+DIAGNOSTIC hit: Player; distance=0; target=
+DIAGNOSTIC hit: Window Interaction; distance=1.09; target=Wall_Interior_2x_door_double_L (WindowGameTarget)
+DIAGNOSTIC first hit=Window Interaction
+PASS: Existing player-camera interaction ray reaches the actual sliding window
+PASS: Click starts movement without completing stage
+PASS: Existing player movement and look temporarily blocked
+PASS: Window moves gradually; no premature completion or curtain swap
+PASS: Interrupted opening restores input and remains retryable
+PASS: Interrupted window returns to its closed pose
+PASS: Completion occurs only after actual open pose
+PASS: Left window moves exactly world -X 2 units
+PASS: Static OFF and animated ON at completion
+PASS: Legacy idle plays explicitly and loops without automatic playback
+PASS: Player input restored to previous state
+PASS: Shared AudioManager fades the assigned wind loop to target volume
+PASS: Wind curtain roots remain at their arranged positions
+PASS: Room resume restores open window and wind after curtain restoration
+PASS: Room resume restarts wind audio and Legacy animation
+PASS: Repeated input does not reopen or skip the following stage
+PASS: Actual scene reload retains completion in the existing persistent manager
+PASS: Actual scene reload restores curtain completion, window open and wind state
+PASS: Actual scene reload restores visible wind curtains, animation and audio
+ALL CHECKS PASSED

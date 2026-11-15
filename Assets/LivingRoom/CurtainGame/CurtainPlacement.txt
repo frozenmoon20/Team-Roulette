@@ -1,0 +1,3 @@
+room2_curtaina: 1 Animation, 0 Animator; source Assets/StoreAssets/Curtains Animated/POLYBOX/hazelwoodloft/Animation/room2_curtaina.fbx
+room2_curtainb: 1 Animation, 0 Animator; source Assets/StoreAssets/Curtains Animated/POLYBOX/hazelwoodloft/Animation/room2_curtainb.fbx
+Saved; original model prefab links and components retained.

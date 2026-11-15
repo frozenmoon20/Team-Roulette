@@ -1,0 +1,7 @@
+PASS: Full size at route start
+PASS: Halfway to curtain gives size 0.6
+PASS: Stationary player does not shrink over time
+PASS: Minimum is not reached early
+PASS: Retreat restores size based on route position
+PASS: Minimum 0.2 at curtain contact
+ALL CHECKS PASSED

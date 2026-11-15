@@ -1,0 +1,9 @@
+Unity에서 사용하기
+
+1. 이 FBX, 프리팹, SimpleTugRope.cs, 재질/텍스처 폴더 및 .meta 파일을 함께 Assets에 가져옵니다.
+2. DogAccesories-001_TugRope.prefab을 씬에 놓습니다. 스크립트와 기본 조작점은 이미 연결되어 있습니다.
+3. Play 상태에서 Hand_Grip, Mouth_Grip을 움직이면 로프가 변형됩니다. Bend_Direction은 휘어지는 방향입니다.
+4. 실제 게임에서는 프리팹 루트의 SimpleTugRope 컴포넌트에 강아지 입 Transform을 Mouth Target, 손 Transform을 Hand Target에 지정합니다.
+5. Allow Stretch가 켜져 있으면 양끝 거리가 로프 길이보다 길 때 늘어납니다. 끄면 원래 길이까지만 닿습니다.
+
+Blender IK 제약 자체가 Unity에서 실행되는 것은 아니며, 포함된 스크립트가 본을 움직입니다.

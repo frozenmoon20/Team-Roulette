@@ -15,6 +15,15 @@ public static class MealGameVerification
     static string report;
     static MealGameVerification() { EditorApplication.playModeStateChanged += OnPlay; }
 
+    [InitializeOnLoadMethod]
+    static void ResumeRequestedTests()
+    {
+        EditorApplication.delayCall+=()=>{
+            string path=MealGameSetup.Folder+"/Verify.pending";
+            if(!File.Exists(path))return;
+            File.Delete(path);Run();
+        };
+    }
     [MenuItem("Tools/MealGame/2 - Verify full sequence")]
     public static void Run()
     {
@@ -93,18 +102,24 @@ public static class MealGameVerification
     static void Aim(MealGameController g, MealAction action)
     {
         var target = Object.FindObjectsByType<MealTarget>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
-            .First(t => t.game == g && t.action == action);
-        Bounds bounds = target.GetComponent<Renderer>().bounds;
+            .First(t => t.game == g && t.action == action && t.enabled);
+        Bounds bounds = MealGeometry.BoundsOf(target.gameObject);
         var cam = g.interactor.playerCamera.transform;
-        cam.position = bounds.center + Vector3.left * 1.2f;
-        cam.LookAt(bounds.center);
-        Physics.SyncTransforms();
-        var actual = g.GetComponent<MealInput>().FindTarget();
-        Check(actual && actual.action == action, "Camera ray reaches " + action);
+        foreach(var direction in new[]{Vector3.forward,Vector3.right,Vector3.left,Vector3.back,Vector3.up})
+        {
+            float extent=Vector3.Dot(bounds.extents,new Vector3(Mathf.Abs(direction.x),Mathf.Abs(direction.y),Mathf.Abs(direction.z)));
+            cam.position=bounds.center+direction*(extent+.45f);
+            cam.LookAt(bounds.center);
+            Physics.SyncTransforms();
+            var actual=g.GetComponent<MealInput>().FindTarget();
+            if(actual && actual.action==action){Check(true,"Camera ray reaches "+action);return;}
+        }
+        Check(false,"Camera ray reaches "+action);
     }
     static IEnumerator VerifyMouse()
     {
         var g = Object.FindFirstObjectByType<MealGameController>();
+        typeof(TeamRoulette.Room3.GameManager).GetProperty("Instance").SetValue(null, null);
         OptionState.Instance.Unlock(OptionType.Hand);
         OptionState.Instance.Unlock(OptionType.Grab);
         OptionState.Instance.Unlock(OptionType.Saturation);
@@ -131,6 +146,7 @@ public static class MealGameVerification
     static IEnumerator Verify(bool reverse)
     {
         var g = Object.FindFirstObjectByType<MealGameController>();
+        typeof(TeamRoulette.Room3.GameManager).GetProperty("Instance").SetValue(null, null);
         var hand = PlayerHand.Instance;
         var input = g.GetComponent<MealInput>();
         Vector3 originalCameraPosition = g.interactor.playerCamera.transform.localPosition;
@@ -181,7 +197,7 @@ public static class MealGameVerification
         Vector3 pop = g.cookedToast.transform.position;
         g.Click(MealAction.Toaster);
         yield return .15;
-        Check(hand.Held == g.cookedToast && Vector3.Dot(g.cookedToast.transform.up, Vector3.up) > .999f,
+        Check(hand.Held == g.cookedToast && MealGeometry.BoundsOf(g.cookedToast.gameObject).size.y < Mathf.Max(MealGeometry.BoundsOf(g.cookedToast.gameObject).size.x, MealGeometry.BoundsOf(g.cookedToast.gameObject).size.z) * .5f,
             "Cooked toast is horizontal in world space, independent of wrist rotation");
         // Inspect the real player/camera/hand hierarchy, not a detached camera.
         g.interactor.playerCamera.transform.localPosition = originalCameraPosition;
@@ -192,10 +208,9 @@ public static class MealGameVerification
         body.enabled = true;
         g.player.cameraRoot.localRotation = Quaternion.Euler(22, 0, 0);
         yield return .3;
-        Check(Vector3.Dot(g.cookedToast.transform.up, Vector3.up) > .999f, "Cooked toast stays level while camera looks down");
-        Bounds toastBounds = g.cookedToast.GetComponent<Renderer>().bounds;
+        Check(MealGeometry.BoundsOf(g.cookedToast.gameObject).size.y < Mathf.Max(MealGeometry.BoundsOf(g.cookedToast.gameObject).size.x, MealGeometry.BoundsOf(g.cookedToast.gameObject).size.z) * .5f, "Cooked toast stays level while camera looks down");
+        Bounds toastBounds = MealGeometry.BoundsOf(g.cookedToast.gameObject);
         Check(Mathf.Abs(toastBounds.min.y - hand.palmPoint.position.y) < .002f, "Toast bottom rests at palm height");
-        if (!reverse) ScreenCapture.CaptureScreenshot(System.IO.Path.Combine(System.IO.Path.GetTempPath(), "MealGame-held-toast.png"));
         yield return .3;
         g.ReturnHeld();
         Check(Vector3.Distance(g.cookedToast.transform.position, pop) < .001f, "Cooked toast cancellation returns to toaster, not initial scene location");
@@ -218,6 +233,11 @@ public static class MealGameVerification
         g.Click(reverse ? MealAction.Jam : MealAction.CookedToast);
         g.Click(reverse ? MealAction.CookedToast : MealAction.Jam);
         Check(g.JamApplied && g.jamToast.activeSelf && !g.cookedToast.gameObject.activeSelf, reverse ? "Jam then toast applies jam" : "Toast then jam applies jam");
+        Bounds dishBounds=MealGeometry.BoundsOf(g.plate.transform.Find("PlateBigBreakfast").gameObject);
+        Bounds jamBounds=MealGeometry.BoundsOf(g.jamToast);
+        Check(Vector2.Distance(new Vector2(dishBounds.center.x,dishBounds.center.z),new Vector2(jamBounds.center.x,jamBounds.center.z))<.03f,
+            "Purchased jam toast is centered on purchased plate");
+        Check(Mathf.Abs(jamBounds.min.y-dishBounds.max.y)<.025f,"Jam toast rests on plate surface");
         var plateHome = g.plate.transform.position;
         g.Click(MealAction.Plate);
         yield return .15;

@@ -1,0 +1,4 @@
+Room3_LivingRoom prefab=Assets/LivingRoom/Assets/suburb_house_re/suburb_house.fbx sourceColliders=0 instanceColliders=1
+Room3_OldLivingRoom prefab=Assets/LivingRoom/Assets/suburb_house_re/suburb_house.fbx sourceColliders=0 instanceColliders=39
+Reverted added floor colliders: 38
+Room3_Toy prefab=Assets/LivingRoom/Assets/suburb_house/suburb_house.fbx sourceColliders=219 instanceColliders=219

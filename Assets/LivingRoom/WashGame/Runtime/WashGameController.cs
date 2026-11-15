@@ -352,9 +352,17 @@ public sealed class WashGameController : MonoBehaviour
     {
         yield return new WaitForSeconds(.65f);
         while (Input.GetMouseButton(0) || Time.timeScale <= 0) yield return null;
+        CompleteWash();
+    }
+    void CompleteWash()
+    {
+        RestoreCompleted();
         Release();
         TeamRoulette.Room3.GameManager.ReportComplete(TeamRoulette.Room3.GameStage.Wash);
     }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public void DebugComplete() { StopAllCoroutines(); CompleteWash(); }
+#endif
 
     public void RestoreCompleted()
     {

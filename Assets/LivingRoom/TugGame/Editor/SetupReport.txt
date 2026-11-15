@@ -1,0 +1,19 @@
+Room3_Toy 로프 터그놀이
+Player: Player / Camera: Camera
+Input: InputSystem_Actions (공유 에셋 유지, WASD 전용 액션)
+Winter: Spitz_anim_IP / Controller: Spitz_AContr_Demo
+Mouth: mouth / Head: head
+Mouth world: (-1.83, 0.47, 2.32) / Winter scale: (2.00, 2.00, 2.00)
+Rope: Assets/LivingRoom/TugGame/Prefabs/TugRope.prefab
+Manager: 기존 GameManager.Flow.CompleteVisit(로프)
+Rounds: 2 x 5
+Audio: Assets/Audio/Dog Bark_01.mp3
+Arm_Spitz|Idle_1: True
+Arm_Spitz|Attack_Bite_IP: True
+Arm_Spitz|Crouch_Idle_loop_1: True
+Arm_Spitz|Crouch_R_IP: True
+Arm_Spitz|Crouch_L_IP: True
+Arm_Spitz|Crouch_F_IP: True
+Arm_Spitz|Crouch_B_IP: True
+Arm_Spitz|Trot_F_IP: True
+Arm_Spitz|Bark: True

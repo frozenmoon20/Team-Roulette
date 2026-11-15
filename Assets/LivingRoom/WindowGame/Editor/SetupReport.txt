@@ -1,0 +1,20 @@
+WindowGame scene audit and setup
+Scene: Assets/Scenes/Room3_LivingRoom.unity
+Pipeline: PC_RPAsset
+Curtain movement: CurtainGame/curtaina_static, CurtainGame/curtainb_static
+Curtain completion: CurtainGameController.Completed + GameManager.IsComplete(Curtain)
+Window left: WindowGame/Wall_Interior_2x_door_double_L; pivot/local position (25.1000, 0.5000, 0.1030)
+Window right preserved: WindowGame/Wall_Interior_2x_door_double_R
+Separate yard exit candidates: PorchGame, PorchGame/Door, suburb_house/Door_exterior_windowed.001
+Aligned room2_curtaina: Center: (24.5020, 1.9639, 0.3000), Extents: (0.5533, 1.2639, 0.1658) to Center: (24.5020, 1.9639, 0.3000), Extents: (0.5533, 1.2639, 0.0219)
+Aligned room2_curtainb: Center: (20.8880, 1.9632, 0.3000), Extents: (0.6001, 1.2632, 0.2420) to Center: (20.8880, 1.9632, 0.3000), Extents: (0.6001, 1.2632, 0.0221)
+Interaction surface ahead of house pane: Center: (25.10, 0.50, 0.10), Extents: (1.10, 1.40, 0.03)
+room2_curtaina: Legacy=True, wrap=Loop, autoPlay=false
+room2_curtainb: Legacy=True, wrap=Loop, autoPlay=false
+Input/interaction: existing PlayerInteractor spherecast + left click + IInteractable/IHasName
+Player/Camera: Player / Player/PlayerCameraRoot
+UI: existing ObjectiveManager/DialogueManager; no UI created
+Audio: existing AudioManager.PlaySceneLoop; clip Assets/LivingRoom/WindowGame/VentilationWind.wav
+Open: (25.00, 0.50, 0.00) -> (23.00, 0.50, 0.00); seconds=2
+Material: Assets/StoreAssets/Curtains Animated/POLYBOX/hazelwoodloft/Geometry/Materials/curtain_opaque.mat, Assets/StoreAssets/Curtains Animated/POLYBOX/hazelwoodloft/Geometry/Materials/room3_curatin_fabric56.mat
+Material: Assets/StoreAssets/Curtains Animated/POLYBOX/hazelwoodloft/Geometry/Materials/room3_curatin_fabric56.mat, Assets/StoreAssets/Curtains Animated/POLYBOX/hazelwoodloft/Geometry/Materials/curtain_opaque.mat

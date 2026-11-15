@@ -1,0 +1,14 @@
+BEFORE washer: Assets/LivingRoom/DollGame/WasherOpaque.mat shader=Universal Render Pipeline/Lit queue=2000
+_Surface=0
+_ZWrite=1
+_Smoothness=0.08
+_Metallic=0
+Winter controller=none
+Arm_Spitz|Sitting_end motion=Arm_Spitz|Sitting_end
+Arm_Spitz|Sitting_loop_1 motion=Arm_Spitz|Sitting_loop_1
+Arm_Spitz|Sitting_loop_2 motion=Arm_Spitz|Sitting_loop_2
+Arm_Spitz|Sitting_start motion=Arm_Spitz|Sitting_start
+Reference view=(2.38, 2.23, -4.20) rotation=(32.80, 281.52, 8.24) bed=(0.60, 0.94, -3.86)
+Used current Scene view for photo 2
+Drying view=(4.48, 2.00, 7.99) euler=(10.48, 213.28, 0.00) rack=(3.08, 1.30, 4.19) door=(-1.00, 0.50, 2.74)
+Rest view=(2.38, 2.23, -4.20) euler=(32.80, 281.52, 8.24)

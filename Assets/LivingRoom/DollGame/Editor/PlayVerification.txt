@@ -1,0 +1,30 @@
+오리 인형 회상 통합 재생 검사
+PASS: 추격 시작 후 5초 동안 플레이어 바닥 관통 없음
+PASS: 현재 거실 인형 클릭으로 과거 거실 추격 시작
+PASS: 추격 중 기존 플레이어 조작 유지
+PASS: 거리 밖에서는 인형을 뺏을 수 없음
+PASS: 가까이 접근한 뒤 인형 뺏기
+PASS: 인형을 뺏는 짧은 동작 동안 입력 잠금
+STATE: TakeDoll
+STATE: MoveToWasher
+STATE: WasherInteraction
+PASS: 세탁기 시작 버튼 실제 콜라이더 클릭 가능
+PASS: 세탁기 시작 1회
+PASS: 세탁기 중복 시작 차단
+STATE: Washing
+PASS: 세탁 관람 중 Sitting loop 상태 유지
+STATE: MoveOutside
+STATE: Drying
+PASS: 실제 Room3_Toy 마당으로 이동
+PASS: 감상 구간 HUD 숨김
+STATE: ReturnDoll
+STATE: RunToCushion
+PASS: 계단 각 단과 현관 바닥 경로를 통과
+PASS: 겨울이가 마당에서 현관 높이까지 상승
+PASS: 집 문이 열린 뒤 겨울이가 진입
+STATE: RestWithDoll
+PASS: 완료 이벤트 정확히 1회
+PASS: 현재 거실 복귀
+PASS: Room3 인형 정리 완료 기록
+PASS: 임시 회상 씬 정리
+PASS: 기존 현재 시점 플레이어 조작 복구

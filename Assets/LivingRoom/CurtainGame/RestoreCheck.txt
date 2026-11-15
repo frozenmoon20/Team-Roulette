@@ -1,0 +1,14 @@
+Curtain regression checks
+PASS: Half unit along current path applies configured shrink
+PASS: Two units applies configured shrink
+PASS: Four units reaches minimum 0.2
+PASS: Backward movement grows with configured shrink
+PASS: Retreat restores full scale
+PASS: Shared dialogue manager exists
+PASS: Guide step 1 queues next existing dialogue line
+PASS: Guide step 2 queues next existing dialogue line
+PASS: Guide step 3 queues next existing dialogue line
+PASS: Completion switches static curtains
+PASS: Correct end curtain references
+PASS: Initial curtain visibility restored
+ALL CHECKS PASSED

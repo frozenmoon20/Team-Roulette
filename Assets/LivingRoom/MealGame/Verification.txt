@@ -30,6 +30,8 @@ PASS: Camera ray reaches CookedToast
 PASS: Empty-space click breaks jam/toast sequence
 PASS: Other-object click breaks jam/toast sequence
 PASS: Toast then jam applies jam
+PASS: Purchased jam toast is centered on purchased plate
+PASS: Jam toast rests on plate surface
 PASS: Plate carries its active jam toast
 PASS: Carried plate and child toast remain horizontal
 PASS: Plate cancellation preserves meal and location
@@ -85,6 +87,8 @@ PASS: Camera ray reaches CookedToast
 PASS: Empty-space click breaks jam/toast sequence
 PASS: Other-object click breaks jam/toast sequence
 PASS: Jam then toast applies jam
+PASS: Purchased jam toast is centered on purchased plate
+PASS: Jam toast rests on plate surface
 PASS: Plate carries its active jam toast
 PASS: Carried plate and child toast remain horizontal
 PASS: Plate cancellation preserves meal and location

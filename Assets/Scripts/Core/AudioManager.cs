@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
 
 // 효과음(한 번 나는 소리)을 대신 틀어 주는 공용 관리자. _Systems/AudioManager에 붙어 있고 씬이 바뀌어도 살아남는다.
 // 원리:
@@ -9,11 +11,14 @@ using UnityEngine;
 //   AudioManager.Play(clip);          // 기본 크기
 //   AudioManager.Play(clip, 0.5f);    // 절반 크기
 //   AudioManager.Volume               // 지금 효과음이 나야 할 크기 (해금 전 0, 해금 후 슬라이더 값). 반복 소리(웅웅 등)에 곱해서 씀
+//   AudioManager.Instance.PlaySceneLoop(source, clip, volume, fadeSeconds)   // (거실) 씬의 반복 소리를 서서히 틀기
+//   AudioManager.Instance.StopSceneLoop(source)                              // (거실) 그 반복 소리 멈추기
 public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
 
     private AudioSource audioSource;
+    readonly Dictionary<AudioSource, Coroutine> sceneFades = new Dictionary<AudioSource, Coroutine>();
 
     void Awake()
     {
@@ -64,5 +69,41 @@ public class AudioManager : MonoBehaviour
     {
         if (clip == null || !SfxUnlocked) return;
         audioSource.PlayOneShot(clip, volume);
+    }
+
+    // ===== (거실 팀원 추가) 씬에 있는 반복 소리를 같은 효과음 경로로 서서히 틀고 멈추기 =====
+
+    // Scene-owned looping sources retain the shared SFX mixer route without making music loop.
+    public void PlaySceneLoop(AudioSource source, AudioClip clip, float volume, float fadeSeconds)
+    {
+        if (!source || !clip || !source.gameObject.activeInHierarchy) return;
+        StopSceneLoop(source);
+        source.outputAudioMixerGroup = audioSource.outputAudioMixerGroup;
+        source.playOnAwake = false;
+        source.clip = clip;
+        source.loop = true;
+        source.volume = 0;
+        source.Play();
+        sceneFades[source] = StartCoroutine(FadeSceneLoop(source, Mathf.Clamp01(volume), fadeSeconds));
+    }
+
+    IEnumerator FadeSceneLoop(AudioSource source, float volume, float seconds)
+    {
+        float elapsed = 0;
+        while (source && source.gameObject.activeInHierarchy && elapsed < Mathf.Max(.01f, seconds))
+        {
+            elapsed += Time.deltaTime;
+            source.volume = volume * Mathf.SmoothStep(0, 1, Mathf.Clamp01(elapsed / Mathf.Max(.01f, seconds)));
+            yield return null;
+        }
+        if (source && source.gameObject.activeInHierarchy) source.volume = volume;
+        if (source) sceneFades.Remove(source);
+    }
+
+    public void StopSceneLoop(AudioSource source)
+    {
+        if (!source) return;
+        if (sceneFades.TryGetValue(source, out var fade)) { StopCoroutine(fade); sceneFades.Remove(source); }
+        source.Stop();
     }
 }

@@ -1,57 +1,59 @@
 using UnityEngine;
+using TeamRoulette.Room3;
 
 public sealed class CalGameController : MonoBehaviour
 {
-    public GameObject calenderWin;
-    public GameObject calenderSpr;
-    public GameObject circle;
+    public Renderer calendarRenderer;
+    public Texture2D decemberCal, mayCal, mayCalCircle;
     public AudioSource pageAudio;
-    [Tooltip("Replace this clip to change the paper-turn sound.")]
     public AudioClip pageTurnSound;
     public bool Turned { get; private set; }
     public bool Marked { get; private set; }
+    public Texture CurrentPage => Marked ? mayCalCircle : Turned ? mayCal : decemberCal;
+    MaterialPropertyBlock properties;
     int lastClickFrame = -1;
-
-    public void RestoreCompleted()
+    void ShowPage()
     {
-        Turned = Marked = true;
-        calenderWin.SetActive(false);
-        calenderSpr.SetActive(true);
-        circle.SetActive(true);
+        if (!calendarRenderer) return;
+        if (properties == null) properties = new MaterialPropertyBlock();
+        calendarRenderer.GetPropertyBlock(properties);
+        properties.SetTexture("_BaseMap", CurrentPage);
+        properties.SetTexture("_MainTex", CurrentPage);
+        calendarRenderer.SetPropertyBlock(properties);
     }
-
+    public void RestoreCompleted() { Turned = Marked = true; ShowPage(); }
     void Awake()
     {
-        if (!calenderWin || !calenderSpr || !circle || !pageAudio)
-        {
-            Debug.LogError("CalGame: assign both calendars, Circle and AudioSource.", this);
-            enabled = false;
-            return;
-        }
-        calenderWin.SetActive(true);
-        calenderSpr.SetActive(false);
-        circle.SetActive(false);
+        if (!calendarRenderer || !decemberCal || !mayCal || !mayCalCircle || !pageAudio)
+        { Debug.LogError("CalGame: assign calendar Renderer, three PNG textures and AudioSource.", this); enabled = false; return; }
+        ShowPage();
     }
-
-    public void Click(bool springPage)
+    // Compatibility for existing Room3 verification and event callers.
+    public void Click(bool unusedSpringPage) { Click(); }
+    public void Click()
     {
-        if (!isActiveAndEnabled || Time.timeScale <= 0 || lastClickFrame == Time.frameCount) return;
-        if (!TeamRoulette.Room3.GameManager.TryBegin(TeamRoulette.Room3.GameStage.Calendar)) return;
-        if (!Turned && !springPage)
+        if (!isActiveAndEnabled || Marked || Time.timeScale <= 0 || lastClickFrame == Time.frameCount) return;
+        if (!GameManager.TryBegin(GameStage.Calendar)) return;
+        lastClickFrame = Time.frameCount;
+        if (!Turned)
         {
-            lastClickFrame = Time.frameCount;
-            Turned = true;
-            TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Calendar, TeamRoulette.Room3.ObjectiveStep.MarkCalendar);
-            calenderWin.SetActive(false);
-            calenderSpr.SetActive(true);
+            Turned = true; ShowPage();
+            ObjectiveManager.Request(GameStage.Calendar, ObjectiveStep.MarkCalendar);
             if (pageTurnSound) pageAudio.PlayOneShot(pageTurnSound);
         }
-        else if (Turned && springPage && !Marked)
+        else
         {
-            lastClickFrame = Time.frameCount;
-            Marked = true;
-            circle.SetActive(true);
-            TeamRoulette.Room3.GameManager.ReportComplete(TeamRoulette.Room3.GameStage.Calendar);
+            CompleteCalendar();
         }
     }
+    void CompleteCalendar()
+    {
+        RestoreCompleted();
+        GameManager.ReportComplete(GameStage.Calendar);
+    }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public void DebugComplete() { CompleteCalendar(); }
+#endif
 }
+
+

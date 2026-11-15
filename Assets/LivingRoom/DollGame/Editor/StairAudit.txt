@@ -1,0 +1,43 @@
+2F bathroom / stair side 1 pos=(-3.40, 3.50, -2.69) bounds=Center: (-3.40, 5.10, -4.09), Extents: (0.10, 1.40, 1.41) colliders=MeshCollider:True
+2F bathroom / stair side 2 pos=(-3.40, 3.50, -5.50) bounds=Center: (-3.40, 5.10, -6.65), Extents: (0.10, 1.40, 1.15) colliders=MeshCollider:True
+2F bedroom / stair side 1 pos=(-0.19, 3.50, -2.50) bounds=Center: (-0.19, 5.10, -4.00), Extents: (0.10, 1.40, 1.50) colliders=MeshCollider:True
+2F bedroom / stair side 2 pos=(-0.19, 3.50, -5.50) bounds=Center: (-0.19, 5.10, -6.65), Extents: (0.10, 1.40, 1.15) colliders=MeshCollider:True
+Aligned marked / 1F porch left solid 09 pos=(3.50, 0.50, 2.00) bounds=Center: (3.45, 1.75, 1.90), Extents: (0.05, 1.75, 0.10) colliders=MeshCollider:True
+Aligned marked / 1F porch left solid 10 pos=(0.90, 0.50, 2.00) bounds=Center: (0.70, 1.75, 1.90), Extents: (0.20, 1.75, 0.10) colliders=MeshCollider:True
+Entry / concrete step pos=(0.20, 0.12, 4.00) bounds=Center: (-1.00, 0.08, 4.60), Extents: (1.20, 0.08, 0.60) colliders=MeshCollider:True
+Entry / concrete step.001 pos=(0.10, 0.25, 4.00) bounds=Center: (-1.00, 0.17, 4.40), Extents: (1.10, 0.17, 0.40) colliders=MeshCollider:True
+Entry / concrete step.002 pos=(0.00, 0.37, 4.00) bounds=Center: (-1.00, 0.25, 4.20), Extents: (1.00, 0.25, 0.20) colliders=MeshCollider:True
+F1-10 / Wall_1st_3x_window_double_B (porch) pos=(3.40, 0.50, 2.00) bounds=Center: (2.15, 1.75, 1.88), Extents: (1.25, 1.75, 0.15) colliders=MeshCollider:True
+WindowPane / F1-10 / Wall_1st_3x_window_double_B (porch) pos=(3.40, 0.50, 2.00) bounds=Center: (2.15, 2.23, 1.90), Extents: (0.77, 0.75, 0.00) colliders=MeshCollider:True
+Porch / Roof_5x pos=(-2.65, 3.14, 2.00) bounds=Center: (-1.00, 3.68, 3.00), Extents: (1.96, 0.55, 1.00) colliders=MeshCollider:True
+Porch / Roof_5x_end pos=(-2.65, 3.14, 4.00) bounds=Center: (-1.00, 3.68, 4.15), Extents: (1.96, 0.55, 0.26) colliders=MeshCollider:True
+Porch repaired / end main left pos=(3.70, 0.50, 2.00) bounds=Center: (3.84, 2.20, 2.98), Extents: (0.27, 1.70, 0.98) colliders=MeshCollider:True
+Porch repaired / end main right pos=(-2.80, 0.50, 2.00) bounds=Center: (-2.90, 2.20, 2.98), Extents: (0.31, 1.70, 0.98) colliders=MeshCollider:True
+Porch repaired / end wing left pos=(-3.25, 0.50, 1.20) bounds=Center: (-3.11, 2.20, 1.79), Extents: (0.27, 1.70, 0.59) colliders=MeshCollider:True
+Porch repaired / end wing right pos=(-7.75, 0.50, 1.20) bounds=Center: (-7.89, 2.20, 1.79), Extents: (0.27, 1.70, 0.59) colliders=MeshCollider:True
+Porch repaired / main roof 1 pos=(2.70, 0.50, 2.00) bounds=Center: (2.70, 3.50, 2.98), Extents: (1.00, 0.40, 0.99) colliders=MeshCollider:True
+Porch repaired / main roof 2 pos=(0.70, 0.50, 2.00) bounds=Center: (0.70, 3.50, 2.98), Extents: (1.00, 0.40, 0.99) colliders=MeshCollider:True
+Porch repaired / main roof 3 pos=(-1.30, 0.50, 2.00) bounds=Center: (-1.30, 3.50, 2.98), Extents: (1.00, 0.40, 0.99) colliders=MeshCollider:True
+Porch repaired / main roof 4 pos=(-2.55, 0.50, 2.00) bounds=Center: (-2.55, 3.50, 2.98), Extents: (0.25, 0.40, 0.99) colliders=MeshCollider:True
+Porch repaired / original ceiling main pos=(3.70, 3.10, 3.90) bounds=Center: (0.45, 3.10, 2.95), Extents: (3.25, 0.00, 0.95) colliders=MeshCollider:True
+Porch repaired / original ceiling wing pos=(-3.25, 3.10, 2.34) bounds=Center: (-5.50, 3.10, 1.77), Extents: (2.25, 0.00, 0.57) colliders=MeshCollider:True
+Porch repaired / right wing roof 1 pos=(-4.25, 0.50, 1.20) bounds=Center: (-4.25, 3.50, 1.79), Extents: (1.00, 0.40, 0.59) colliders=MeshCollider:True
+Porch repaired / right wing roof 2 pos=(-6.25, 0.50, 1.20) bounds=Center: (-6.25, 3.50, 1.79), Extents: (1.00, 0.40, 0.59) colliders=MeshCollider:True
+Porch repaired / right wing roof 3 pos=(-7.50, 0.50, 1.20) bounds=Center: (-7.50, 3.50, 1.79), Extents: (0.25, 0.40, 0.59) colliders=MeshCollider:True
+Porch repaired / wing masonry footing 3.30 pos=(-3.30, 0.00, 2.07) bounds=Center: (-3.30, 0.34, 2.07), Extents: (0.20, 0.34, 0.20) colliders=MeshCollider:True
+Porch repaired / wing masonry footing 7.70 pos=(-7.70, 0.00, 2.07) bounds=Center: (-7.70, 0.34, 2.07), Extents: (0.20, 0.34, 0.20) colliders=MeshCollider:True
+Stairs_main_R pos=(-0.11, 0.50, -1.07) bounds=Center: (-1.24, 2.66, -4.62), Extents: (1.05, 2.16, 2.55) colliders=MeshCollider:True
+Stairwell / supplied Floor_stairs_5x_3x pos=(-0.11, 0.50, -7.07) bounds=Center: (-1.61, 3.60, -4.57), Extents: (1.50, 2.90, 2.50) colliders=MeshCollider:True
+Stairwell surround / Aligned ceiling / Floor_12x_8x.001 / 1 pos=(8.00, 3.50, 0.00) bounds=Center: (3.85, 3.50, -4.00), Extents: (4.15, 0.00, 4.00) colliders=MeshCollider:True
+Stairwell surround / Aligned ceiling / Floor_12x_8x.001 / 2 pos=(-3.11, 3.50, 0.00) bounds=Center: (-3.55, 3.50, -4.00), Extents: (0.45, 0.00, 4.00) colliders=MeshCollider:True
+Stairwell surround / Aligned ceiling / Floor_12x_8x.001 / 3 pos=(-0.29, 3.50, 0.00) bounds=Center: (-1.70, 3.50, -1.04), Extents: (1.41, 0.00, 1.04) colliders=MeshCollider:True
+Stairwell surround / Aligned ceiling / Floor_12x_8x.001 / 4 pos=(-0.29, 3.50, -7.07) bounds=Center: (-1.70, 3.50, -7.54), Extents: (1.41, 0.00, 0.46) colliders=MeshCollider:True
+Stairwell surround / Floor_12x_8x.001 / 1 pos=(8.00, 0.50, 0.00) bounds=Center: (3.95, 0.70, -4.00), Extents: (4.05, 0.00, 4.00) colliders=MeshCollider:True
+Stairwell surround / Floor_12x_8x.001 / 2 pos=(-3.11, 0.50, 0.00) bounds=Center: (-3.55, 0.70, -4.00), Extents: (0.45, 0.00, 4.00) colliders=MeshCollider:True
+Stairwell surround / Floor_12x_8x.001 / 3 pos=(-0.11, 0.50, 0.00) bounds=Center: (-1.61, 0.70, -1.04), Extents: (1.50, 0.00, 1.04) colliders=MeshCollider:True
+Stairwell surround / Floor_12x_8x.001 / 4 pos=(-0.11, 0.50, -7.07) bounds=Center: (-1.61, 0.70, -7.54), Extents: (1.50, 0.00, 0.46) colliders=MeshCollider:True
+Stairwell surround / Floor_12x_8x.002 / 1 pos=(8.00, 3.50, 0.00) bounds=Center: (3.85, 3.70, -4.00), Extents: (4.15, 0.00, 4.00) colliders=MeshCollider:True
+Stairwell surround / Floor_12x_8x.002 / 2 pos=(-3.11, 3.50, 0.00) bounds=Center: (-3.55, 3.70, -4.00), Extents: (0.45, 0.00, 4.00) colliders=MeshCollider:True
+Stairwell surround / Floor_12x_8x.002 / 3 pos=(-0.29, 3.50, 0.00) bounds=Center: (-1.70, 3.70, -1.04), Extents: (1.41, 0.00, 1.04) colliders=MeshCollider:True
+Stairwell surround / Floor_12x_8x.002 / 4 pos=(-0.29, 3.50, -7.07) bounds=Center: (-1.70, 3.70, -7.54), Extents: (1.41, 0.00, 0.46) colliders=MeshCollider:True
+stand=(3.08, 0.00, 5.24) door=(-1.00, 0.50, 2.74) inside=(-1.00, 0.50, 1.04)

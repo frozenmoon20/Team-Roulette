@@ -59,8 +59,13 @@ namespace TeamRoulette.Room3
         public bool IsToyComplete(string id) => completedToys.Contains(id);
         internal void CompleteToyVisit(string id)
         {
-            if (CurrentStage != GameStage.Toys || !Room3FlowController.ToyIds.Contains(id) || !completedToys.Add(id)) return;
-            if (completedToys.Count == Room3FlowController.ToyIds.Length) ReportComplete(GameStage.Toys);
+            if (CurrentStage != GameStage.Toys) return;
+            RecordToyMemoryCompletion(id);
+        }
+        public void RecordToyMemoryCompletion(string id)
+        {
+            if (!Room3FlowController.ToyIds.Contains(id) || !completedToys.Add(id)) return;
+            if (CurrentStage == GameStage.Toys && completedToys.Count == Room3FlowController.ToyIds.Length) ReportComplete(GameStage.Toys);
             else Changed?.Invoke();
         }
         bool openingDialogueQueued;
@@ -107,6 +112,84 @@ namespace TeamRoulette.Room3
         }
 
         void OnDestroy() { if (Instance == this) Instance = null; }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        bool debugCompletionPending;
+        void Update()
+        {
+#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+            bool pressed = UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.f1Key.wasPressedThisFrame;
+#else
+            bool pressed = Input.GetKeyDown(KeyCode.F1);
+#endif
+            if (pressed) DebugCompleteCurrentObjective();
+        }
+
+        // Development shortcut only. Stage ownership/events still belong to ReportComplete.
+        public bool DebugCompleteCurrentObjective()
+        {
+            if (debugCompletionPending) return false;
+            var stage = CurrentStage;
+            var visit = Flow ? Flow.VisitingObject : null;
+            debugCompletionPending = true;
+            bool accepted = DispatchDebugCompletion();
+            if (accepted) StartCoroutine(WaitForDebugCompletion(stage, visit));
+            else debugCompletionPending = false;
+            return accepted;
+        }
+        IEnumerator WaitForDebugCompletion(GameStage stage, string visit)
+        {
+            float timeout = Time.realtimeSinceStartup + 15;
+            do { yield return null; }
+            while (Time.realtimeSinceStartup < timeout && !IsFinished &&
+                (Flow.IsTransitioning || (CurrentStage == stage && Flow.VisitingObject == visit)));
+            debugCompletionPending = false;
+        }
+        bool DispatchDebugCompletion()
+        {
+            if (Instance != this || IsFinished || !Flow || Flow.IsTransitioning || Flow.EndingVisible || Time.timeScale <= 0) return false;
+            var ui = FindFirstObjectByType<GameUI>();
+            if (ui && ui.IsPaused) return false;
+            var stage = CurrentStage;
+            if (!TryBegin(stage)) return false;
+            if (PlayerHand.Instance && PlayerHand.Instance.Held) PlayerHand.Instance.ReturnHeld();
+            switch (stage)
+            {
+                case GameStage.Curtain: return DebugFinish<CurtainGameController>(g => g.DebugComplete());
+                case GameStage.Window: return DebugFinish<WindowGameController>(g => g.DebugComplete());
+                case GameStage.Wash: return DebugFinish<WashGameController>(g => g.DebugComplete());
+                case GameStage.Meal: return DebugFinish<MealGameController>(g => g.DebugComplete());
+                case GameStage.Board: return DebugFinish<BoardGameController>(g => g.DebugComplete());
+                case GameStage.Calendar: return DebugFinish<CalGameController>(g => g.DebugComplete());
+                case GameStage.TV: return DebugFinish<TVGameController>(g => g.DebugComplete());
+                case GameStage.Entrance: return DebugFinish<PorchGameController>(g => g.Interact());
+                case GameStage.Toys:
+                    switch (Flow.VisitingObject)
+                    {
+                        case "테니스공": return DebugFinish<BallPlay.BallGame>(g => g.DebugComplete());
+                        case "로프": return DebugFinish<TugPlay.TugGame>(g => g.DebugComplete());
+                        case "뼈다귀 장난감": return DebugFinish<BonePlay.BoneCatchGame>(g => g.DebugComplete());
+                        case "carrot_snuffle_game": return DebugFinish<Nosework.NoseworkGame>(g => g.DebugComplete());
+                        case "인형": return DebugFinish<DollMemory.DollMemorySequence>(g => g.DebugComplete());
+                        case null:
+                        case "":
+                            foreach (var id in Room3FlowController.ToyIds) CompleteToyVisit(id);
+                            if (CurrentStage == GameStage.Toys && CompletedToyCount == Room3FlowController.ToyIds.Length)
+                                ReportComplete(GameStage.Toys);
+                            Flow.RefreshToyDisplayForDebug();
+                            return true;
+                    }
+                    break;
+            }
+            return false;
+        }
+        bool DebugFinish<T>(Action<T> finish) where T : MonoBehaviour
+        {
+            var game = FindFirstObjectByType<T>();
+            if (!game || !game.isActiveAndEnabled) { Debug.LogWarning("F1: active controller missing: " + typeof(T).Name, this); return false; }
+            finish(game);
+            return true;
+        }
+#endif
         public bool IsComplete(GameStage stage) => completed.Contains(stage);
         public bool HasStarted(GameStage stage) => started.Contains(stage);
         public StageContent Content(GameStage stage) => Array.Find(stages, x => x != null && x.stage == stage);
@@ -172,6 +255,8 @@ namespace TeamRoulette.Room3
             var meal = Find<MealGameController>();
             var board = Find<BoardGameController>();
             if (IsComplete(GameStage.Curtain) && curtain) curtain.RestoreCompleted();
+            var window = Find<WindowGameController>();
+            if (IsComplete(GameStage.Window) && window) window.RestoreCompleted();
             if (IsComplete(GameStage.Calendar) && calendar) calendar.RestoreCompleted();
             if (IsComplete(GameStage.Wash) && wash) wash.RestoreCompleted();
             if (IsComplete(GameStage.Meal) && meal) meal.RestoreCompleted();

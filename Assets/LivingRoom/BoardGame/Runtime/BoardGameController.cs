@@ -63,7 +63,18 @@ public sealed class BoardGameController : MonoBehaviour
         progress.gameObject.SetActive(finishHold>0);
     }
 
-    void Start() { overlay.SetActive(false); nextOrder=items.Max(i=>i.order); RefreshOverlap(); }
+    void Start() { overlay.SetActive(false); nextOrder=items.Max(i=>i.order); SyncBoardCoordinates(); RefreshOverlap(); }
+    // Scene edits to Items or PlacementSurface must not snap back to old serialized coordinates.
+    void SyncBoardCoordinates()
+    {
+        foreach(var item in items.Where(i=>i.state==BoardItemState.Board))
+        {
+            Vector3 local=surface.InverseTransformPoint(item.transform.position);
+            item.boardPosition=new Vector2(local.x,local.y);
+            Vector3 right=surface.InverseTransformDirection(item.transform.right);
+            item.angle=Mathf.Atan2(right.y,right.x)*Mathf.Rad2Deg;
+        }
+    }
     public void Begin()
     {
         if(!Application.isPlaying || !isActiveAndEnabled || Completed || Active || Time.timeScale<=0) return;
@@ -85,6 +96,7 @@ public sealed class BoardGameController : MonoBehaviour
     {
         if(!Active && blocked.Count==0) return;
         Active=false; finishHold=0;
+        foreach(var item in items) if(item) item.SetOutline(false);
         if(overlay) overlay.SetActive(false);
         var restore=blocked.ToArray();
         blocked.Clear();
@@ -161,6 +173,7 @@ public sealed class BoardGameController : MonoBehaviour
     public bool Place(Vector2 p)
     {
         if(!Active || !Held || !BoardGeometry.Fits(p,Held.size,Held.angle,boardSize)) return false;
+        SyncBoardCoordinates();
         var item=Held; Held=null; item.state=BoardItemState.Board; item.boardPosition=p; item.order=++nextOrder;
         item.hitbox.enabled=true; ArrangeBoard(); RefreshOverlap(); return true;
     }
@@ -199,7 +212,7 @@ public sealed class BoardGameController : MonoBehaviour
             var x=items[a]; var y=items[b];
             if(x.state!=BoardItemState.Board || y.state!=BoardItemState.Board) continue;
             if(BoardGeometry.Overlap(x.boardPosition,x.size,x.angle,y.boardPosition,y.size,y.angle)<=overlapLimit) continue;
-            x.SetOutline(true); y.SetOutline(true); bad=true;
+            x.SetOutline(Active && !Completed); y.SetOutline(Active && !Completed); bad=true;
         }
         if(Active && !Completed)
         {
@@ -236,6 +249,18 @@ public sealed class BoardGameController : MonoBehaviour
         TeamRoulette.Room3.GameManager.ReportComplete(TeamRoulette.Room3.GameStage.Board);
         return true;
     }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public void DebugComplete()
+    {
+        if (!Active) Begin();
+        if (!Active) return;
+        // Discarding everything is an existing valid board solution.
+        if (Held) Discard();
+        foreach (var item in items.Where(i => i.state == BoardItemState.Floor || i.state == BoardItemState.Board).ToArray())
+        { Pick(item); Discard(); }
+        TryFinish();
+    }
+#endif
     public void RestoreCompleted(TeamRoulette.Room3.BoardItemRecord[] records)
     {
         Completed = true;

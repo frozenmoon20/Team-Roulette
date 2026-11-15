@@ -2,11 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using TeamRoulette.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 namespace TeamRoulette.Room3
 {
@@ -18,6 +16,51 @@ namespace TeamRoulette.Room3
         public const string ToyRoom = "Room3_Toy";
         public const string OldLivingRoom = "Room3_OldLivingRoom";
         public static readonly string[] ToyIds = { "테니스공", "로프", "뼈다귀 장난감", "인형", "carrot_snuffle_game" };
+        // Keep completion identities stable while using the replacement scene assets.
+        static string ToyIdentity(string name) => name switch
+        {
+            "08_duck_prefab" => "인형",
+            "DogAccesories-001" => "로프",
+            "Bone_1" => "뼈다귀 장난감",
+            "Ball_3" => "테니스공",
+            _ => name
+        };
+        static bool IsStoredToy(Transform node)
+        {
+            for (var parent = node.parent; parent; parent = parent.parent)
+                if (parent.name == "Toys" && parent.parent && parent.parent.name == "ToyGame") return true;
+            return false;
+        }
+
+        static string StoredToyIdentity(string name)
+        {
+            // Unity appends " (1)" when the arranged copy is duplicated in the scene.
+            if (name.EndsWith("(1)", StringComparison.Ordinal)) name = name.Substring(0, name.Length - 3).TrimEnd();
+            return ToyIdentity(name);
+        }
+
+        void RefreshToyDisplay(Scene scene)
+        {
+            var nodes = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Transform>(true)).ToArray();
+            foreach (var node in nodes)
+            {
+                if (node.parent && node.parent.name == "Toys" && node.parent.parent && node.parent.parent.name == "ToyGame")
+                {
+                    string id = StoredToyIdentity(node.name);
+                    if (Array.IndexOf(ToyIds, id) >= 0) node.gameObject.SetActive(IsToyComplete(id));
+                }
+                else if (!IsStoredToy(node) && node.TryGetComponent<Room3FlowTarget>(out var target)
+                    && Array.IndexOf(ToyIds, target.ObjectId) >= 0)
+                    node.gameObject.SetActive(!IsToyComplete(target.ObjectId));
+            }
+        }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        internal void RefreshToyDisplayForDebug()
+        {
+            var scene = SceneManager.GetSceneByName(LivingRoom);
+            if (scene.IsValid() && scene.isLoaded) RefreshToyDisplay(scene);
+        }
+#endif
         public bool IsTransitioning { get; private set; }
         public string VisitingObject { get; private set; }
         public bool EndingVisible { get; private set; }
@@ -45,9 +88,11 @@ namespace TeamRoulette.Room3
             if (!home && scene.name != ToyRoom && scene.name != OldLivingRoom) return;
             foreach (var node in scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Transform>(true)))
             {
-                string id = node.name;
+                // Arranged copies are display-only and must never start another visit.
+                if (home && IsStoredToy(node)) continue;
+                string id = ToyIdentity(node.name);
                 bool toy = Array.IndexOf(ToyIds, id) >= 0;
-                bool target = home ? toy || id == "WindowClose" || id == "TV" || id == "Door" : toy || id == "TV";
+                bool target = home ? toy || id == "WindowClose" : toy;
                 if (!target) continue;
                 EnsureCollider(node.gameObject);
                 var binding = node.GetComponent<Room3FlowTarget>();
@@ -60,8 +105,9 @@ namespace TeamRoulette.Room3
                 var closed = nodes.FirstOrDefault(node => node.name == "WindowClose");
                 var open = nodes.FirstOrDefault(node => node.name == "WindowOpen");
                 bool complete = manager.IsComplete(GameStage.Window);
-                if (closed) closed.gameObject.SetActive(!complete);
-                if (open) open.gameObject.SetActive(complete);
+                if (closed) closed.gameObject.SetActive(!Find<WindowGameController>(scene) && !complete);
+                if (open) open.gameObject.SetActive(!Find<WindowGameController>(scene) && complete);
+                RefreshToyDisplay(scene);
             }
             else
             {
@@ -119,6 +165,8 @@ namespace TeamRoulette.Room3
             if (PlayerHand.Instance && PlayerHand.Instance.Held) { PlayerInteractor.ShowHint("먼저 내려놓자."); return; }
             if (!string.IsNullOrEmpty(VisitingObject))
             {
+                // Tennis is completed by its independent 3D game, never by a second click.
+                if (VisitingObject == "테니스공" || VisitingObject == "인형") return;
                 // Only the exact object used to enter can finish this visit.
                 if (target.gameObject.scene == visitScene && target.ObjectId == VisitingObject)
                     StartCoroutine(ReturnHome());
@@ -128,19 +176,11 @@ namespace TeamRoulette.Room3
             switch (target.ObjectId)
             {
                 case "WindowClose":
-                    if (!GameManager.TryBegin(GameStage.Window)) return;
-                    var opened = target.transform.parent.GetComponentsInChildren<Transform>(true).FirstOrDefault(node => node.name == "WindowOpen");
-                    if (!opened) { Debug.LogError("WindowGame: WindowOpen is missing.", target); return; }
-                    opened.gameObject.SetActive(true);
-                    target.gameObject.SetActive(false);
-                    GameManager.ReportComplete(GameStage.Window);
-                    break;
-                case "Door":
-                    if (!GameManager.TryBegin(GameStage.Entrance)) return;
-                    if (GameManager.ReportComplete(GameStage.Entrance)) ShowEnding();
+                    var windowGame = Find<WindowGameController>(target.gameObject.scene);
+                    if (windowGame) windowGame.Interact();
                     break;
                 case "TV":
-                    BeginVisit(target, GameStage.TV, ToyRoom);
+                    // TV playback is handled locally by TVGameTarget on Screen.
                     break;
                 default:
                     if (Array.IndexOf(ToyIds, target.ObjectId) < 0 || IsToyComplete(target.ObjectId)) return;
@@ -192,6 +232,15 @@ namespace TeamRoulette.Room3
             IsTransitioning = false;
         }
 
+        // The scene-local mini-game calls this only after its final fetch and celebration.
+        public bool CompleteVisit(string id)
+        {
+            if (IsTransitioning || string.IsNullOrEmpty(id) || VisitingObject != id
+                || !visitScene.IsValid() || !visitScene.isLoaded || SceneManager.GetActiveScene() != visitScene) return false;
+            StartCoroutine(ReturnHome());
+            return true;
+        }
+
         IEnumerator ReturnHome()
         {
             IsTransitioning = true;
@@ -201,7 +250,11 @@ namespace TeamRoulette.Room3
             yield return SceneManager.UnloadSceneAsync(visitScene);
             ResumeHome();
             VisitingObject = null;
-            if (visitStage == GameStage.Toys) manager.CompleteToyVisit(id);
+            if (visitStage == GameStage.Toys)
+            {
+                manager.CompleteToyVisit(id);
+                RefreshToyDisplay(homeScene);
+            }
             else GameManager.ReportComplete(GameStage.TV);
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
@@ -218,45 +271,7 @@ namespace TeamRoulette.Room3
             Physics.SyncTransforms();
         }
 
-        void ShowEnding()
-        {
-            EndingVisible = true;
-            var ui = FindFirstObjectByType<GameUI>();
-            var font = ui && ui.objectiveText ? ui.objectiveText.font : TMP_Settings.defaultFontAsset;
-            // Suspend the whole room so movement, settings, hands and other click handlers stop.
-            foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects()) root.SetActive(false);
-            var screen = new GameObject("Room3 Ending", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            screen.transform.SetParent(transform, false);
-            var canvas = screen.GetComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-            canvas.sortingOrder = short.MaxValue;
-            var scaler = screen.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            var background = new GameObject("Black", typeof(RectTransform), typeof(Image));
-            background.transform.SetParent(screen.transform, false);
-            Stretch(background.GetComponent<RectTransform>());
-            background.GetComponent<Image>().color = Color.black;
-            var label = new GameObject("Game Over", typeof(RectTransform), typeof(TextMeshProUGUI));
-            label.transform.SetParent(background.transform, false);
-            Stretch(label.GetComponent<RectTransform>());
-            var text = label.GetComponent<TextMeshProUGUI>();
-            text.font = font;
-            text.text = "게임 종료";
-            text.fontSize = 64;
-            text.color = Color.white;
-            text.alignment = TextAlignmentOptions.Center;
-            Time.timeScale = 0;
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = false;
-        }
-
-        static void Stretch(RectTransform rect)
-        {
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = rect.offsetMax = Vector2.zero;
-        }
+        public void BeginEnding() { EndingVisible = true; }
 
         void OnDestroy() { if (EndingVisible) Time.timeScale = 1; }
     }

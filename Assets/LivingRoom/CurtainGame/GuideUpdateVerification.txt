@@ -1,0 +1,2 @@
+Saved reveal targets: curtaina_static_end, curtainb_static_end
+Guide start: (23.54, 0.70, 4.80); direction: (-0.15, 0.00, -0.99); end Z: 0.359

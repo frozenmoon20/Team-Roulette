@@ -1,0 +1,1 @@
+PASS: board start, trash retrieve, placement at requested coordinates; all other items retain their horizontal and vertical positions after scene/group edits; completion.

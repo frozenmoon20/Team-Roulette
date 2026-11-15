@@ -1,0 +1,19 @@
+Room3_Toy 테니스공 미니게임 설정 완료
+기존 Player: Player @ (-2.83, 0.00, -2.22)
+Camera: Camera / Controller: FirstPersonPlayer
+Input: InputSystem_Actions
+Interaction: PlayerCameraRoot
+Winter: Spitz_anim_IP / Animator 기존 연결: 없음
+재사용 Animator: Spitz_AContr_Demo / In Place, applyRootMotion=false (런타임 한정)
+Mouth: mouth
+마당 범위: Center: (-11.50, 0.70, 0.00), Extents: (6.50, 0.70, 8.00) / 충돌 보강: 0
+기존 NavMeshSurface: 0
+기존 씬 오브젝트 삭제: 0 / 공, 겨울이, 플레이어의 영구 위치 변경: 0
+Arm_Spitz|Idle_1: True
+Arm_Spitz|Run_F_IP: True
+Arm_Spitz|Pick_up: True
+Arm_Spitz|Put_down: True
+Arm_Spitz|Bark: True
+Arm_Spitz|Sitting_start: True
+Arm_Spitz|Sitting_loop_1: True
+Arm_Spitz|Idle_3: True
