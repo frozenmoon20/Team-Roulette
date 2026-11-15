@@ -35,10 +35,26 @@ public class PlayerInteractor : MonoBehaviour
     bool lockedLastFrame;
     GameUI ui;
 
-    void Awake() { instance = this; }
+    // (복도) 소파 이름은 글자를 크게 보여 주기 위해 원래 글자 크기를 기억해 둔다
+    float originalNameFontSize;
+    const float SofaNameScale = 1.5f;
+
+    void Awake()
+    {
+        instance = this;
+
+        if (nameText != null)
+            originalNameFontSize = nameText.fontSize;
+    }
+
     // (거실) 씬을 겹쳐 열었다 돌아올 때 플레이어가 꺼졌다 켜지므로, 켜질 때 다시 '나'로 등록
     void OnEnable() { instance = this; lockedLastFrame = false; }
-    void OnDestroy() { if (instance == this) instance = null; }
+
+    void OnDestroy()
+    {
+        if (instance == this)
+            instance = null;
+    }
 
     void LateUpdate()
     {
@@ -81,59 +97,4 @@ public class PlayerInteractor : MonoBehaviour
     {
         if (hovered == null) return;
 
-        // 물건을 들고 있으면 놓을 자리(PlaceSpot)만 클릭 가능
-        PlayerHand hand = PlayerHand.Instance;
-        if (hand != null && hand.Held != null && !(hovered is PlaceSpot))
-        {
-            ShowHint(handBusyMessage);
-            return;
-        }
-
-        hovered.Interact();
-    }
-
-    void TryReturnHeld()
-    {
-        PlayerHand hand = PlayerHand.Instance;
-        if (hand == null || hand.Held == null) return;
-
-        // (복도 미니게임1) 들고 있는 게 캡슐 장난감이면, 열 수 있을 때는 돌려놓지 않고 연다
-        CapsuleToy capsule = hand.Held.GetComponent<CapsuleToy>();
-        if (capsule != null && capsule.TryOpen()) return;
-
-        hand.ReturnHeld();
-    }
-
-    void UpdateUI()
-    {
-        bool showHand = false;
-        string label = "";
-
-        if (hovered != null)
-        {
-            GrabbableItem item = hovered as GrabbableItem;
-            showHand = item != null && item.CanGrab;
-
-            IHasName named = hoveredComponent != null ? hoveredComponent.GetComponentInParent<IHasName>() : null;
-            if (named != null) label = named.DisplayName;
-        }
-        if (Time.time < hintUntil) label = hintText;   // 안내 문구가 이름보다 우선
-
-        // 대사 중에는 이름·안내 문구를 숨김 (대사창과 같은 자리라 겹침)
-        if (ui == null) ui = FindFirstObjectByType<GameUI>();
-        if (ui != null && ui.IsDialogueOpen) label = "";
-
-        if (crosshairDot != null) crosshairDot.SetActive(!Blocked && !showHand);
-        if (handIcon != null) handIcon.SetActive(!Blocked && showHand);
-        if (nameText != null) nameText.text = label;
-    }
-
-    // 화면 아래에 짧은 안내 문구 표시. 어느 스크립트에서나 호출 가능.
-    // 사용 예: PlayerInteractor.ShowHint("잠겨 있다.");
-    public static void ShowHint(string message)
-    {
-        if (instance == null || string.IsNullOrEmpty(message)) return;
-        instance.hintText = message;
-        instance.hintUntil = Time.time + instance.hintDuration;
-    }
-}
+        // 물건을

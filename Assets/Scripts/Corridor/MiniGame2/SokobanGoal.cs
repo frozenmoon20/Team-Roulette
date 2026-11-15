@@ -1,7 +1,11 @@
+
 using UnityEngine;
 
 public class SokobanGoal : MonoBehaviour
 {
+    [Header("맵 1 전용 색상 판정")]
+    public bool useColorCheck = true;
+
     public SokobanColor goalColor;
     public SokobanGameManager gameManager;
 
@@ -9,11 +13,18 @@ public class SokobanGoal : MonoBehaviour
 
     public void PlaceBox(SokobanPushBox box)
     {
-        IsCorrect = box.boxColor == goalColor;
+        if (useColorCheck)
+        {
+            IsCorrect = box.boxColor == goalColor;
+        }
+        else
+        {
+            IsCorrect = true;
+        }
 
         if (IsCorrect)
         {
-            Debug.Log(goalColor + " 발판 정답!");
+            Debug.Log("발판 정답!");
         }
         else
         {
@@ -26,9 +37,6 @@ public class SokobanGoal : MonoBehaviour
 
     public void RemoveBox()
     {
-        if (IsCorrect)
-            Debug.Log(goalColor + " 발판에서 상자가 빠짐");
-
         IsCorrect = false;
 
         if (gameManager != null)

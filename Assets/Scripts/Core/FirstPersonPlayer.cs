@@ -44,16 +44,36 @@ public class FirstPersonPlayer : MonoBehaviour
     }
 
     // Scene travel restores the view as well as the body, without carrying walking momentum.
-    public void Teleport(Vector3 position, Quaternion rotation, Quaternion cameraRotation)
+    public void Teleport(
+        Vector3 position,
+        Quaternion rotation,
+        Quaternion cameraRotation)
     {
-        bool wasEnabled = controller.enabled;
-        controller.enabled = false;
+        if (controller == null)
+            controller = GetComponent<CharacterController>();
+
+        bool wasEnabled = controller != null && controller.enabled;
+
+        if (controller != null)
+            controller.enabled = false;
+
         transform.SetPositionAndRotation(position, rotation);
-        pitch = Mathf.Clamp(Mathf.DeltaAngle(0, cameraRotation.eulerAngles.x), -maxPitch, maxPitch);
-        if (cameraRoot) cameraRoot.localRotation = cameraRotation;
+
+        pitch = Mathf.Clamp(
+            Mathf.DeltaAngle(0f, cameraRotation.eulerAngles.x),
+            -maxPitch,
+            maxPitch
+        );
+
+        if (cameraRoot != null)
+            cameraRoot.localRotation = cameraRotation;
+
         horizontalVelocity = Vector3.zero;
-        verticalVelocity = 0;
-        controller.enabled = wasEnabled;
+        verticalVelocity = 0f;
+
+        if (controller != null)
+            controller.enabled = wasEnabled;
+
         Physics.SyncTransforms();
     }
 
@@ -149,8 +169,16 @@ public class FirstPersonPlayer : MonoBehaviour
     // pitch 값을 같이 바꿔야 다음 프레임 Look()이 예전 각도로 되돌리지 않는다
     public void SetPitch(float value)
     {
-        pitch = Mathf.Clamp(value, -maxPitch, maxPitch);
-        cameraRoot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
+        SetLookPitch(value);
+    }
+
+    // 고개 각도를 바로 정하는 함수 (복도 파트에서 사용)
+    public void SetLookPitch(float newPitch)
+    {
+        pitch = Mathf.Clamp(newPitch, -maxPitch, maxPitch);
+
+        if (cameraRoot != null)
+            cameraRoot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
     }
 
 
@@ -165,6 +193,4 @@ public class FirstPersonPlayer : MonoBehaviour
         Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !locked;
     }
-
-
 }

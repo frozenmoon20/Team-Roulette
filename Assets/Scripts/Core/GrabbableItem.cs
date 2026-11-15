@@ -100,6 +100,13 @@ public class GrabbableItem : MonoBehaviour, IInteractable, IHasName
         transform.position = point.position - transform.TransformVector(localBottom);
     }
 
+    // 지정한 자리에 그대로 놓기 (복도 파트: 쿠션 위치 맞춤 등에서 사용)
+    public void PlaceExactlyAt(Transform point)
+    {
+        transform.SetParent(point.parent, true);
+        transform.SetPositionAndRotation(point.position, point.rotation);
+    }
+
     // 원래 자리로 (우클릭)
     public void ReturnHome()
     {

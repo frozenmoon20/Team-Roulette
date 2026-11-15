@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using TeamRoulette.UI;
 
@@ -9,7 +10,19 @@ public class MiniGame1Door : MonoBehaviour, IInteractable, IHasName
     public float openAngle = 90f;
     public float openSpeed = 3f;
 
+    [Header("문 효과음")]
+    public AudioClip lockedSound;
+    public AudioClip unlockSound;
+    public AudioClip openSound;
+
+    [Range(0f, 1f)]
+    public float soundVolume = 0.8f;
+
+    [Min(0f)]
+    public float lockedSoundCooldown = 0.3f;
+
     bool opened;
+    float lastLockedSoundTime = -999f;
 
     Quaternion closedRotation;
     Quaternion openRotation;
@@ -48,24 +61,42 @@ public class MiniGame1Door : MonoBehaviour, IInteractable, IHasName
 
         if (!MiniGame1State.HasKey)
         {
-            PlayerInteractor.ShowHint(
-                "잠겨 있다."
-            );
+            PlayerInteractor.ShowHint("잠겨 있다.");
+
+            if (Time.time - lastLockedSoundTime >=
+                lockedSoundCooldown)
+            {
+                AudioManager.Play(
+                    lockedSound,
+                    soundVolume
+                );
+
+                lastLockedSoundTime = Time.time;
+            }
 
             return;
         }
 
         opened = true;
 
+        // 잠금 해제 효과음
+        AudioManager.Play(
+            unlockSound,
+            soundVolume
+        );
+
+        // 기존 문 열림 동작 시작
+        AudioManager.Play(
+            openSound,
+            soundVolume
+        );
+
         SceneUIContent ui =
             FindFirstObjectByType<SceneUIContent>();
 
         if (ui != null)
         {
-            ui.CompleteObjective(
-                "minigame1"
-            );
-
+            ui.CompleteObjective("minigame1");
         }
 
         PlayerInteractor.ShowHint(
