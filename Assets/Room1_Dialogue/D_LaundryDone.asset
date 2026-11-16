@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1959a926c5d6c3418787cabe798da3c, type: 3}
+  m_Name: D_LaundryDone
+  m_EditorClassIdentifier: Assembly-CSharp::TeamRoulette.UI.DialogueSequence
+  lines:
+  - "\uBE68\uB798 \uC815\uB9AC\uB294 \uC5EC\uAE30\uAE4C\uC9C0\uC778\uAC70 \uAC19\uB2E4..."
+  - "\uADF8\uB3D9\uC548 \uD798\uB4E4\uC5B4\uC11C \uCE58\uC6B0\uC9C4 \uBABB\uD588\uC9C0\uB9CC.."
+  - "\uC774\uC81C\uB294 \uCE58\uC6CC\uB098\uAC00\uC57C\uACA0\uB2E4."
+  colorCodes:
+  - '#FFFFFF'
+  - '#FFFFFF'
+  - '#FFFFFF'

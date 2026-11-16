@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1959a926c5d6c3418787cabe798da3c, type: 3}
+  m_Name: D_TrashEmpty
+  m_EditorClassIdentifier: Assembly-CSharp::TeamRoulette.UI.DialogueSequence
+  lines:
+  - "\uC4F0\uB808\uAE30\uD1B5\uC774\uB2E4."
+  - "\uBC29 \uC8FC\uBCC0\uC758 \uC4F0\uB808\uAE30\uB4E4\uC744 \uC9D1\uC744 \uC218\uB9CC
+    \uC788\uB2E4\uBA74 \uB123\uC5B4\uBCF4\uC790..."
+  colorCodes:
+  - '#FFFFFF'
+  - '#FFFFFF'

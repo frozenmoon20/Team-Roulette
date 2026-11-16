@@ -22,6 +22,10 @@ public class FirstPersonPlayer : MonoBehaviour
     [System.NonSerialized] public bool canJump = true;
     [System.NonSerialized] public bool canSprint = true;
 
+    // 회상(기억) 속에서만 켜는 스위치: 켜져 있으면 Jump가 해금되지 않았어도 점프할 수 있다
+    // (기억 속 과거의 나는 뛸 수 있었다). MemoryTrip이 들어갈 때 켜고 나올 때 끈다.
+    public static bool memoryJump;
+
 
     CharacterController controller;
     float pitch;                // 위아래 각도
@@ -40,16 +44,36 @@ public class FirstPersonPlayer : MonoBehaviour
     }
 
     // Scene travel restores the view as well as the body, without carrying walking momentum.
-    public void Teleport(Vector3 position, Quaternion rotation, Quaternion cameraRotation)
+    public void Teleport(
+        Vector3 position,
+        Quaternion rotation,
+        Quaternion cameraRotation)
     {
-        bool wasEnabled = controller.enabled;
-        controller.enabled = false;
+        if (controller == null)
+            controller = GetComponent<CharacterController>();
+
+        bool wasEnabled = controller != null && controller.enabled;
+
+        if (controller != null)
+            controller.enabled = false;
+
         transform.SetPositionAndRotation(position, rotation);
-        pitch = Mathf.Clamp(Mathf.DeltaAngle(0, cameraRotation.eulerAngles.x), -maxPitch, maxPitch);
-        if (cameraRoot) cameraRoot.localRotation = cameraRotation;
+
+        pitch = Mathf.Clamp(
+            Mathf.DeltaAngle(0f, cameraRotation.eulerAngles.x),
+            -maxPitch,
+            maxPitch
+        );
+
+        if (cameraRoot != null)
+            cameraRoot.localRotation = cameraRotation;
+
         horizontalVelocity = Vector3.zero;
-        verticalVelocity = 0;
-        controller.enabled = wasEnabled;
+        verticalVelocity = 0f;
+
+        if (controller != null)
+            controller.enabled = wasEnabled;
+
         Physics.SyncTransforms();
     }
 
@@ -89,18 +113,22 @@ public class FirstPersonPlayer : MonoBehaviour
 
         // 입력 → 목표 속도
         Vector3 targetVelocity = Vector3.zero;
-        if(Allowed(canMove, OptionType.Move))
+        if (Allowed(canMove, OptionType.Move))
         {
             float x = Input.GetAxisRaw("Horizontal");
             float z = Input.GetAxisRaw("Vertical");
 
             Vector3 dir = transform.right * x + transform.forward * z;
-            if(dir.sqrMagnitude > 1f) dir.Normalize();
+            if (dir.sqrMagnitude > 1f) dir.Normalize();
 
-            bool sprint = canSprint && Input.GetKey(KeyCode.LeftShift);
+            // 달리기(Shift): 스위치(canSprint)가 켜져 있고 OptionState에서 Run이 해금돼 있어야 함 (Move·Jump와 같은 방식)
+            bool sprint = Allowed(canSprint, OptionType.Run) && Input.GetKey(KeyCode.LeftShift);
             targetVelocity = dir * (sprint ? sprintSpeed : moveSpeed);
 
-            if (canJump && grounded && Input.GetButtonDown("Jump"))
+            // 점프: 스위치(canJump)가 켜져 있고 OptionState에서 Jump가 해금돼 있어야 함 (Move와 같은 방식)
+            //       단, 회상 속(memoryJump)에서는 해금 전이어도 점프 가능
+            bool jumpOk = canJump && (memoryJump || Allowed(true, OptionType.Jump));
+            if (jumpOk && grounded && Input.GetButtonDown("Jump"))
             {
                 verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
             }
@@ -129,13 +157,28 @@ public class FirstPersonPlayer : MonoBehaviour
     }
 
     // 미니게임/연출 시작 시 미끄러짐 없이 즉시 멈추고 싶을 때 호출
-    public void StopMovement(ControllerColliderHit hit)
+    public void StopMovement()
     {
-        if (Mathf.Abs(hit.normal.y) > 0.3f) return;    // 바닥/천장은 무시
+        horizontalVelocity = Vector3.zero;
+    }
 
-        Vector3 n = new Vector3(hit.normal.x, 0f, hit.normal.z).normalized;
-        float into = Vector3.Dot(horizontalVelocity, n);
-        if (into < 0f) horizontalVelocity -= n * into;
+    // 지금 고개 위아래 각도 (아래가 +)
+    public float Pitch => pitch;
+
+    // 순간이동 등으로 고개 각도를 바로 정할 때 호출 (0 = 정면, 아래가 +)
+    // pitch 값을 같이 바꿔야 다음 프레임 Look()이 예전 각도로 되돌리지 않는다
+    public void SetPitch(float value)
+    {
+        SetLookPitch(value);
+    }
+
+    // 고개 각도를 바로 정하는 함수 (복도 파트에서 사용)
+    public void SetLookPitch(float newPitch)
+    {
+        pitch = Mathf.Clamp(newPitch, -maxPitch, maxPitch);
+
+        if (cameraRoot != null)
+            cameraRoot.localRotation = Quaternion.Euler(pitch, 0f, 0f);
     }
 
 
@@ -150,7 +193,4 @@ public class FirstPersonPlayer : MonoBehaviour
         Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
         Cursor.visible = !locked;
     }
-
-    
 }
-

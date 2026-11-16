@@ -8,6 +8,7 @@ using UnityEngine.UI;
 // 마우스를 누른 채 움직이면 커서 자리에서 파동이 퍼짐. 목표에 가까울수록 촘촘하고 소리가 커짐
 // 목표 위에서 계속 누르면 게이지가 차고, 찾을 때마다 짖는 소리가 한 단계씩 또렷해짐
 // 마지막까지 찾으면 효과음(SFX) 해금
+// (미니게임 2 연결) StopBarking / StartBarking / FadeOutBarking 으로 짖는 소리를 멈추고, 다시 틀고, 사라지게 함
 public class SoundSearchMinigame : MonoBehaviour
 {
     [Header("UI 연결")]
@@ -100,6 +101,31 @@ public class SoundSearchMinigame : MonoBehaviour
 
     // 미니게임 2 등에서 짖는 소리를 멈출 때 호출
     public void StopBarking() => barking = false;
+
+    // 미니게임 2에서 깨어난 뒤: "창밖에서 들리는" 짖는 소리로 다시 시작 (조금 먹먹하게)
+    public void StartBarking(float muffledCutoff)
+    {
+        barking = barkClip != null;
+        barkTimer = 0.5f;
+        barkVolume = 1f;
+        if (barkSource != null) barkSource.volume = 1f;
+        if (humFilter != null) humFilter.cutoffFrequency = muffledCutoff;
+    }
+
+    // 짖는 소리가 time초에 걸쳐 서서히 작아지다가 멈춤 (카메라 회전 해금 이후)
+    public void FadeOutBarking(float time) => StartCoroutine(FadeOutBark(time));
+
+    IEnumerator FadeOutBark(float time)
+    {
+        float start = barkSource != null ? barkSource.volume : 1f;
+        for (float t = 0f; t < 1f; t += Time.deltaTime / time)
+        {
+            if (barkSource != null) barkSource.volume = Mathf.Lerp(start, 0f, t);
+            yield return null;
+        }
+        barking = false;
+        if (barkSource != null) barkSource.volume = 1f;
+    }
 
     void StartRound()
     {
