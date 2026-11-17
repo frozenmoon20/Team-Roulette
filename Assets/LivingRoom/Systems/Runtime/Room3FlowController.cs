@@ -15,14 +15,13 @@ namespace TeamRoulette.Room3
         public const string LivingRoom = "Room3_LivingRoom";
         public const string ToyRoom = "Room3_Toy";
         public const string OldLivingRoom = "Room3_OldLivingRoom";
-        public static readonly string[] ToyIds = { "테니스공", "로프", "뼈다귀 장난감", "인형", "carrot_snuffle_game" };
+        public static readonly string[] ToyIds = { "로프", "뼈다귀 장난감", "인형" };
         // Keep completion identities stable while using the replacement scene assets.
         static string ToyIdentity(string name) => name switch
         {
             "08_duck_prefab" => "인형",
             "DogAccesories-001" => "로프",
             "Bone_1" => "뼈다귀 장난감",
-            "Ball_3" => "테니스공",
             _ => name
         };
         static bool IsStoredToy(Transform node)
@@ -165,8 +164,8 @@ namespace TeamRoulette.Room3
             if (PlayerHand.Instance && PlayerHand.Instance.Held) { PlayerInteractor.ShowHint("먼저 내려놓자."); return; }
             if (!string.IsNullOrEmpty(VisitingObject))
             {
-                // Tennis is completed by its independent 3D game, never by a second click.
-                if (VisitingObject == "테니스공" || VisitingObject == "인형") return;
+                // The memory sequence completes through its own callback.
+                if (VisitingObject == "인형") return;
                 // Only the exact object used to enter can finish this visit.
                 if (target.gameObject.scene == visitScene && target.ObjectId == VisitingObject)
                     StartCoroutine(ReturnHome());
@@ -185,7 +184,7 @@ namespace TeamRoulette.Room3
                 default:
                     if (Array.IndexOf(ToyIds, target.ObjectId) < 0 || IsToyComplete(target.ObjectId)) return;
                     BeginVisit(target, GameStage.Toys,
-                        target.ObjectId == "인형" || target.ObjectId == "carrot_snuffle_game" ? OldLivingRoom : ToyRoom);
+                        target.ObjectId == "인형" ? OldLivingRoom : ToyRoom);
                     break;
             }
         }

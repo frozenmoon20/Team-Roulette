@@ -96,7 +96,6 @@ namespace TeamRoulette.Room3.BoneEditor
             game.onCompleted.AddListener(() => completed++);
             Check(game.requiredSuccesses == 5 && game.flightSeconds < .6f && game.dogDistance < 3, "기본 5회, 가까운 거리의 빠른 투척");
             Check(game.OwnsInput && !game.player.canMove && !game.player.canLook, "기존 플레이어 이동과 시점 고정");
-            Check(!UnityEngine.Object.FindFirstObjectByType<TeamRoulette.Room3.BallPlay.BallGame>().OwnsInput && !UnityEngine.Object.FindFirstObjectByType<TeamRoulette.Room3.TugPlay.TugGame>().OwnsInput, "테니스공·터그 동시 실행 없음");
             foreach (var target in UnityEngine.Object.FindObjectsByType<Room3FlowTarget>(FindObjectsSortMode.None).Where(t => t.ObjectId == BoneCatchGame.ToyId)) target.Interact();
             yield return .1;
             Check(!flow.IsTransitioning && flow.VisitingObject == BoneCatchGame.ToyId, "마당 뼈다귀 재클릭으로 조기 복귀 불가");

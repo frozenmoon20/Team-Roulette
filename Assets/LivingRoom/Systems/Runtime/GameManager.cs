@@ -21,7 +21,7 @@ namespace TeamRoulette.Room3
         public int order;
     }
 
-    public enum GameStage { Curtain, Window, Calendar, Wash, Meal, Board, Toys, TV, Entrance, Finished }
+    public enum GameStage { Curtain = 0, Window = 1, Wash = 3, Meal = 4, Board = 5, Toys = 6, TV = 7, Entrance = 8, Finished = 9 }
 
     [Serializable]
     public class StageContent
@@ -38,7 +38,7 @@ namespace TeamRoulette.Room3
         // Enum IDs stay stable for serialized prefab references; this is the gameplay order.
         public static readonly GameStage[] Progression = {
             GameStage.Curtain, GameStage.Window, GameStage.Wash, GameStage.Meal,
-            GameStage.Board, GameStage.Toys, GameStage.Calendar, GameStage.TV, GameStage.Entrance
+            GameStage.Board, GameStage.Toys, GameStage.TV, GameStage.Entrance
         };
         public static GameStage NextStage(GameStage current)
         {
@@ -159,16 +159,13 @@ namespace TeamRoulette.Room3
                 case GameStage.Wash: return DebugFinish<WashGameController>(g => g.DebugComplete());
                 case GameStage.Meal: return DebugFinish<MealGameController>(g => g.DebugComplete());
                 case GameStage.Board: return DebugFinish<BoardGameController>(g => g.DebugComplete());
-                case GameStage.Calendar: return DebugFinish<CalGameController>(g => g.DebugComplete());
                 case GameStage.TV: return DebugFinish<TVGameController>(g => g.DebugComplete());
                 case GameStage.Entrance: return DebugFinish<PorchGameController>(g => g.Interact());
                 case GameStage.Toys:
                     switch (Flow.VisitingObject)
                     {
-                        case "테니스공": return DebugFinish<BallPlay.BallGame>(g => g.DebugComplete());
                         case "로프": return DebugFinish<TugPlay.TugGame>(g => g.DebugComplete());
                         case "뼈다귀 장난감": return DebugFinish<BonePlay.BoneCatchGame>(g => g.DebugComplete());
-                        case "carrot_snuffle_game": return DebugFinish<Nosework.NoseworkGame>(g => g.DebugComplete());
                         case "인형": return DebugFinish<DollMemory.DollMemorySequence>(g => g.DebugComplete());
                         case null:
                         case "":
@@ -250,14 +247,12 @@ namespace TeamRoulette.Room3
             if (!scene.IsValid() || !scene.isLoaded || scene.name != "Room3_LivingRoom") yield break;
             T Find<T>() where T : Component => scene.GetRootGameObjects().SelectMany(x => x.GetComponentsInChildren<T>(true)).FirstOrDefault();
             var curtain = Find<CurtainGameController>();
-            var calendar = Find<CalGameController>();
             var wash = Find<WashGameController>();
             var meal = Find<MealGameController>();
             var board = Find<BoardGameController>();
             if (IsComplete(GameStage.Curtain) && curtain) curtain.RestoreCompleted();
             var window = Find<WindowGameController>();
             if (IsComplete(GameStage.Window) && window) window.RestoreCompleted();
-            if (IsComplete(GameStage.Calendar) && calendar) calendar.RestoreCompleted();
             if (IsComplete(GameStage.Wash) && wash) wash.RestoreCompleted();
             if (IsComplete(GameStage.Meal) && meal) meal.RestoreCompleted();
             if (IsComplete(GameStage.Board) && board) board.RestoreCompleted(boardResult);

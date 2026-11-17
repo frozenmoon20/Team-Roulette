@@ -10,7 +10,7 @@ namespace TeamRoulette.Room3
         Rinsing, SelectTowel, WipeFace, WashComplete, GetToast, PutToastInToaster,
         GetJam, PutJamOnCounter, WaitForToast, TakeToast, PutToastOnPlate, ApplyJam,
         PlacePlate, GetJuice, PourJuice, PlaceCup, EatMeal, ArrangeBoard, ResolveOverlap,
-        FinishBoard, MarkCalendar
+        FinishBoard
     }
 
     [RequireComponent(typeof(SceneUIContent))]
@@ -25,7 +25,6 @@ namespace TeamRoulette.Room3
             GameStage.Meal => "식사를 준비하자",
             GameStage.Board => "게시판을 정리하자",
             GameStage.Toys => "장난감을 정리하자",
-            GameStage.Calendar => "달력을 넘기자",
             GameStage.TV => "TV를 켜자",
             GameStage.Entrance => "현관으로 가자",
             _ => ""
@@ -60,7 +59,6 @@ namespace TeamRoulette.Room3
             (GameStage.Board, ObjectiveStep.ArrangeBoard) => "사진들을 게시판에 정리하자",
             (GameStage.Board, ObjectiveStep.ResolveOverlap) => "겹친 사진들을 정리하자",
             (GameStage.Board, ObjectiveStep.FinishBoard) => "게시판 정리를 마무리하자",
-            (GameStage.Calendar, ObjectiveStep.MarkCalendar) => "달력에 날짜를 표시하자",
             _ => null
         };
         public const string CompletedMessage = "거실에서 할 일을 모두 마쳤다";

@@ -116,20 +116,6 @@ namespace TeamRoulette.Room3.TugPlay
         bool carrying;
         float carryingBlend;
         TugCarryPose carryPose;
-        TeamRoulette.Room3.BallPlay.BallGame ballGame;
-        bool ballAutoStart;
-
-        void Awake()
-        {
-            // Standalone scene preview defaults to this game. Visits keep the existing toy routing.
-            var flow = GameManager.Instance ? GameManager.Instance.Flow : null;
-            if (playWhenSceneOpenedDirectly && (!flow || string.IsNullOrEmpty(flow.VisitingObject)))
-            {
-                ballGame = GetSceneComponents<TeamRoulette.Room3.BallPlay.BallGame>().FirstOrDefault();
-                if (ballGame) { ballAutoStart = ballGame.autoStart; ballGame.autoStart = false; }
-            }
-        }
-
         IEnumerator Start()
         {
             if (!autoStart) yield break;
@@ -531,7 +517,6 @@ namespace TeamRoulette.Room3.TugPlay
         void OnDestroy()
         {
             Restore();
-            if (ballGame) ballGame.autoStart = ballAutoStart;
         }
         void Restore()
         {

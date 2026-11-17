@@ -41,16 +41,6 @@ namespace TeamRoulette.Room3
             "창문 끝"
         };
 
-        // 3. CalGame — 달력 시작 / 완료
-        public static readonly string[] CalendarStart =
-        {
-            "달력 시작"
-        };
-        public static readonly string[] CalendarFinish =
-        {
-            "달력 끝"
-        };
-
         // 4. WashGame — 세안 시작 / 완료
         public static readonly string[] WashStart =
         {
@@ -115,7 +105,7 @@ namespace TeamRoulette.Room3
         public static string[] GetStart(GameStage stage) => stage switch
         {
             GameStage.Curtain => CurtainStart, GameStage.Window => WindowStart,
-            GameStage.Calendar => CalendarStart, GameStage.Wash => WashStart,
+            GameStage.Wash => WashStart,
             GameStage.Meal => MealStart, GameStage.Board => BoardStart,
             GameStage.Toys => ToysStart, GameStage.TV => TVStart,
             GameStage.Entrance => EntranceStart, _ => System.Array.Empty<string>()
@@ -123,7 +113,7 @@ namespace TeamRoulette.Room3
         public static string[] GetFinish(GameStage stage) => stage switch
         {
             GameStage.Curtain => CurtainFinish, GameStage.Window => WindowFinish,
-            GameStage.Calendar => CalendarFinish, GameStage.Wash => WashFinish,
+            GameStage.Wash => WashFinish,
             GameStage.Meal => MealFinish, GameStage.Board => BoardFinish,
             GameStage.Toys => ToysFinish, GameStage.TV => TVFinish,
             GameStage.Entrance => EntranceFinish, _ => System.Array.Empty<string>()

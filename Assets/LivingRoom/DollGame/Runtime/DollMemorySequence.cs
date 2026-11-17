@@ -61,8 +61,6 @@ namespace TeamRoulette.Room3.DollMemory
             oldObjective=sharedUI && sharedUI.objectiveText?sharedUI.objectiveText.text:"";
             winter.Capture(); dogStart=winter.dog.position;
             foreach(var target in Components<Room3FlowTarget>(memoryScene)) Block(target);
-            // The carrot and duck share the same memory scene, but never own it together.
-            foreach(var b in Components<MonoBehaviour>(memoryScene).Where(b=>b.GetType().Namespace=="TeamRoulette.Room3.Nosework")) Block(b);
             Block(interactor);
             Hide(interactor?interactor.handIcon:null); Hide(interactor && interactor.nameText?interactor.nameText.gameObject:null);
             hand=player.GetComponentInChildren<PlayerHand>(true); if(hand) { Block(hand); if(hand.handModel) { handVisual=hand.handModel.transform; handParent=handVisual.parent; handPosition=handVisual.localPosition; handRotation=handVisual.localRotation; handVisible=handVisual.gameObject.activeSelf; } }

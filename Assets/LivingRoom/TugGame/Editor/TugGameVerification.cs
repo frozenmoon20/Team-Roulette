@@ -157,8 +157,6 @@ namespace TeamRoulette.Room3.TugEditor
             yield return Until(() => game.Phase == TugPhase.Waiting, 10, "입력 대기");
             Check(game.roundCount == 2 && game.successesPerRound == 5, "기본 2라운드 × 5회");
             Check(game.OwnsInput && !game.player.canMove && !game.player.canLook, "미니게임 이동·시점 잠금");
-            var ball = UnityEngine.Object.FindFirstObjectByType<TeamRoulette.Room3.BallPlay.BallGame>();
-            Check(!ball || !ball.OwnsInput, "테니스공 게임 동시 실행 없음");
             game.onCompleted.AddListener(() => events++);
             var targets = UnityEngine.Object.FindObjectsByType<Room3FlowTarget>(FindObjectsSortMode.None).Where(t => t.ObjectId == TugGame.ToyId && t.gameObject.scene == game.gameObject.scene).ToArray();
             foreach (var target in targets) target.Interact();

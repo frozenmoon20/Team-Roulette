@@ -5,10 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using TeamRoulette.Room3;
-using TeamRoulette.Room3.BallPlay;
 using TeamRoulette.Room3.TugPlay;
 using TeamRoulette.Room3.BonePlay;
-using TeamRoulette.Room3.Nosework;
 using TeamRoulette.Room3.DollMemory;
 using TeamRoulette.UI;
 using UnityEditor;
@@ -95,11 +93,11 @@ public static class DevelopmentGoalVerification
         yield return Skip(GameStage.Board);
         Check(Find<BoardGameController>().Completed && Find<PlayerInteractor>().enabled,"Board follows valid finish path and releases input");
         // Visit all real toy games; F1 must use each game's own completion callback.
-        foreach(string id in new[]{"테니스공","로프","뼈다귀 장난감","carrot_snuffle_game","인형"}) {
+        foreach(string id in new[]{"로프","뼈다귀 장난감","인형"}) {
             var source=Object.FindObjectsByType<Room3FlowTarget>(FindObjectsSortMode.None).First(t=>t.ObjectId==id && t.gameObject.scene.name==Room3FlowController.LivingRoom);
             source.Interact();
             yield return Until(()=>!m.Flow.IsTransitioning && m.Flow.VisitingObject==id,"Enter toy "+id);
-            MonoBehaviour game=id=="테니스공"?(MonoBehaviour)Find<BallGame>():id=="로프"?Find<TugGame>():id=="뼈다귀 장난감"?Find<BoneCatchGame>():id=="인형"?Find<DollMemorySequence>():Find<NoseworkGame>();
+            MonoBehaviour game=id=="로프"?(MonoBehaviour)Find<TugGame>():id=="뼈다귀 장난감"?Find<BoneCatchGame>():Find<DollMemorySequence>();
             Check(game,"Real toy controller exists: "+id);
             int events=0;((UnityEvent)game.GetType().GetField("onCompleted").GetValue(game)).AddListener(()=>events++);
             yield return .3;
@@ -114,9 +112,7 @@ public static class DevelopmentGoalVerification
             Check(events==1 && SceneManager.GetActiveScene().name==Room3FlowController.LivingRoom && SceneManager.sceneCount==1,"Toy callback once and all visit scenes unloaded: "+id);
             Check(!source.gameObject.activeSelf,"Completed source toy hidden: "+id);
         }
-        Check(m.CompletedToyCount==5 && m.CurrentStage==GameStage.Calendar,"Five toy completions advance existing manager");
-        yield return Skip(GameStage.Calendar);
-        Check(Find<CalGameController>().Marked,"Calendar final page applied");
+        Check(m.CompletedToyCount==3 && m.CurrentStage==GameStage.TV,"Three toy completions advance existing manager");
         yield return Skip(GameStage.TV);
         Check(Find<TVGameController>().IsComplete && Find<FirstPersonPlayer>().enabled,"TV completion restores room input");
         yield return Skip(GameStage.Entrance);

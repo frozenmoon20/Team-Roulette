@@ -99,7 +99,7 @@ namespace TeamRoulette.Room3.BonePlay
             var flow = GameManager.Instance ? GameManager.Instance.Flow : null;
             if (!previewWhenOpenedDirectly || (flow && !string.IsNullOrEmpty(flow.VisitingObject))) return;
             // Set their explicit preview flags without disabling components or modifying saved assets.
-            foreach (var b in InScene<MonoBehaviour>().Where(b => b && (b.GetType().Name == "BallGame" || b.GetType().Name == "TugGame")))
+            foreach (var b in InScene<MonoBehaviour>().Where(b => b && b.GetType().Name == "TugGame"))
             {
                 var field = b.GetType().GetField("autoStart");
                 if (field == null) continue;
@@ -275,7 +275,7 @@ namespace TeamRoulette.Room3.BonePlay
             get
             {
                 if (!lipLeft || !lipRight || !tongue || !nose || !head) return mouth.TransformPoint(mouthOffset);
-                // The imported "mouth" bone is a jaw pivot. Locate the actual bite using the same rig landmarks as BallGame.
+                // The imported "mouth" bone is a jaw pivot. Locate the actual bite using the rig landmarks.
                 Vector3 bite = Vector3.Lerp((lipLeft.position + lipRight.position) * .5f, tongue.position, .7f);
                 Vector3 outward = (nose.position - head.position).normalized;
                 float clearance = Mathf.Max(0, Vector3.Dot(nose.position - bite, outward));

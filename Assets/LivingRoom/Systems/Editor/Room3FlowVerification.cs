@@ -228,7 +228,7 @@ public static class Room3FlowVerification
         var windowOpen = living.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Transform>(true))
             .First(item => item.name == "WindowOpen").gameObject;
         var door = Target("Door", living);
-        window.Interact(); Target("TV", living).Interact(); Target("테니스공", living).Interact(); door.Interact();
+        window.Interact(); Target("TV", living).Interact(); Target("로프", living).Interact(); door.Interact();
         yield return .15;
         Check(manager.CurrentStage == GameStage.Curtain && !flow.IsTransitioning && !flow.EndingVisible
             && window.gameObject.activeSelf && !windowOpen.activeSelf, "Later stages cannot start before curtain");
@@ -257,11 +257,11 @@ public static class Room3FlowVerification
         player.Teleport(player.transform.position, Quaternion.Euler(0, 37, 0), Quaternion.Euler(12, 0, 0));
         Vector3 savedPosition = player.transform.position;
         Quaternion savedRotation = player.transform.rotation, savedLook = player.cameraRoot.localRotation;
-        string[] toys = { "carrot_snuffle_game", "로프", "인형", "테니스공", "뼈다귀 장난감" };
+        string[] toys = { "로프", "인형", "뼈다귀 장난감" };
         for (int i = 0; i < toys.Length; i++)
         {
             string id = toys[i];
-            string destination = id == "인형" || id == "carrot_snuffle_game" ? "Room3_OldLivingRoom" : "Room3_Toy";
+            string destination = id == "인형" ? "Room3_OldLivingRoom" : "Room3_Toy";
             var origin = Target(id, living);
             CheckRay(origin, living);
             origin.Interact();
@@ -273,7 +273,7 @@ public static class Room3FlowVerification
             CheckOptions(options);
             CheckSinglePlayerAndUI(guest);
             CheckObjective(guest, GameStage.Toys);
-            string other = destination == "Room3_OldLivingRoom" ? (id == "인형" ? "carrot_snuffle_game" : "인형") : "TV";
+            string other = "TV";
             Target(other, guest).Interact();
             yield return .1;
             Check(!flow.IsTransitioning && flow.VisitingObject == id && SceneManager.GetActiveScene() == guest,
@@ -299,29 +299,20 @@ public static class Room3FlowVerification
             yield return .1;
             Check(!flow.IsTransitioning && SceneManager.GetActiveScene() == living && flow.CompletedToyCount == i + 1,
                 "Completed toy cannot be entered again: " + id);
-            Check(manager.CurrentStage == (i == toys.Length - 1 ? GameStage.Calendar : GameStage.Toys),
-                "All five distinct toys are required before calendar");
+            Check(manager.CurrentStage == (i == toys.Length - 1 ? GameStage.TV : GameStage.Toys),
+                "All three distinct toys are required before TV");
         }
-        Target("TV", living).Interact();
-        door.Interact();
-        Check(!flow.IsTransitioning && !flow.EndingVisible && manager.CurrentStage == GameStage.Calendar,
-            "TV and entrance remain unavailable until calendar completion");
-        var calendar = Find<CalGameController>(living);
-        calendar.Click(false); calendar.Click(true);
-        // Calendar intentionally rejects duplicate same-frame clicks.
-        yield return .1;
-        calendar.Click(true);
-        Check(manager.CurrentStage == GameStage.TV, "Calendar gameplay reports completion and unlocks TV");
+        Check(manager.CurrentStage == GameStage.TV, "Toy completion unlocks TV");
         Target("TV", living).Interact();
         yield return WaitFor(() => !flow.IsTransitioning && SceneManager.GetActiveScene().name == "Room3_Toy", "Enter TV scene");
         var tvScene = SceneManager.GetActiveScene();
-        Target("테니스공", tvScene).Interact();
+        Target("로프", tvScene).Interact();
         Check(!flow.IsTransitioning && flow.VisitingObject == "TV", "Toy object cannot finish TV visit");
         CheckOptions(options);
         CheckRay(Target("TV", tvScene), tvScene);
         Target("TV", tvScene).Interact();
         yield return WaitFor(() => !flow.IsTransitioning && SceneManager.GetActiveScene() == living, "Return from TV");
-        Check(manager.CurrentStage == GameStage.Entrance && flow.CompletedToyCount == 5,
+        Check(manager.CurrentStage == GameStage.Entrance && flow.CompletedToyCount == 3,
             "TV return unlocks entrance without changing toy completion");
         Check(Vector3.Distance(player.transform.position, savedPosition) < .001f
             && Quaternion.Angle(player.transform.rotation, savedRotation) < .01f
