@@ -105,7 +105,10 @@ public static class MealGameVerification
             .First(t => t.game == g && t.action == action && t.enabled);
         Bounds bounds = MealGeometry.BoundsOf(target.gameObject);
         var cam = g.interactor.playerCamera.transform;
-        foreach(var direction in new[]{Vector3.forward,Vector3.right,Vector3.left,Vector3.back,Vector3.up})
+        var directions = action == MealAction.Plate || action == MealAction.EmptyCup || action == MealAction.JuiceCup
+            ? new[] { (Vector3.up + Vector3.right * .3f).normalized }
+            : new[]{Vector3.forward,Vector3.right,Vector3.left,Vector3.back,Vector3.up};
+        foreach(var direction in directions)
         {
             float extent=Vector3.Dot(bounds.extents,new Vector3(Mathf.Abs(direction.x),Mathf.Abs(direction.y),Mathf.Abs(direction.z)));
             cam.position=bounds.center+direction*(extent+.45f);
@@ -186,7 +189,8 @@ public static class MealGameVerification
         Check(!g.jam.gameObject.activeSelf, "Jam cancellation is repeatable");
         g.Click(MealAction.Fridge);
         yield return .15;
-        g.Click(MealAction.Counter);
+        Aim(g, MealAction.Counter);
+        g.Click(input.FindTarget().action);
         Check(g.JamOnCounter && !hand.Held && g.jam.transform.parent == g.jamPoint, "Jam is placed on counter");
         Check(g.SecondsRemaining > 8 && g.SecondsRemaining < 10, "Timer decreases independently during jam preparation");
         int waited = 0;
@@ -197,8 +201,11 @@ public static class MealGameVerification
         Vector3 pop = g.cookedToast.transform.position;
         g.Click(MealAction.Toaster);
         yield return .15;
-        Check(hand.Held == g.cookedToast && MealGeometry.BoundsOf(g.cookedToast.gameObject).size.y < Mathf.Max(MealGeometry.BoundsOf(g.cookedToast.gameObject).size.x, MealGeometry.BoundsOf(g.cookedToast.gameObject).size.z) * .5f,
-            "Cooked toast is horizontal in world space, independent of wrist rotation");
+        yield return .3;
+        Check(hand.Held == g.cookedToast && g.cookedToast.transform.parent == hand.palmPoint,
+            "Cooked toast is attached to the palm");
+        var toastLocalPosition = g.cookedToast.transform.localPosition;
+        var toastLocalRotation = g.cookedToast.transform.localRotation;
         // Inspect the real player/camera/hand hierarchy, not a detached camera.
         g.interactor.playerCamera.transform.localPosition = originalCameraPosition;
         g.interactor.playerCamera.transform.localRotation = originalCameraRotation;
@@ -208,9 +215,9 @@ public static class MealGameVerification
         body.enabled = true;
         g.player.cameraRoot.localRotation = Quaternion.Euler(22, 0, 0);
         yield return .3;
-        Check(MealGeometry.BoundsOf(g.cookedToast.gameObject).size.y < Mathf.Max(MealGeometry.BoundsOf(g.cookedToast.gameObject).size.x, MealGeometry.BoundsOf(g.cookedToast.gameObject).size.z) * .5f, "Cooked toast stays level while camera looks down");
-        Bounds toastBounds = MealGeometry.BoundsOf(g.cookedToast.gameObject);
-        Check(Mathf.Abs(toastBounds.min.y - hand.palmPoint.position.y) < .002f, "Toast bottom rests at palm height");
+        Check(Vector3.Distance(toastLocalPosition, g.cookedToast.transform.localPosition) < .001f &&
+            Quaternion.Angle(toastLocalRotation, g.cookedToast.transform.localRotation) < .1f,
+            "Toast keeps the same grip when the player moves and looks down");
         yield return .3;
         g.ReturnHeld();
         Check(Vector3.Distance(g.cookedToast.transform.position, pop) < .001f, "Cooked toast cancellation returns to toaster, not initial scene location");
@@ -218,7 +225,7 @@ public static class MealGameVerification
         g.Click(MealAction.CookedToast);
         yield return .15;
         Aim(g, MealAction.Plate);
-        g.Click(MealAction.Plate);
+        g.Click(input.FindTarget().action);
         Check(g.ToastOnPlate && !hand.Held && g.cookedToast.transform.parent == g.toastOnPlatePoint, "Cooked toast is placed on plate");
         Aim(g, MealAction.Jam);
         Aim(g, MealAction.CookedToast);
@@ -256,7 +263,7 @@ public static class MealGameVerification
         g.Click(MealAction.Fridge);
         yield return .15;
         Aim(g, MealAction.EmptyCup);
-        g.Click(MealAction.EmptyCup);
+        g.Click(input.FindTarget().action);
         Check(g.JuicePoured && !hand.Held && !g.juice.gameObject.activeSelf && !g.emptyCup.activeSelf && g.juiceCup.gameObject.activeSelf,
             "Pour consumes juice and replaces empty cup");
         Check(g.actionAudio.isPlaying, "Pour effect plays");

@@ -80,18 +80,79 @@ public static class DevelopmentGoalVerification
         Application.runInBackground=true;
         var m=GameManager.Instance;Check(m && m.Flow,"Existing manager owns debug shortcut");
         var ui=Find<GameUI>();ui.OpenSettings();Check(!m.DebugCompleteCurrentObjective(),"Paused input cannot skip a stage");ui.CloseSettings();yield return .15;
+        var barriers=Object.FindObjectsByType<Room3Barrier>(FindObjectsSortMode.None);
+        var barrier=barriers.Single(b=>b.Remark=="올라갈 필요 없다.");
+        var windowBoundary=barriers.Single(b=>b.Remark=="아직은...");
+        Check(barrier.transform.parent && barrier.transform.parent==windowBoundary.transform.parent &&
+            barrier.transform.parent.name=="Barrier","Stair and window boundaries share the Barrier parent");
+        Check(barrier && barrier.GetComponent<BoxCollider>().enabled && !barrier.GetComponent<BoxCollider>().isTrigger,"Stair barrier is a solid collider");
+        var testPlayer=Find<FirstPersonPlayer>();var body=testPlayer.GetComponent<CharacterController>();
+        var savedPosition=testPlayer.transform.position;
+        body.enabled=false;testPlayer.transform.position=barrier.transform.position+new Vector3(0,0,1);body.enabled=true;Physics.SyncTransforms();
+        body.Move(Vector3.back*2);
+        Check(testPlayer.transform.position.z>barrier.transform.position.z,"Character cannot cross upper stair boundary");
+        body.enabled=false;testPlayer.transform.position=savedPosition;body.enabled=true;Physics.SyncTransforms();
+        foreach(var action in new[]{MealAction.Fridge,MealAction.Toaster,MealAction.EmptyCup}) {
+            var target=Object.FindObjectsByType<MealTarget>(FindObjectsInactive.Include,FindObjectsSortMode.None).First(t=>t.action==action);
+            Check(!string.IsNullOrWhiteSpace(target.DisplayName) && target is IInteractable,"Kitchen hover target labelled outside meal stage: "+action);
+        }
+        yield return Until(()=>ui.IsDialogueOpen && ui.dialogueText.text==barrier.Remark,"Stair contact shows its remark");
+        Check(true,"Stair contact shows its remark");
         yield return Skip(GameStage.Curtain);
         Check(Find<CurtainGameController>().Completed && Find<FirstPersonPlayer>().transform.localScale==Vector3.one,"Curtain completion restores player scale");
         yield return Skip(GameStage.Window);
         Check(Find<WindowGameController>().WindowOpened && Find<FirstPersonPlayer>().canMove,"Window opened and movement restored");
-        var wash=Find<WashGameController>();wash.Click(WashAction.Water);wash.Click(WashAction.Water);wash.Click(WashAction.Soap);
+        var windowCollider=windowBoundary.GetComponent<BoxCollider>();
+        Check(windowCollider.enabled && !windowCollider.isTrigger,"Window has a fixed solid barrier after opening");
+        Check(Find<CurtainGameController>().dog.GetComponentsInChildren<Collider>().Any(c=>c.enabled && !c.isTrigger),
+            "Winter has solid body collision");
+        Check(!testPlayer.GetComponentsInChildren<Light>(true).Any(l=>l.name=="HandLight" && l.enabled),
+            "Living room HandLight is disabled");
+        savedPosition=testPlayer.transform.position;
+        var windowPlane=windowBoundary.transform;
+        var direction=windowPlane.forward * Mathf.Sign(Vector3.Dot(savedPosition-windowPlane.position,windowPlane.forward));
+        body.enabled=false;
+        testPlayer.transform.position=new Vector3(windowPlane.position.x,windowCollider.bounds.min.y+.1f,windowPlane.position.z)+direction;
+        body.enabled=true;
+        Physics.SyncTransforms();
+        body.Move(-direction*2);
+        Check(Vector3.Dot(testPlayer.transform.position-windowPlane.position,direction)>0,"Player cannot cross the open window");
+        body.enabled=false;
+        testPlayer.transform.position=savedPosition;
+        body.enabled=true;
+        Physics.SyncTransforms();
+        yield return Until(()=>ui.IsDialogueOpen && ui.dialogueText.text==windowBoundary.Remark,"Window contact shows its remark");
+        Check(true,"Window contact shows its remark");
+        Check(ObjectiveManager.GetObjective(GameStage.Wash)=="화장실에 가자","Wash begins with bathroom objective");
+        Find<RestroomDoor>().Interact();
+        Check(Find<SceneUIContent>().objectives.Any(o=>o.visible && o.text=="물을 틀자"),"Bathroom door click changes objective to water");
+        var wash=Find<WashGameController>();
+        var aim=Find<PlayerInteractor>();var camera=aim.playerCamera.transform;
+        var originalCameraPosition=camera.position;var originalCameraRotation=camera.rotation;
+        var sink=Object.FindObjectsByType<WashTarget>(FindObjectsSortMode.None).First(t=>t.name=="T_sink");
+        Check(sink.game==wash,"Visible sink references the current wash controller");
+        var sinkBounds=sink.GetComponent<Collider>().bounds;
+        camera.SetPositionAndRotation(sinkBounds.center+new Vector3(0,.55f,1),Quaternion.LookRotation(new Vector3(0,-.55f,-1)));
+        typeof(PlayerInteractor).GetMethod("UpdateHover",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(aim,new object[]{true});
+        typeof(PlayerInteractor).GetMethod("TryInteract",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(aim,null);
+        Check(wash.IsActive && wash.CurrentStage==WashGameController.Stage.WaterRunning,"Aiming and clicking the sink starts WashGame");
+        wash.Click(WashAction.Water);wash.Click(WashAction.Soap);
         yield return Skip(GameStage.Wash);
         Check(!wash.IsActive && !OptionState.Instance.IsUnlocked(OptionType.Blur) && wash.viewCamera.targetTexture==null,"Wash releases blur, painting input and render target");
+        camera.SetPositionAndRotation(originalCameraPosition,originalCameraRotation);
+        var counter=Object.FindObjectsByType<MealTarget>(FindObjectsSortMode.None).First(t=>t.action==MealAction.Counter);
+        var counterBounds=counter.GetComponentsInChildren<Collider>().First(c=>c.enabled&&!c.isTrigger).bounds;
+        camera.SetPositionAndRotation(counterBounds.center+Vector3.up*(counterBounds.extents.y+.7f),Quaternion.LookRotation(Vector3.down,Vector3.forward));
+        Physics.SyncTransforms();
+        Check(Find<MealInput>().FindTarget()==counter,"Countertop aim resolves the jam placement target");
+        for(int i=0;i<12;i++) {
+            Check(aim.TryAimHit(out var hit) && hit.collider.GetComponentInParent<MealTarget>()==Find<MealInput>().FindTarget(),"Shared and meal aim agree on counter sample "+i);
+            yield return null;
+        }
+        camera.SetPositionAndRotation(originalCameraPosition,originalCameraRotation);
         var meal=Find<MealGameController>();meal.Click(MealAction.Fridge);yield return .2;
         yield return Skip(GameStage.Meal);
         Check(meal.Completed && !meal.Ending && !meal.timerPanel.activeSelf && meal.blackScreen.alpha==0,"Meal releases held items, countdown and blackout");
-        yield return Skip(GameStage.Board);
-        Check(Find<BoardGameController>().Completed && Find<PlayerInteractor>().enabled,"Board follows valid finish path and releases input");
         // Visit all real toy games; F1 must use each game's own completion callback.
         foreach(string id in new[]{"로프","뼈다귀 장난감","인형"}) {
             var source=Object.FindObjectsByType<Room3FlowTarget>(FindObjectsSortMode.None).First(t=>t.ObjectId==id && t.gameObject.scene.name==Room3FlowController.LivingRoom);
@@ -112,9 +173,11 @@ public static class DevelopmentGoalVerification
             Check(events==1 && SceneManager.GetActiveScene().name==Room3FlowController.LivingRoom && SceneManager.sceneCount==1,"Toy callback once and all visit scenes unloaded: "+id);
             Check(!source.gameObject.activeSelf,"Completed source toy hidden: "+id);
         }
-        Check(m.CompletedToyCount==3 && m.CurrentStage==GameStage.TV,"Three toy completions advance existing manager");
+        Check(m.CompletedToyCount==3 && m.CurrentStage==GameStage.TV,"Three toy completions unlock TV");
         yield return Skip(GameStage.TV);
         Check(Find<TVGameController>().IsComplete && Find<FirstPersonPlayer>().enabled,"TV completion restores room input");
+        yield return Skip(GameStage.Board);
+        Check(Find<BoardGameController>().Completed && Find<PlayerInteractor>().enabled,"Board follows valid finish path and releases input");
         yield return Skip(GameStage.Entrance);
         Check(m.IsFinished && Find<PorchGameController>().IsRunning,"Entrance follows normal credits ending");
         Check(!m.DebugCompleteCurrentObjective(),"F1 has no effect after ending");

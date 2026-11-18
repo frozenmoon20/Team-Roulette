@@ -38,7 +38,7 @@ namespace TeamRoulette.Room3
         // Enum IDs stay stable for serialized prefab references; this is the gameplay order.
         public static readonly GameStage[] Progression = {
             GameStage.Curtain, GameStage.Window, GameStage.Wash, GameStage.Meal,
-            GameStage.Board, GameStage.Toys, GameStage.TV, GameStage.Entrance
+            GameStage.Toys, GameStage.TV, GameStage.Board, GameStage.Entrance
         };
         public static GameStage NextStage(GameStage current)
         {

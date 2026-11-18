@@ -14,7 +14,6 @@ namespace TeamRoulette.Room3
     {
         public const string LivingRoom = "Room3_LivingRoom";
         public const string ToyRoom = "Room3_Toy";
-        public const string OldLivingRoom = "Room3_OldLivingRoom";
         public static readonly string[] ToyIds = { "로프", "뼈다귀 장난감", "인형" };
         // Keep completion identities stable while using the replacement scene assets.
         static string ToyIdentity(string name) => name switch
@@ -84,7 +83,7 @@ namespace TeamRoulette.Room3
         {
             InitializeOptions();
             bool home = scene.name == LivingRoom;
-            if (!home && scene.name != ToyRoom && scene.name != OldLivingRoom) return;
+            if (!home && scene.name != ToyRoom) return;
             foreach (var node in scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Transform>(true)))
             {
                 // Arranged copies are display-only and must never start another visit.
@@ -183,8 +182,7 @@ namespace TeamRoulette.Room3
                     break;
                 default:
                     if (Array.IndexOf(ToyIds, target.ObjectId) < 0 || IsToyComplete(target.ObjectId)) return;
-                    BeginVisit(target, GameStage.Toys,
-                        target.ObjectId == "인형" ? OldLivingRoom : ToyRoom);
+                    BeginVisit(target, GameStage.Toys, ToyRoom);
                     break;
             }
         }

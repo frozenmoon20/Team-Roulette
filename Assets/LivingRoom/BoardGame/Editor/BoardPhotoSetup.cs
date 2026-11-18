@@ -71,14 +71,15 @@ public static class BoardPhotoSetup
             // The paper faces +Z; reverse U so its front reads correctly from that side.
             float u0=(float)minX/texture.width,u1=(float)(maxX+1)/texture.width,v0=(float)minY/texture.height,v1=(float)(maxY+1)/texture.height;
             mesh.uv=new[]{new Vector2(u1,v0),new Vector2(u0,v0),new Vector2(u0,v1),new Vector2(u1,v1)};
-            mesh.triangles=new[]{0,2,1,0,3,2};mesh.RecalculateNormals();mesh.RecalculateBounds();
+            mesh.triangles=new[]{0,1,2,0,2,3};mesh.RecalculateNormals();mesh.RecalculateBounds();
             string meshPath=Folder+"/Meshes/Photos/"+Files[n]+".asset";
             var savedMesh=AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
             if(savedMesh){EditorUtility.CopySerialized(mesh,savedMesh);UnityEngine.Object.DestroyImmediate(mesh);}else{AssetDatabase.CreateAsset(mesh,meshPath);savedMesh=mesh;}
             Undo.RecordObject(visual.GetComponent<MeshFilter>(),"Apply photo mesh");visual.GetComponent<MeshFilter>().sharedMesh=savedMesh;
             string materialPath=Folder+"/Materials/Photos/"+Files[n]+".mat";
             var material=AssetDatabase.LoadAssetAtPath<Material>(materialPath);
-            if(!material){material=new Material(Shader.Find("Universal Render Pipeline/Unlit"));AssetDatabase.CreateAsset(material,materialPath);}
+            if(!material){material=new Material(Shader.Find("Universal Render Pipeline/Lit"));AssetDatabase.CreateAsset(material,materialPath);}
+            BoardPhotoPaper.Apply(material);
             material.SetTexture("_BaseMap",texture);material.SetColor("_BaseColor",Color.white);material.SetFloat("_Surface",0);material.SetFloat("_AlphaClip",1);material.SetFloat("_Cutoff",.5f);material.SetFloat("_Cull",0);material.EnableKeyword("_ALPHATEST_ON");material.renderQueue=(int)RenderQueue.AlphaTest;material.SetOverrideTag("RenderType","TransparentCutout");EditorUtility.SetDirty(material);
             var renderer=visual.GetComponent<MeshRenderer>();Undo.RecordObject(renderer,"Apply photo material");renderer.sharedMaterial=material;renderer.shadowCastingMode=ShadowCastingMode.Off;
             foreach(var label in item.GetComponentsInChildren<TMPro.TMP_Text>(true)){Undo.RecordObject(label.gameObject,"Hide placeholder name");label.gameObject.SetActive(false);}

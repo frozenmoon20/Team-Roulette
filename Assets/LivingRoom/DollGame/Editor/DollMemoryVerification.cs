@@ -14,22 +14,34 @@ public static class DollMemoryVerification
 {
     const string Folder="Assets/LivingRoom/DollGame/Editor/";
     static double began; static int phase,completed; static DollMemoryState previous; static float restBegan;
+    static double heartbeat;
+    static bool runtimeError;
     static float chaseStarted=-1, stateSince; static readonly System.Collections.Generic.HashSet<string> pictures=new System.Collections.Generic.HashSet<string>();
     static DollMemoryVerification() { EditorApplication.update+=Tick; Application.logMessageReceived+=Log; }
-    static void Log(string message,string stack,LogType type) { if(SessionState.GetBool("Doll.Verify",false) && (type==LogType.Exception || type==LogType.Error)) File.AppendAllText(Folder+"PlayVerification.txt","ERROR: "+message+"\n"+stack+"\n"); }
+    static void Log(string message,string stack,LogType type) { if(SessionState.GetBool("Doll.Verify",false) && (type==LogType.Exception || type==LogType.Error)) {runtimeError=true;File.AppendAllText(Folder+"PlayVerification.txt","ERROR: "+message+"\n"+stack+"\n");} }
     static void Check(bool test,string label) { if(!test) throw new Exception(label); File.AppendAllText(Folder+"PlayVerification.txt","PASS: "+label+"\n"); }
     static void Tick()
     {
         if(EditorApplication.isCompiling || EditorApplication.isUpdating) return;
         if(!EditorApplication.isPlayingOrWillChangePlaymode && File.Exists(Folder+"Verify.request") && File.ReadAllText(Folder+"Verify.request").Trim()=="verify")
         {
+            began=heartbeat=0;phase=completed=walkPoint=0;previous=DollMemoryState.Inactive;chaseStarted=-1;yardChecked=false;pictures.Clear();
+            runtimeError=false;
+            EditorApplication.isPaused=false;
             File.WriteAllText(Folder+"Verify.request","running"); File.WriteAllText(Folder+"PlayVerification.txt","오리 인형 회상 통합 재생 검사\n");
             SessionState.SetBool("Doll.Verify",true); EditorSceneManager.playModeStartScene=AssetDatabase.LoadAssetAtPath<SceneAsset>("Assets/Scenes/Room3_LivingRoom.unity"); EditorApplication.isPlaying=true; return;
         }
         if(!SessionState.GetBool("Doll.Verify",false) || !EditorApplication.isPlaying) return;
         try
         {
+            if(runtimeError)throw new Exception("Runtime error during verification; see ERROR above.");
             if(began==0) began=EditorApplication.timeSinceStartup;
+            Application.runInBackground=true;
+            if(EditorApplication.timeSinceStartup-heartbeat>5)
+            {
+                heartbeat=EditorApplication.timeSinceStartup;
+                File.AppendAllText(Folder+"PlayVerification.txt",$"PROGRESS phase={phase} scene={SceneManager.GetActiveScene().name} time={Time.timeSinceLevelLoad} scale={Time.timeScale} paused={EditorApplication.isPaused} manager={GameManager.Instance != null} stage={GameManager.Instance?.CurrentStage}\n");
+            }
             if(EditorApplication.timeSinceStartup-began>150) throw new Exception("통합 검사 시간 초과 phase="+phase);
             foreach(var ui in UnityEngine.Object.FindObjectsByType<GameUI>(FindObjectsSortMode.None)) if(ui.IsDialogueOpen) ui.AdvanceDialogue();
             var manager=GameManager.Instance; if(!manager) return;
@@ -44,7 +56,7 @@ public static class DollMemoryVerification
             if(phase==1)
             {
                 if(!game || game.State!=DollMemoryState.Chase) return;
-                if(chaseStarted<0) { chaseStarted=Time.time; return; }
+                if(chaseStarted<0) { Check(game.gameObject.scene.name==Room3FlowController.ToyRoom,"Doll memory starts inside Room3_Toy"); chaseStarted=Time.time; return; }
                 if(Time.time-chaseStarted<5) return;
                 Check(game.player.transform.position.y>=game.entry.position.y-.15f,"추격 시작 후 5초 동안 플레이어 바닥 관통 없음");
                 Check(manager.Flow.VisitingObject==DollMemorySequence.ToyId,"현재 거실 인형 클릭으로 과거 거실 추격 시작");
@@ -57,6 +69,8 @@ public static class DollMemoryVerification
             }
             if(phase==2 && game)
             {
+                if(SceneManager.GetSceneByName("Room3_OldLivingRoom").isLoaded)throw new Exception("Unexpected old living room dependency.");
+                if(game.gameObject.scene.name!=Room3FlowController.ToyRoom)throw new Exception("Memory left Room3_Toy before completion.");
                 if(game.State==DollMemoryState.MoveToWasher || game.State==DollMemoryState.WasherInteraction)
                 {
                     var door=UnityEngine.Object.FindFirstObjectByType<RestroomDoor>();if(door&&!door.IsOpen)door.Interact();
@@ -81,18 +95,59 @@ public static class DollMemoryVerification
                     Check(game.PressWasherButton(),"세탁기 시작 1회"); Check(!game.PressWasherButton(),"세탁기 중복 시작 차단");
                 }
                 if(game.State==DollMemoryState.Drying){CheckYardOnce(game);if(Time.time-stateSince>2)Frame("Drying");}
+                if(game.State==DollMemoryState.AwaitDryDoll && Time.time-stateSince>2)
+                {
+                    var target=game.ActiveDoll.GetComponentInChildren<Renderer>().bounds.center;
+                    var camera=game.playerCamera;
+                    if(pictures.Add("DryDollWalk"))
+                    {
+                        Check(game.player.isActiveAndEnabled && camera.enabled,"First-person movement and view resume after drying");
+                        Check(game.sharedUI.objectiveText.isActiveAndEnabled && game.sharedUI.objectiveText.text=="말린 인형을 집자","Pickup instruction appears in the objective HUD");
+                        Check(game.ActiveDoll.parent==null && game.winter.IsSitting,"Duck stays on rack while Winter waits");
+                        Check(!game.TryYardClick(new Ray(camera.transform.position,target-camera.transform.position)),"Pickup is rejected from the lawn spawn");
+                    }
+                    Vector3 front=Vector3.ProjectOnPlane(game.yardBinding.houseDoor.position-game.yardBinding.insidePoint.position,Vector3.up).normalized;
+                    Vector3 pickup=game.ActiveDoll.position+front*.95f+Vector3.Cross(Vector3.up,front)*.85f;
+                    Vector3 step=Vector3.ProjectOnPlane(pickup-game.player.transform.position,Vector3.up);
+                    if(step.magnitude>.12f)
+                        game.player.GetComponent<CharacterController>().Move(Vector3.ClampMagnitude(step,.06f));
+                    else
+                    {
+                        var ray=new Ray(camera.transform.position,target-camera.transform.position);
+                        Check(game.TryYardClick(ray),"Player walks into reach and picks up dried duck");
+                        Check(!game.TryYardClick(ray),"Duplicate pickup click rejected");
+                    }
+                }
+                if(game.State==DollMemoryState.AwaitGiveDoll && Time.time-stateSince>2)
+                {
+                    Check(game.winter.IsSitting,"Waiting for the player with Winter sitting");
+                    Check(game.OutdoorRouteIndex==-1,"No automatic departure before handover");
+                    Check(!game.TryYardClick(new Ray(Vector3.one*1000,Vector3.up)),"Empty-space click does not advance");
+                    Check(game.ActiveDoll.parent && game.ActiveDoll.parent==game.playerCamera.transform,"Duck is held after pickup");
+                    Frame("AwaitGiveDoll");
+                    var camera=game.playerCamera;
+                    var subject=game.winter.dog;
+                    bool clicked=false;
+                    foreach(var renderer in subject.GetComponentsInChildren<Renderer>())
+                    {
+                        if(!renderer.enabled)continue;
+                        if(game.TryYardClick(new Ray(camera.transform.position,renderer.bounds.center-camera.transform.position))){clicked=true;break;}
+                    }
+                    Check(clicked,"Player gives duck to sitting Winter");
+                    Check(!game.TryYardClick(new Ray(camera.transform.position,subject.position-camera.transform.position)),"Duplicate click rejected");
+                }
                 if(game.State==DollMemoryState.Washing && Time.time-stateSince>3){if(!pictures.Contains("Washing"))Check(game.winter.IsSitting,"세탁 관람 중 Sitting loop 상태 유지");Frame("Washing");}
                 if(game.State==DollMemoryState.ReturnDoll && Time.time-stateSince>2.7f)Frame("ReturnDoll");
                 if(game.State==DollMemoryState.ReturnDoll && game.OutdoorRouteIndex>=2 && game.OutdoorRouteIndex<=4)Frame("Stairs");
-                if(game.State==DollMemoryState.RunToCushion && Time.time-stateSince>2){if(!pictures.Contains("Entrance"))Check(game.interiorDoor.IsOpen,"집 문이 열린 뒤 겨울이가 진입");Frame("Entrance");}
-                if(game.State==DollMemoryState.RestWithDoll && Time.time-restBegan>1.5f && !File.Exists(Folder+"Rest.png")) Capture(game);
+                if(game.State==DollMemoryState.RunToCushion && Time.time-stateSince>2){if(game.interiorDoor && !pictures.Contains("Entrance"))Check(game.interiorDoor.IsOpen,"집 문이 열린 뒤 겨울이가 진입");Frame("Entrance");}
+                if(game.State==DollMemoryState.RestWithDoll && Time.time-restBegan>1.5f && pictures.Add("Rest")) Capture(game);
             }
             if(phase==2 && completed>0)
             {
                 if(manager.Flow.IsTransitioning) return;
                 Check(completed==1,"완료 이벤트 정확히 1회"); Check(SceneManager.GetActiveScene().name==Room3FlowController.LivingRoom,"현재 거실 복귀");
                 Check(manager.IsToyComplete(DollMemorySequence.ToyId),"Room3 인형 정리 완료 기록");
-                Check(!SceneManager.GetSceneByName(Room3FlowController.ToyRoom).isLoaded && !SceneManager.GetSceneByName(Room3FlowController.OldLivingRoom).isLoaded,"임시 회상 씬 정리");
+                Check(!SceneManager.GetSceneByName(Room3FlowController.ToyRoom).isLoaded && !SceneManager.GetSceneByName("Room3_OldLivingRoom").isLoaded,"임시 회상 씬 정리");
                 Check(UnityEngine.Object.FindFirstObjectByType<FirstPersonPlayer>().enabled,"기존 현재 시점 플레이어 조작 복구");
                 End("passed");
             }
@@ -120,7 +175,9 @@ public static class DollMemoryVerification
     }
     static void Frame(string name){
         if(!pictures.Add(name))return;
-        var c=UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None).First(v=>v.name=="Doll Memory Camera");
+        var game=UnityEngine.Object.FindFirstObjectByType<DollMemorySequence>();
+        var c=game.playerCamera.enabled ? game.playerCamera :
+            UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None).First(v=>v.name=="Doll Memory Camera");
         var rt=RenderTexture.GetTemporary(960,540,24);var saved=c.targetTexture;var old=RenderTexture.active;c.targetTexture=rt;c.Render();RenderTexture.active=rt;
         var tex=new Texture2D(960,540,TextureFormat.RGB24,false);tex.ReadPixels(new Rect(0,0,960,540),0,0);tex.Apply();File.WriteAllBytes(Folder+name+".png",tex.EncodeToPNG());
         c.targetTexture=saved;RenderTexture.active=old;RenderTexture.ReleaseTemporary(rt);UnityEngine.Object.DestroyImmediate(tex);

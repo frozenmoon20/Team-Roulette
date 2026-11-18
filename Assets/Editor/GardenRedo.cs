@@ -1,7 +1,0 @@
-#if UNITY_EDITOR
-using UnityEngine;using UnityEditor;using UnityEngine.SceneManagement;using UnityEditor.SceneManagement;using System.IO;using System.Linq;using System.Text;
-[InitializeOnLoad]public static class GardenRedo{
-static GardenRedo(){EditorApplication.update+=Run;}static Bounds B(GameObject g){var rr=g.GetComponentsInChildren<Renderer>(true);var b=new Bounds(g.transform.position,Vector3.zero);if(rr.Length>0){b=rr[0].bounds;foreach(var r in rr)b.Encapsulate(r.bounds);}return b;}
-static void Run(){if(EditorApplication.isCompiling||EditorApplication.isUpdating||EditorApplication.isPlayingOrWillChangePlaymode||File.Exists("Temp/garden-new-audit.txt"))return;var s=SceneManager.GetActiveScene();if(s.name!="Room3_Toy")return;var sb=new StringBuilder();foreach(var g in s.GetRootGameObjects()){var b=B(g);sb.AppendLine(g.name+" active="+g.activeSelf+" pos="+g.transform.position+" bounds="+b.min+".."+b.max);if(g.name=="GardenDecoration"||g.name=="Yard")foreach(Transform t in g.transform)sb.AppendLine(" child "+t.name+" active="+t.gameObject.activeSelf+" bounds="+B(t.gameObject));}foreach(var p in AssetDatabase.FindAssets("t:Prefab",new[]{"Assets/StoreAssets/SP City Park 01/Bohn Studios/_Common/Prefabs/OWA Trees 01"}).Take(10)){var path=AssetDatabase.GUIDToAssetPath(p);var go=(GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(path));sb.AppendLine(path+" SIZE="+B(go).size);Object.DestroyImmediate(go);}File.WriteAllText("Temp/garden-new-audit.txt",sb.ToString());}
-}
-#endif

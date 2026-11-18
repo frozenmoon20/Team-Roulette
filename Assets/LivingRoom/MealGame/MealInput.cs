@@ -11,9 +11,7 @@ public sealed class MealInput : MonoBehaviour
     public MealTarget FindTarget()
     {
         if (!shared || !shared.playerCamera) return null;
-        Ray ray = shared.playerCamera.ViewportPointToRay(new Vector3(.5f, .5f, 0));
-        if (!Physics.SphereCast(ray, shared.aimRadius, out var hit, shared.InteractRange,
-            Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore)) return null;
+        if (!shared.TryAimHit(out var hit)) return null;
         var target = hit.collider.GetComponentInParent<MealTarget>();
         return target && target.game == game && target.isActiveAndEnabled ? target : null;
     }
@@ -41,7 +39,8 @@ public sealed class MealInput : MonoBehaviour
         lockedLastFrame = locked;
         if (ownsInput)
         {
-            if (shared.nameText) shared.nameText.text = game.Ending ? "" : game.Label(target);
+            var ui = FindFirstObjectByType<TeamRoulette.UI.GameUI>();
+            if (shared.nameText) shared.nameText.text = game.Ending || (ui && ui.IsDialogueOpen) ? "" : game.Label(target);
             bool usable = target && game.CanUse(target.action) && !game.Ending;
             if (shared.handIcon) shared.handIcon.SetActive(usable);
             if (shared.crosshairDot) shared.crosshairDot.SetActive(!usable && !game.Ending);

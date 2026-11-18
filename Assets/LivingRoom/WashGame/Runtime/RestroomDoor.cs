@@ -3,15 +3,16 @@ using UnityEngine;
 public sealed class RestroomDoor : MonoBehaviour, IInteractable, IHasName
 {
     public float openAngle = -95f;
-    [Min(.1f)] public float duration = .35f;
+    [Min(.1f)] public float duration = .85f;
     public bool IsOpen { get; private set; }
-    public string DisplayName => IsOpen ? "화장실 문 닫기" : "화장실 문 열기";
+    public string DisplayName => "화장실 문";
     Quaternion closed, from, target;
     float elapsed;
     void Awake() { closed=transform.rotation; from=target=closed; elapsed=duration; }
     public void Interact()
     {
         if(Time.timeScale<=0)return;
+        TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Wash, TeamRoulette.Room3.ObjectiveStep.TurnOnWater);
         IsOpen=!IsOpen;
         from=transform.rotation;
         // Imported mesh axes can be tilted. Swing around the vertical world axis.

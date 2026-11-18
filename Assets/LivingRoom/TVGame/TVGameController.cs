@@ -343,7 +343,7 @@ namespace TeamRoulette.Room3
             var r = panel.rectTransform;
             r.anchorMin = new Vector2(.06f, .06f); r.anchorMax = new Vector2(.94f, .29f);
             r.offsetMin = r.offsetMax = Vector2.zero;
-            var label = Label("Warning", r, "영상을 시작하면 그동안 중단할 수 없습니다. TV를 보시겠습니까?", 32);
+            var label = Label("Warning", r, "영상을 시작하면 그동안 중단할 수 없습니다. 영상을 보시겠습니까?\n(처음 시청 후, ESC로 중단 가능)", 32);
             label.rectTransform.anchorMin = new Vector2(.04f, .40f); label.rectTransform.anchorMax = new Vector2(.96f, .94f);
             label.rectTransform.offsetMin = label.rectTransform.offsetMax = Vector2.zero;
             Button(r, "Yes", "예", new Vector2(.35f, .23f), Accept);

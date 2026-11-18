@@ -10,7 +10,7 @@ namespace TeamRoulette.Room3
         Rinsing, SelectTowel, WipeFace, WashComplete, GetToast, PutToastInToaster,
         GetJam, PutJamOnCounter, WaitForToast, TakeToast, PutToastOnPlate, ApplyJam,
         PlacePlate, GetJuice, PourJuice, PlaceCup, EatMeal, ArrangeBoard, ResolveOverlap,
-        FinishBoard
+        FinishBoard, TurnOnWater
     }
 
     [RequireComponent(typeof(SceneUIContent))]
@@ -21,28 +21,28 @@ namespace TeamRoulette.Room3
         {
             GameStage.Curtain => "커튼을 열자",
             GameStage.Window => "창문을 열자",
-            GameStage.Wash => "세수하자",
+            GameStage.Wash => "화장실에 가자",
             GameStage.Meal => "식사를 준비하자",
             GameStage.Board => "게시판을 정리하자",
-            GameStage.Toys => "장난감을 정리하자",
-            GameStage.TV => "TV를 켜자",
-            GameStage.Entrance => "현관으로 가자",
+            GameStage.Toys => "겨울이 장난감들을 정리하자",
+            GameStage.TV => "TV로 겨울이 영상을 보자",
+            GameStage.Entrance => "현관문을 열고 밖으로 나가자",
             _ => ""
         };
 
         // 세부 목표: 게임은 아래의 ID만 요청하며, 표시 문구는 여기서만 수정합니다.
         public static string GetDetailObjective(GameStage stage, ObjectiveStep step) => (stage, step) switch
         {
-            (GameStage.Curtain, ObjectiveStep.FollowDog) => "겨울이를 따라가자",
-            (GameStage.Curtain, ObjectiveStep.OpeningCurtains) => "커튼이 열린다",
+            (GameStage.Curtain, ObjectiveStep.FollowDog) => "커튼을 열자",
+            (GameStage.Wash, ObjectiveStep.TurnOnWater) => "물을 틀자",
             (GameStage.Wash, ObjectiveStep.WetFace) => "물로 얼굴을 적시자",
             (GameStage.Wash, ObjectiveStep.SelectSoap) => "비누를 집자",
             (GameStage.Wash, ObjectiveStep.ApplySoap) => "얼굴에 비누칠을 하자",
             (GameStage.Wash, ObjectiveStep.RinseFace) => "물로 거품을 헹구자",
-            (GameStage.Wash, ObjectiveStep.Rinsing) => "거품이 씻겨 내려간다",
+            (GameStage.Wash, ObjectiveStep.Rinsing) => "",
             (GameStage.Wash, ObjectiveStep.SelectTowel) => "수건을 집자",
             (GameStage.Wash, ObjectiveStep.WipeFace) => "수건으로 얼굴을 닦자",
-            (GameStage.Wash, ObjectiveStep.WashComplete) => "세안을 마쳤다",
+            (GameStage.Wash, ObjectiveStep.WashComplete) => "",
             (GameStage.Meal, ObjectiveStep.GetToast) => "냉장고에서 토스트를 꺼내자",
             (GameStage.Meal, ObjectiveStep.PutToastInToaster) => "토스트를 토스터기에 넣자",
             (GameStage.Meal, ObjectiveStep.GetJam) => "냉장고에서 잼을 꺼내자",
@@ -54,11 +54,11 @@ namespace TeamRoulette.Room3
             (GameStage.Meal, ObjectiveStep.PlacePlate) => "완성한 토스트를 식탁에 놓자",
             (GameStage.Meal, ObjectiveStep.GetJuice) => "냉장고에서 주스를 꺼내자",
             (GameStage.Meal, ObjectiveStep.PourJuice) => "빈 컵에 주스를 따르자",
-            (GameStage.Meal, ObjectiveStep.PlaceCup) => "주스컵을 식탁에 놓자",
-            (GameStage.Meal, ObjectiveStep.EatMeal) => "식사한다",
+            (GameStage.Meal, ObjectiveStep.PlaceCup) => "주스가 담긴 컵을 식탁에 놓자",
+            (GameStage.Meal, ObjectiveStep.EatMeal) => "",
             (GameStage.Board, ObjectiveStep.ArrangeBoard) => "사진들을 게시판에 정리하자",
-            (GameStage.Board, ObjectiveStep.ResolveOverlap) => "겹친 사진들을 정리하자",
-            (GameStage.Board, ObjectiveStep.FinishBoard) => "게시판 정리를 마무리하자",
+            (GameStage.Board, ObjectiveStep.ResolveOverlap) => "",
+            (GameStage.Board, ObjectiveStep.FinishBoard) => "",
             _ => null
         };
         public const string CompletedMessage = "거실에서 할 일을 모두 마쳤다";

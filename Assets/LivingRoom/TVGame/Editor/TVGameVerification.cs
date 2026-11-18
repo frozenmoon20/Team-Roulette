@@ -137,7 +137,7 @@ public static class TVGameVerification
         while (!game.IsComplete) { CheckPreparing(game); yield return null; }
         wait = Time.realtimeSinceStartup + .2f;
         while (Time.realtimeSinceStartup < wait) yield return null;
-        Check(manager.CurrentStage == GameStage.Entrance && manager.IsComplete(GameStage.TV), "실제 영상 종료 이벤트로 TV 완료 및 현관 목표 진행");
+        Check(manager.CurrentStage == GameStage.Board && manager.IsComplete(GameStage.TV), "실제 영상 종료 이벤트로 TV 완료 및 게시판 목표 진행");
         Check(game.player.enabled == playerEnabled && ui.enabled && canvases.All(pair => pair.Key.enabled == pair.Value),
             "종료 후 기존 플레이어·UI·카메라 입력 상태 복구");
         Check(game.Ready && Field<RawImage>(game, "preview").gameObject.activeSelf, "완료 후 TV 썸네일 유지");

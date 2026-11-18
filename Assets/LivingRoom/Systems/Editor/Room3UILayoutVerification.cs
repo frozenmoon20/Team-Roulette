@@ -204,7 +204,7 @@ public static class Room3UILayoutVerification
         Check(board.Active && board.overlay.activeInHierarchy && board.instruction.gameObject.activeInHierarchy,
             "Board opens its own visible control overlay");
         Check(board.instruction.text.Contains("좌클릭") && board.instruction.text.Contains("Q·E")
-            && board.instruction.text.Contains("F:") && board.instruction.text.Contains("G 2초"),
+            && board.instruction.text.Contains("F:") && board.instruction.text.Contains("G: 완료 확인"),
             "Board top instructions include all controls and G completion");
         Rect helpRect = ScreenRect(board.instruction.rectTransform);
         Check(helpRect.yMin > Screen.height * .65f, "Board control instructions remain at the top");
@@ -216,7 +216,7 @@ public static class Room3UILayoutVerification
         Check(board.progress.gameObject.activeSelf && board.progress.text.Contains("40%")
             && Vector2.Distance(holdRect.center, new Vector2(Screen.width, Screen.height) * .5f) < 1,
             "G hold shows its two-second progress in the exact screen center");
-        Check(board.instruction.gameObject.activeSelf && board.instruction.text.Contains("G 2초"),
+        Check(board.instruction.gameObject.activeSelf && board.instruction.text.Contains("G: 완료 확인"),
             "Top G instructions remain visible while center progress is shown");
         board.TickFinish(false, 0);
         Check(!board.progress.gameObject.activeSelf, "Releasing G hides and resets the center progress");

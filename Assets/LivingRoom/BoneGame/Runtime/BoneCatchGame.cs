@@ -86,7 +86,8 @@ namespace TeamRoulette.Room3.BonePlay
         Material ringMaterial;
         SceneUIContent content;
         SceneUIContent.Objective objective;
-        TMP_Text instructions;
+        const string ThrowHelp = "겨울이 주변의 초록 링을 클릭해 겨울이에게 삑삑이를 던져주자";
+        TMP_Text instructions, catchCount;
         InputActionMap actions;
         InputAction click;
         Coroutine cycle;
@@ -138,7 +139,9 @@ namespace TeamRoulette.Room3.BonePlay
             Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
             Play(idleState); GiveToPlayer();
             SuccessCount = AttemptCount = SqueakCount = 0;
-            NextTarget(); return true;
+            NextTarget();
+            DialogueManager.Speak(sharedUI, Room3DialogueScript.BoneStart);
+            return true;
         }
         void SaveAndLock()
         {
@@ -223,12 +226,26 @@ namespace TeamRoulette.Room3.BonePlay
             var rt = instructions.rectTransform; rt.anchorMin = new Vector2(.06f, 1); rt.anchorMax = new Vector2(.94f, 1); rt.pivot = new Vector2(.5f, 1);
             rt.anchoredPosition = new Vector2(0, -100); rt.sizeDelta = new Vector2(0, 90);
             instructions.fontSize = 24; instructions.enableAutoSizing = false; instructions.alignment = TextAlignmentOptions.Center; instructions.raycastTarget = false;
-            instructions.text = "겨울이 주변의 초록 링을 마우스로 조준하고 클릭해 짧게 던져주세요.";
+            instructions.text = ThrowHelp;
+            catchCount = Instantiate(instructions, help.transform, false);
+            catchCount.name = "BoneCatch Count";
+            var countRect = catchCount.rectTransform;
+            countRect.anchorMin = countRect.anchorMax = new Vector2(.5f, .16f);
+            countRect.pivot = new Vector2(.5f, .5f);
+            countRect.anchoredPosition = Vector2.zero;
+            countRect.sizeDelta = new Vector2(180, 48);
+            catchCount.fontSize = 32;
             RefreshObjective();
         }
         void RefreshObjective()
         {
-            if (objective != null) { objective.text = "겨울이와 뼈다귀 캐치하기 " + SuccessCount + "/" + requiredSuccesses; objective.completed = Phase == CatchPhase.Completed; content.Refresh(); }
+            if (catchCount) catchCount.text = $"{SuccessCount}/{requiredSuccesses}";
+            if (objective != null)
+            {
+                objective.text = "겨울이와 물어오기 놀이";
+                objective.completed = Phase == CatchPhase.Completed;
+                content.Refresh();
+            }
         }
         public bool SelectTarget(CatchDirection direction)
         {
@@ -307,7 +324,8 @@ namespace TeamRoulette.Room3.BonePlay
             else
             {
                 onMissed.Invoke(); Phase = CatchPhase.Recovering;
-                instructions.text = "괜찮아요. 겨울이가 주워서 다시 가져와요.";
+                instructions.text = "";
+                DialogueManager.Speak(sharedUI, Room3DialogueScript.BoneMiss);
                 Vector3 drop = Ground(aim), from = bone.transform.position;
                 yield return Animate(.28f, t => bone.transform.position = Vector3.Lerp(from, drop + Vector3.up * .06f, t * t));
                 Play(runState);
@@ -321,11 +339,13 @@ namespace TeamRoulette.Room3.BonePlay
             // A short handoff instead of throwing/fetching over a long distance.
             carried = false; var giveStart = bone.transform.position;
             yield return Animate(.22f, t => bone.transform.position = Vector3.Lerp(giveStart, HeldPoint, t));
-            GiveToPlayer(); instructions.text = "초록 링을 마우스로 조준하고 클릭해 짧게 던져주세요."; NextTarget(); cycle = null;
+            GiveToPlayer(); instructions.text = ThrowHelp; NextTarget(); cycle = null;
         }
         IEnumerator Celebrate()
         {
-            Phase = CatchPhase.Celebrating; instructions.text = "잘했어, 겨울아!";
+            Phase = CatchPhase.Celebrating;
+            instructions.text = "";
+            sharedUI.GetComponent<DialogueManager>()?.PlayLines(new[] { Room3DialogueScript.BoneSuccess }, 1f);
             Vector3 center = winter.position; center.y = home.y;
             Play(happyState, runState);
             yield return Animate(Mathf.Max(.5f, celebrationSeconds), t => {
@@ -335,6 +355,8 @@ namespace TeamRoulette.Room3.BonePlay
             });
             winter.SetPositionAndRotation(center, Quaternion.LookRotation(Vector3.ProjectOnPlane(player.transform.position - center, Vector3.up)));
             Play(idleState); yield return Wait(.5f);
+            var dialogue = DialogueManager.Speak(sharedUI, Room3DialogueScript.BoneFinish);
+            while (dialogue && dialogue.HasDialogue) yield return null;
             CompleteGame();
             cycle = null;
         }
@@ -390,10 +412,8 @@ namespace TeamRoulette.Room3.BonePlay
         {
             get
             {
-                Vector3 view = playerCamera.WorldToViewportPoint(playerCamera.transform.TransformPoint(heldOffset));
-                // Keep the toy visible even in a narrow, docked Game view.
-                view.x = Mathf.Clamp(view.x, .25f, .74f); view.y = Mathf.Clamp(view.y, .24f, .76f);
-                return playerCamera.ViewportToWorldPoint(view);
+                return hand && hand.palmPoint ? hand.palmPoint.position :
+                    playerCamera.transform.TransformPoint(heldOffset);
             }
         }
         void Play(string name, string fallback = null)
@@ -409,7 +429,6 @@ namespace TeamRoulette.Room3.BonePlay
             {
                 var point = HeldPoint;
                 PositionBone(point, playerCamera.transform.rotation * Quaternion.Euler(heldEuler) * boneAxis);
-                if (hand && hand.handModel && hand.palmPoint) hand.handModel.transform.position += point - hand.palmPoint.position;
             }
             if (carried) PositionBone(MouthPoint, winter.rotation * Quaternion.Euler(carriedEuler) * boneAxis);
             if (marker && marker.activeSelf) marker.transform.rotation = playerCamera.transform.rotation;

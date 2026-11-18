@@ -34,72 +34,84 @@ namespace TeamRoulette.Room3
         // 2. 창문 열기 — 시작 / 완료
         public static readonly string[] WindowStart =
         {
-            "창문 시작"
+            "환기 좀 하자..."
         };
         public static readonly string[] WindowFinish =
         {
-            "창문 끝"
+            "바람 좋네...", "정신 좀 차리자. 얼굴부터 씻어야겠어."
         };
 
         // 4. WashGame — 세안 시작 / 완료
         public static readonly string[] WashStart =
         {
-            "세안 시작"
+            "찬물로 씻으면 조금 낫겠지."
         };
         public static readonly string[] WashFinish =
         {
-            "세안 끝"
+            "이제 좀 개운하네.", "제대로 밥을 먹은 게 언제였더라. 간단하게라도 먹자."
         };
 
         // 5. MealGame — 식사 시작 / 완료
         public static readonly string[] MealStart =
         {
-            "식사 시작"
+            "토스트와 주스면 되겠지."
         };
         public static readonly string[] MealFinish =
         {
-            "식사 끝"
+            "이렇게 앉아서 먹는 것도 오랜만이네.", "장난감들이 어지러져있네... 장난감들도 이젠 정리해야지."
         };
 
         // 6. BoardGame — 게시판 시작 / 완료
         public static readonly string[] BoardStart =
         {
-            "게시판 시작"
+            "겨울이 사진들이랑 친구와의 추억들...", "하나씩 다시 걸어 두자."
         };
         public static readonly string[] BoardFinish =
         {
-            "게시판 끝"
-        };
-
-        // 7. 장난감 정리 — 시작 / 완료
-        public static readonly string[] ToysStart =
-        {
-            "장난감 정리 시작"
-        };
-        public static readonly string[] ToysFinish =
-        {
-            "장난감 정리 끝"
+            "함께 보낸 시간이 이렇게 많았구나.", "...이제 친구를 보러가자."
         };
 
         // 8. TV / 어질리티 — 시작 / 완료
         public static readonly string[] TVStart =
         {
-            "TV 시작"
+            "너랑 어질리티하던 영상. 친구가 찍어줬었지.", 
         };
         public static readonly string[] TVFinish =
         {
-            "TV 끝"
+            "저렇게 같이 신나게 뛰었었지...", "맞아, 그 때 메달도 받았었어.", "사진들이 떨어져있네..."
         };
 
         // 9. 현관 — 시작 / 완료
         public static readonly string[] EntranceStart =
         {
-            "현관 시작"
+            "다녀올게, 겨울아."
         };
         public static readonly string[] EntranceFinish =
         {
-            "현관 끝"
+            "우리 또 만나자."
         };
+
+        // BoneGame 대사
+        public const string BoneStart = "겨울아 물어와!";
+        public const string BoneMiss = "앗, 다시 던져줄게.";
+        public const string BoneSuccess = "잘했어, 겨울아!";
+        public const string BoneFinish = "매일 해줄걸.";
+
+        // TugGame 대사
+        public const string TugStart = "겨울이 물어!";
+        public const string TugSuccess = "좋아!";
+        public const string TugMiss = "겨울아 반대로 당기면...!";
+        public const string TugRoundBreak = "겨울이 재밌었어?";
+        public const string TugLookAtSky = "아, 날씨 좋다!";
+        public const string TugPlayAgain = "또 놀자고?";
+        public const string TugFinish = "겨울이는 힘도 셌지.";
+
+        // DollGame 대사
+        public const string DollStart = "겨울아 인형 빨아야지...!";
+        public const string DollTaken = "금방 빨아줄게.";
+        public const string DollWashing = "금방 될거야.";
+        public const string DollReturned = "자, 여기 겨울이 오리!";
+        public const string DollFinish = "겨울이가 맨날 물고 다녔었지...";
 
         // 아래는 연결 코드입니다. 대사 수정은 위 배열에서만 하면 됩니다.
         public static string[] GetStart(GameStage stage) => stage switch
@@ -107,7 +119,7 @@ namespace TeamRoulette.Room3
             GameStage.Curtain => CurtainStart, GameStage.Window => WindowStart,
             GameStage.Wash => WashStart,
             GameStage.Meal => MealStart, GameStage.Board => BoardStart,
-            GameStage.Toys => ToysStart, GameStage.TV => TVStart,
+            GameStage.TV => TVStart,
             GameStage.Entrance => EntranceStart, _ => System.Array.Empty<string>()
         };
         public static string[] GetFinish(GameStage stage) => stage switch
@@ -115,7 +127,7 @@ namespace TeamRoulette.Room3
             GameStage.Curtain => CurtainFinish, GameStage.Window => WindowFinish,
             GameStage.Wash => WashFinish,
             GameStage.Meal => MealFinish, GameStage.Board => BoardFinish,
-            GameStage.Toys => ToysFinish, GameStage.TV => TVFinish,
+            GameStage.TV => TVFinish,
             GameStage.Entrance => EntranceFinish, _ => System.Array.Empty<string>()
         };
     }
@@ -154,7 +166,18 @@ namespace TeamRoulette.Room3
             PlayLines(stage == GameStage.Curtain ? lines.Take(1).ToArray() : lines);
         }
         void OnComplete(GameStage stage) { PlayLines(Room3DialogueScript.GetFinish(stage)); }
-        public void PlayLines(string[] lines)
+        public bool HasDialogue => pending.Count > 0 || (ui && ui.IsDialogueOpen);
+
+        public static DialogueManager Speak(GameUI ui, params string[] lines)
+        {
+            if (!ui) return null;
+            var dialogue = ui.GetComponent<DialogueManager>();
+            if (!dialogue) dialogue = ui.gameObject.AddComponent<DialogueManager>();
+            dialogue.PlayLines(lines);
+            return dialogue;
+        }
+
+        public void PlayLines(string[] lines, float secondsPerLine = 2f)
         {
             var text = lines?.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
             if (text == null || text.Length == 0) return;
@@ -162,8 +185,16 @@ namespace TeamRoulette.Room3
             sequence.name = "Room3 script dialogue";
             sequence.hideFlags = HideFlags.DontSave;
             sequence.lines = text;
+            sequence.secondsPerLine = secondsPerLine;
             generated.Add(sequence);
             Play(sequence);
+        }
+        // Environmental remarks wait until the existing story dialogue has finished.
+        public bool TryPlayAmbient(string line)
+        {
+            if (!isActiveAndEnabled || !ui || ui.IsPaused || ui.IsDialogueOpen || pending.Count > 0 || Time.timeScale <= 0) return false;
+            PlayLines(new[] { line });
+            return true;
         }
         void ReleaseGenerated(DialogueSequence sequence)
         {

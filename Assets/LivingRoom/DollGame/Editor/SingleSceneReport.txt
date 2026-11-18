@@ -1,0 +1,5 @@
+Source house door=(-0.50, 0.50, 1.91) Toy door=(-0.50, 0.50, 1.91) rotation=(0.00, 0.00, 0.00)
+Copied: Washingmachine (-4.01, 0.70, 0.51)
+Copied: DogAccesories-006 (0.60, 0.93, -3.86)
+PASS: all serialized game references belong to Room3_Toy or project assets.
+Player entry=(2.60, 0.73, -4.90) winter=(2.74, 0.70, -2.53) washer=(-4.01, 0.70, 0.51) bed=(0.60, 0.93, -3.86)
