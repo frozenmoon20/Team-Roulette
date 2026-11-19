@@ -6,6 +6,9 @@ using UnityEngine.Events;
 // 원리: 모든 Awake가 Start보다 먼저 실행된다는 점을 이용한다.
 //   1) Awake: 오프닝 대사(DialogueStep)의 Play On Start를 꺼서 MG1이 시작되지 않게 한다.
 //   2) Start: 플레이어를 시작 지점으로 옮기고, 골라 둔 옵션을 해금하고, onSkip 이벤트를 실행한다.
+// 이어하기: 타이틀에서 "이어하기"로 침실에 들어왔고 저장에 시점 회전(RotateCamera)이 해금돼 있으면
+//   (= 미니게임1·2를 이미 끝냄) Skip Intro 체크와 상관없이 똑같이 건너뛴다. 빌드에서도 동작.
+//   이때 옵션은 저장에서 이미 되살아나 있으므로 unlockOnSkip은 하지 않는다 (해금 알림이 다시 뜨지 않게).
 // 사용: 빈 오브젝트(DevSkip)에 붙이고 칸을 채운다. 테스트할 때만 Skip Intro를 체크한다.
 //       ※ 커밋 전에 Skip Intro 체크를 꼭 끌 것 (켜져 있어도 빌드에선 무시되지만, 팀원이 헷갈림)
 public class DevSkip : MonoBehaviour
@@ -22,10 +25,12 @@ public class DevSkip : MonoBehaviour
     public UnityEvent onSkip;                 // 그 밖에 할 일 (목표창 보이기, 목표 표시 등)
 
     bool active;
+    bool continued;                           // 이어하기로 들어와서 건너뛰는 중
 
     void Awake()
     {
-        active = skipIntro && Application.isEditor;
+        continued = SaveSystem.ContinuedInto(gameObject.scene.name) && SaveSystem.ContinueUnlocked(OptionType.RotateCamera);
+        active = continued || (skipIntro && Application.isEditor);
         if (!active) return;
 
         if (openingDialogue != null) openingDialogue.playOnStart = false;
@@ -35,7 +40,8 @@ public class DevSkip : MonoBehaviour
     void Start()
     {
         if (!active) return;
-        Debug.LogWarning("DevSkip: 미니게임1·2를 건너뛰었습니다 (테스트용). 커밋 전에 Skip Intro를 끄세요.", this);
+        if (continued) Debug.Log("DevSkip: 이어하기 → 미니게임1·2 건너뜀", this);
+        else Debug.LogWarning("DevSkip: 미니게임1·2를 건너뛰었습니다 (테스트용). 커밋 전에 Skip Intro를 끄세요.", this);
 
         // 플레이어 옮기기 (CharacterController는 켜진 채로 위치를 바꾸면 무시되므로 잠깐 끈다)
         if (startPoint != null)
@@ -50,8 +56,8 @@ public class DevSkip : MonoBehaviour
             }
         }
 
-        // 옵션 해금
-        if (OptionState.Instance != null)
+        // 옵션 해금 (이어하기면 저장에서 이미 되살아났으므로 안 함)
+        if (!continued && OptionState.Instance != null)
             foreach (OptionType opt in unlockOnSkip) OptionState.Instance.Unlock(opt);
 
         onSkip.Invoke();

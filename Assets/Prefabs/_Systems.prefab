@@ -215,25 +215,40 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc36e46f60c0e2944b0cc5dfb866cd4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HalftoneController
-  fadeSpeed: 0.08
-  excludedOptions: 0a000000
-  blendByCount:
-  - 0
-  - 0.08
-  - 0.14
-  - 0.2
-  - 0.26
-  - 0.32
-  - 0.38
-  - 0.44
-  - 0.5
-  - 0.54
-  - 0.72
-  - 0.85
-  - 1
-  unlockedNow: 0
-  totalNow: 0
+  fadeSpeed: 0.5
+  bedroomShare: 0.7
+  hallwayShare: 0.2
+  livingShare: 0.1
+  startBlend: 0
+  endBlend: 1
+  blendCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  progressNow: 0
   targetNow: 0
+  preview: 0
+  previewProgress: 0
 --- !u!1 &8724950474643668288
 GameObject:
   m_ObjectHideFlags: 0
