@@ -10,6 +10,7 @@ using UnityEngine;
 //       각 단계가 끝날 때 ProgressStep.Complete()가 이름을 기록한다.
 //   - static 이라 씬이 바뀌어도 기록이 남는다 (해금 상태처럼).
 //   - 무언가 바뀌면 OnChanged 알림 → 지도·하프톤이 다시 그린다.
+//   - 자동저장(SaveSystem)이 거실 단계를 저장·복원할 때 아래 LivingSteps / RestoreLiving / ResetLiving을 쓴다.
 public static class HouseProgress
 {
     public enum Area { Bedroom, Hallway, Living }
@@ -18,7 +19,7 @@ public static class HouseProgress
         { OptionType.RotateCamera, OptionType.Move, OptionType.Hand, OptionType.Grab,
           OptionType.SFX, OptionType.BGM, OptionType.Jump, OptionType.Run };
     public static readonly OptionType[] HallwayOptions = { OptionType.Push, OptionType.Pull };
-    public const int LivingTotal = 7;
+    public const int LivingTotal = 6;
 
     static readonly HashSet<string> livingDone = new HashSet<string>();
 
@@ -34,6 +35,26 @@ public static class HouseProgress
 
     // 해금 상태가 바뀌었을 때 (HouseMap이 OptionState 알림을 받아 대신 불러 줌)
     public static void NotifyChanged() { OnChanged?.Invoke(); }
+
+    // ===== 자동저장용 (SaveSystem이 씀) =====
+
+    // 완료한 거실 단계 이름들 (저장할 때 읽음)
+    public static IEnumerable<string> LivingSteps => livingDone;
+
+    // 이어하기: 저장된 거실 단계를 되살림
+    public static void RestoreLiving(IEnumerable<string> steps)
+    {
+        livingDone.Clear();
+        if (steps != null) foreach (string s in steps) if (!string.IsNullOrEmpty(s)) livingDone.Add(s);
+        OnChanged?.Invoke();
+    }
+
+    // 새 게임: 거실 기록 비우기
+    public static void ResetLiving()
+    {
+        livingDone.Clear();
+        OnChanged?.Invoke();
+    }
 
     public static int Done(Area area)
     {

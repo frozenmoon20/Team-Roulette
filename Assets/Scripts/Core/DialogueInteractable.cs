@@ -9,6 +9,10 @@ using UnityEngine.Events;
 //     미니게임 클리어 이벤트에 UnlockNow() 연결
 //   - 다시 클릭: repeatDialogue가 있으면 그 대사, 없으면 repeatHint 한 줄을 화면 아래에 잠깐 표시
 //   - requiredOptions(원본 칸)에 옵션을 넣으면 그 옵션이 해금되기 전엔 클릭해도 반응 없음
+// 대사 끊기: 다른 오브젝트를 클릭하면 이 오브젝트의 대사는 바로 끊긴다 (DialogueStep 규칙).
+//   단, 처음 대사가 해금이나 끝난 뒤 할 일(목표·미니게임 등)로 이어지면 "필수 대사"라서 끝까지 나오고,
+//   그동안(대사 → 해금 → 할 일까지)은 다른 오브젝트를 클릭해도 반응하지 않는다 (PlayerInteractor.Blocked).
+//   → 해금보다 다른 물건 대사가 먼저 끼어드는 일이 없음
 // 사용: 오브젝트(Collider 있어야 함)에 이 스크립트 + InteractName + DialogueStep을 붙이고 칸을 채운다.
 public class DialogueInteractable : ConditionalInteractable
 {
@@ -33,10 +37,17 @@ public class DialogueInteractable : ConditionalInteractable
     {
         running = true;
 
+        // 해금·할 일로 이어지는 대사면, 끝날 때까지 다른 오브젝트 클릭을 막음 (조준점도 잠깐 숨음)
+        bool important = LeadsToSomething();
+        bool blockedBefore = PlayerInteractor.Blocked;
+        if (important) PlayerInteractor.Blocked = true;
+
         // 1) 대사 재생 → 끝나고 입력까지 돌아올 때까지 기다림
+        //    해금·할 일로 이어지면 필수 대사(끝까지), 아니면 조사 대사(다른 클릭에 끊김)
         if (firstDialogue != null)
         {
-            firstDialogue.Play();
+            if (important) firstDialogue.PlayRequired();
+            else firstDialogue.Play();
             while (firstDialogue.IsPlaying) yield return null;
         }
 
@@ -46,7 +57,23 @@ public class DialogueInteractable : ConditionalInteractable
         // 3) 그 밖에 할 일 (목표 추가, 미니게임 시작 등)
         onFirstFinished.Invoke();
 
+        // 클릭 막은 걸 풀기 (원래 막혀 있던 상태였으면 그대로 둠)
+        if (important && !blockedBefore) PlayerInteractor.Blocked = false;
+
         running = false;
+    }
+
+    // 처음 대사가 해금이나 할 일로 이어지는지
+    bool LeadsToSomething()
+    {
+        return unlockOption || onFirstFinished.GetPersistentEventCount() > 0;
+    }
+
+    // 이어하기용: 이미 끝낸 오브젝트로 표시 (처음 대사·해금을 다시 하지 않고, 클릭하면 "다시 클릭" 반응만)
+    // SaveFlag의 On Restored에 연결한다.
+    public void MarkUsed()
+    {
+        hasUnlocked = true;
     }
 
     // Unlock Type에 고른 옵션을 지금 해금.
