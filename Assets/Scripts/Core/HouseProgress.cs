@@ -19,7 +19,7 @@ public static class HouseProgress
         { OptionType.RotateCamera, OptionType.Move, OptionType.Hand, OptionType.Grab,
           OptionType.SFX, OptionType.BGM, OptionType.Jump, OptionType.Run };
     public static readonly OptionType[] HallwayOptions = { OptionType.Push, OptionType.Pull };
-    public const int LivingTotal = 7;
+    public const int LivingTotal = 6;
 
     static readonly HashSet<string> livingDone = new HashSet<string>();
 
