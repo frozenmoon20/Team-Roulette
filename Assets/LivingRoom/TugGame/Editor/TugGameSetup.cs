@@ -73,7 +73,7 @@ namespace TeamRoulette.Room3.TugEditor
             game.barkSource.playOnAwake = false; game.barkSource.spatialBlend = 0; game.barkSource.volume = .45f;
             EnsureBark(game);
             EditorUtility.SetDirty(game); EditorSceneManager.MarkSceneDirty(scene);
-            // All original objects remain. This adds one scene root and leaves BallGame settings intact.
+            // All original objects remain. This adds one scene root .
             if (!EditorSceneManager.SaveScene(scene)) throw new IOException("Room3_Toy 저장 실패");
             File.WriteAllText(Folder + "/Editor/SetupReport.txt", Report(game), new UTF8Encoding(false));
             Selection.activeGameObject = root;

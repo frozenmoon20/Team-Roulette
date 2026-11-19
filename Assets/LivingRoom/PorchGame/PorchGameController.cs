@@ -23,7 +23,6 @@ namespace TeamRoulette.Room3
         [TextArea(2, 5)] public string missingTitleMessage = "타이틀 화면 준비 중입니다.";
         public bool IsRunning { get; private set; }
         public bool CreditsFinished { get; private set; }
-        readonly List<GameObject> suspended = new List<GameObject>();
         readonly List<AudioSource> pausedAudio = new List<AudioSource>();
         TextMeshProUGUI label;
         Canvas canvas;
@@ -53,7 +52,7 @@ namespace TeamRoulette.Room3
             // Keep the credits root alive while suspending the room and all its input/UI.
             foreach (var root in gameObject.scene.GetRootGameObjects())
                 if (root != transform.root.gameObject && root.activeSelf)
-                { suspended.Add(root); root.SetActive(false); }
+                    root.SetActive(false);
             BuildScreen();
             Time.timeScale = 0;
             Cursor.lockState = CursorLockMode.None; Cursor.visible = false;
@@ -140,7 +139,8 @@ namespace TeamRoulette.Room3
             Time.timeScale = transitioningToTitle ? 1 : savedTimeScale;
             Cursor.lockState = transitioningToTitle ? CursorLockMode.None : savedCursor;
             Cursor.visible = transitioningToTitle || savedVisible;
-            foreach (var root in suspended) if (root) root.SetActive(true);
+            // The credits end the room permanently. Reactivating scene roots here
+            // can run their OnEnable callbacks after sibling objects are destroyed.
             foreach (var source in pausedAudio) if (source) source.UnPause();
         }
     }

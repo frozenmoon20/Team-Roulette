@@ -13,14 +13,14 @@ PASS: Camera ray reaches Toaster
 PASS: Insert toast shows baking top and timer
 PASS: Fridge gives jam while timer runs
 PASS: Jam cancellation is repeatable
+PASS: Camera ray reaches Counter
 PASS: Jam is placed on counter
 PASS: Timer decreases independently during jam preparation
 PASS: Toast finishes after full ten seconds
 PASS: Baking toast is replaced with ready toast
 PASS: Cooked toast pops higher; ding clip is assigned
-PASS: Cooked toast is horizontal in world space, independent of wrist rotation
-PASS: Cooked toast stays level while camera looks down
-PASS: Toast bottom rests at palm height
+PASS: Cooked toast is attached to the palm
+PASS: Toast keeps the same grip when the player moves and looks down
 PASS: Cooked toast cancellation returns to toaster, not initial scene location
 PASS: Camera ray reaches CookedToast
 PASS: Camera ray reaches Plate
@@ -70,14 +70,14 @@ PASS: Camera ray reaches Toaster
 PASS: Insert toast shows baking top and timer
 PASS: Fridge gives jam while timer runs
 PASS: Jam cancellation is repeatable
+PASS: Camera ray reaches Counter
 PASS: Jam is placed on counter
 PASS: Timer decreases independently during jam preparation
 PASS: Toast finishes after full ten seconds
 PASS: Baking toast is replaced with ready toast
 PASS: Cooked toast pops higher; ding clip is assigned
-PASS: Cooked toast is horizontal in world space, independent of wrist rotation
-PASS: Cooked toast stays level while camera looks down
-PASS: Toast bottom rests at palm height
+PASS: Cooked toast is attached to the palm
+PASS: Toast keeps the same grip when the player moves and looks down
 PASS: Cooked toast cancellation returns to toaster, not initial scene location
 PASS: Camera ray reaches CookedToast
 PASS: Camera ray reaches Plate

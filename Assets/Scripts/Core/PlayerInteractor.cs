@@ -79,11 +79,12 @@ public class PlayerInteractor : MonoBehaviour
         hoveredComponent = null;
         if (Blocked || !locked || playerCamera == null) return;
 
-        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-        if (!Physics.SphereCast(ray, aimRadius, out RaycastHit hit, InteractRange)) return;
+        if (!TryAimHit(out var hit)) return;
 
         // 콜라이더가 자식에 있어도 찾도록 부모까지 확인
-        IInteractable target = hit.collider.GetComponentInParent<IInteractable>();
+        // Food items also have a disabled GrabbableItem; their MealTarget owns the label.
+        var mealTarget = hit.collider.GetComponentInParent<MealTarget>();
+        IInteractable target = mealTarget ? mealTarget : hit.collider.GetComponentInParent<IInteractable>();
         if (target == null) return;
 
         Behaviour behaviour = target as Behaviour;
@@ -91,6 +92,36 @@ public class PlayerInteractor : MonoBehaviour
 
         hovered = target;
         hoveredComponent = target as Component;
+    }
+
+    // Both the meal input and shared interactor use this exact hit. A central ray
+    // avoids the wide cast switching between adjacent counter/ingredient colliders.
+    public bool TryAimHit(out RaycastHit hit)
+    {
+        hit = default;
+        if (!playerCamera) return false;
+        var ray = playerCamera.ViewportPointToRay(new Vector3(.5f, .5f, 0));
+        if (FindAimHit(Physics.RaycastAll(ray, InteractRange, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide), out hit)) return true;
+        return FindAimHit(Physics.SphereCastAll(ray, aimRadius, InteractRange, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Collide), out hit);
+    }
+    static bool FindAimHit(RaycastHit[] hits, out RaycastHit hit)
+    {
+        hit = default;
+        float distance = float.PositiveInfinity;
+        foreach (var candidate in hits)
+        {
+            // The counter's generous placement trigger is only for putting down
+            // jam. It must not cover the thin plate or cup when preparing food.
+            var meal = candidate.collider.GetComponentInParent<MealTarget>();
+            if (candidate.collider.isTrigger && meal && meal.action == MealAction.Counter &&
+                (!PlayerHand.Instance || !meal.game || PlayerHand.Instance.Held != meal.game.jam)) continue;
+            // Area/quest triggers must not hide physical objects. Wash tap hitboxes
+            // intentionally are triggers, so retain triggers that can be interacted with.
+            if (candidate.collider.isTrigger && candidate.collider.GetComponentInParent<IInteractable>() == null) continue;
+            if (candidate.distance >= distance) continue;
+            distance = candidate.distance; hit = candidate;
+        }
+        return hit.collider;
     }
 
     void TryInteract()
@@ -138,7 +169,8 @@ public class PlayerInteractor : MonoBehaviour
             GrabbableItem item = hovered as GrabbableItem;
             showHand = item != null && item.CanGrab;
 
-            IHasName named = hoveredComponent != null ? hoveredComponent.GetComponentInParent<IHasName>() : null;
+            IHasName named = hovered as IHasName;
+            if (named == null && hoveredComponent != null) named = hoveredComponent.GetComponentInParent<IHasName>();
             if (named != null) label = named.DisplayName;
         }
         if (Time.time < hintUntil) label = hintText;   // 안내 문구가 이름보다 우선

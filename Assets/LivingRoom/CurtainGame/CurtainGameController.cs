@@ -169,7 +169,7 @@ public sealed class CurtainGameController : MonoBehaviour
     IEnumerator Finale()
     {
         PlayingFinale = true;
-        TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Curtain, TeamRoulette.Room3.ObjectiveStep.OpeningCurtains);
+        TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Curtain, TeamRoulette.Room3.ObjectiveStep.Default);
         dog.SetActive(false);
         playerWasEnabled = player.enabled;
         player.enabled = false; // canMove alone still permits momentum and gravity.

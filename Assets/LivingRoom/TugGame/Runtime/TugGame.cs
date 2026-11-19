@@ -116,20 +116,6 @@ namespace TeamRoulette.Room3.TugPlay
         bool carrying;
         float carryingBlend;
         TugCarryPose carryPose;
-        TeamRoulette.Room3.BallPlay.BallGame ballGame;
-        bool ballAutoStart;
-
-        void Awake()
-        {
-            // Standalone scene preview defaults to this game. Visits keep the existing toy routing.
-            var flow = GameManager.Instance ? GameManager.Instance.Flow : null;
-            if (playWhenSceneOpenedDirectly && (!flow || string.IsNullOrEmpty(flow.VisitingObject)))
-            {
-                ballGame = GetSceneComponents<TeamRoulette.Room3.BallPlay.BallGame>().FirstOrDefault();
-                if (ballGame) { ballAutoStart = ballGame.autoStart; ballGame.autoStart = false; }
-            }
-        }
-
         IEnumerator Start()
         {
             if (!autoStart) yield break;
@@ -165,6 +151,7 @@ namespace TeamRoulette.Room3.TugPlay
             eyeHeight = sittingEyeHeight;
             SpawnRope(0);
             RoundIndex = 1; RoundSuccesses = TotalSuccesses = WrongInputs = 0;
+            Speak(Room3DialogueScript.TugStart);
             routine = StartCoroutine(Prepare());
             Debug.Log("[TugGame] 시작: 기존 Player / Animator / mouth / SimpleTugRope 재사용", this);
             return true;
@@ -283,7 +270,9 @@ namespace TeamRoulette.Room3.TugPlay
             string state = direction == TugDirection.A ? leftState : direction == TugDirection.D ? rightState
                 : direction == TugDirection.W ? forwardState : backState;
             Play(correct ? state : biteState);
-            SetStatus(correct ? "잘했어요!" : "겨울이가 반대로 당겨요. 다시 해보세요.");
+            SetStatus("");
+            if (correct) sharedUI.GetComponent<DialogueManager>()?.PlayLines(new[] { Room3DialogueScript.TugSuccess }, 1f);
+            else Speak(Room3DialogueScript.TugMiss);
             float duration = Mathf.Max(.1f, responseSeconds);
             for (float t = 0; t < duration;)
             {
@@ -298,6 +287,7 @@ namespace TeamRoulette.Room3.TugPlay
             }
             dogOffset = handPull = Vector3.zero; headYaw = cameraKick = 0;
             Play(braceState);
+            while (sharedUI.IsDialogueOpen) yield return null;
             if (correct && RoundSuccesses >= successesPerRound)
             {
                 if (RoundIndex >= roundCount) yield return Celebrate();
@@ -311,19 +301,22 @@ namespace TeamRoulette.Room3.TugPlay
         {
             Phase = TugPhase.Exchanging; RefreshUI(); carrying = true;
             if (hand && hand.handModel) hand.handModel.SetActive(false);
-            SetStatus("겨울이가 로프를 가져갑니다.");
+            SetStatus("");
+            Speak(Room3DialogueScript.TugRoundBreak);
             Vector3 start = homeDog;
             Vector3 away = start + playerStand.forward * 1.5f + playerStand.right * .55f;
             Play(walkState);
             yield return MoveDog(start, away, Quaternion.LookRotation(away - start), exchangeWalkSeconds);
             Play(idleState);
-            SetStatus("잠깐 일어나 하늘을 바라봅니다.");
+            var skyDialogue = DialogueManager.Speak(sharedUI, Room3DialogueScript.TugLookAtSky);
             yield return MoveView(cameraPosition.y, -48, .85f);
             yield return Wait(skyLookSeconds);
+            while (skyDialogue && skyDialogue.HasDialogue) yield return null;
             // Keep one prepared toy when the list contains only one entry; repeat cyclically.
             SpawnRope(RoundIndex);
             Play(barkState); if (barkSource && barkClip) barkSource.PlayOneShot(barkClip);
-            SetStatus("멍! 겨울이가 다시 놀자고 부릅니다.");
+            yield return Wait(.5f);
+            Speak(Room3DialogueScript.TugPlayAgain);
             yield return MoveView(cameraPosition.y, 18, .55f);
             Play(walkState);
             yield return MoveDog(away, start, Quaternion.LookRotation(start - away), exchangeWalkSeconds);
@@ -389,12 +382,15 @@ namespace TeamRoulette.Room3.TugPlay
             if (barkSource && barkClip) barkSource.PlayOneShot(barkClip);
             yield return Wait(.85f); Play(idleState);
             CompleteGame();
+            var dialogue = DialogueManager.Speak(sharedUI, Room3DialogueScript.TugFinish);
+            while ((dialogue && dialogue.HasDialogue) || IsPaused) yield return null;
             yield return Wait(.8f);
             ReturnAfterCompletion();
         }
         void CompleteGame()
         {
-            Phase = TugPhase.Completed; RefreshUI(); SetStatus("겨울이와 터그놀이를 마쳤어요.");
+            Phase = TugPhase.Completed; RefreshUI(); SetStatus("");
+
             if (!completedRaised)
             {
                 completedRaised = true; onCompleted.Invoke();
@@ -500,7 +496,7 @@ namespace TeamRoulette.Room3.TugPlay
             progress = Label("Rounds", new Vector2(.5f, .19f), new Vector2(700, 42), 23);
             status = Label("Status", new Vector2(.5f, .12f), new Vector2(900, 44), 23);
             content = sharedUI.GetComponent<SceneUIContent>();
-            if (content) { objective = new SceneUIContent.Objective { id = "TugGame.Play", text = "겨울이와 로프 터그놀이를 해보자" }; content.objectives.Insert(0, objective); content.Refresh(); }
+            if (content) { objective = new SceneUIContent.Objective { id = "TugGame.Play", text = "겨울이와 터크놀이" }; content.objectives.Insert(0, objective); content.Refresh(); }
         }
         TMP_Text Label(string label, Vector2 anchor, Vector2 size, float fontSize)
         {
@@ -514,12 +510,16 @@ namespace TeamRoulette.Room3.TugPlay
         void RefreshUI()
         {
             if (!prompt) return;
-            string[] arrows = { "위", "왼쪽", "아래", "오른쪽" };
-            prompt.text = Phase == TugPhase.Waiting ? ExpectedDirection + "  " + arrows[(int)ExpectedDirection] : "";
-            progress.text = Phase == TugPhase.Completed ? "터그놀이 완료 · " + TotalSuccesses + "회 성공"
+            string[] arrows = { "위쪽", "왼쪽", "아래쪽", "오른쪽" };
+            prompt.text = Phase == TugPhase.Waiting ? arrows[(int)ExpectedDirection] : "";
+            progress.text = Phase == TugPhase.Completed ? ""
                 : RoundIndex + " / " + roundCount + " 라운드    " + RoundSuccesses + " / " + successesPerRound + "회 성공";
         }
         void SetStatus(string message) { if (status) status.text = message; }
+        void Speak(string message)
+        {
+            DialogueManager.Speak(sharedUI, message);
+        }
 
         public void CancelGame()
         {
@@ -531,7 +531,6 @@ namespace TeamRoulette.Room3.TugPlay
         void OnDestroy()
         {
             Restore();
-            if (ballGame) ballGame.autoStart = ballAutoStart;
         }
         void Restore()
         {

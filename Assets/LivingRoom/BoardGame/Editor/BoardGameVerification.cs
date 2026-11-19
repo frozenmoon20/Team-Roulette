@@ -52,13 +52,13 @@ public static class BoardGameVerification
             Check(BoardGeometry.Overlap(Vector2.zero,Vector2.one,0,new Vector2(.8f,0),Vector2.one,0)<.25f,"Small overlap allowed");
             bool move=g.player.canMove, look=g.player.canLook;
             g.boardTarget.Interact(); Check(g.Active && !g.interactor.enabled && g.player.canMove==move && g.player.canLook==look,"Board click: active="+g.Active+" enabled="+g.isActiveAndEnabled+" shared="+g.interactor.enabled+" time="+Time.timeScale+" held="+(PlayerHand.Instance ? PlayerHand.Instance.Held : null)+" targetGame="+(g.boardTarget.game==g)+" trash="+g.boardTarget.trash+" playing="+Application.isPlaying);
-            Check(g.CompletionIssue()=="바닥에 아직 정리되지 않은 것이 남아있다.","Floor message");
+            Check(g.CompletionIssue()=="바닥에 아직 남아있어.","Floor message");
             var floorItem=g.items.First(i=>i.state==BoardItemState.Floor);
             g.Pick(floorItem); Check(g.Drop() && floorItem.state==BoardItemState.Floor && floorItem.hitbox.enabled,"Drop to floor");
             g.Pick(floorItem); Check(g.Held==floorItem,"Pick dropped item again"); g.Discard(); g.Retrieve(); g.Place(new Vector2(1.8f,0));
             var a=g.items[0]; var b=g.items[1]; var c=g.items[2];
             g.Pick(a); Check(g.Held==a && !a.hitbox.enabled,"Detach existing board item");
-            Check(g.CompletionIssue()=="손에 든 것을 마저 정리하자.","Held message");
+            Check(g.CompletionIssue()=="아직 손에 남아있어.","Held message");
             Check(!g.Place(new Vector2(100,0)) && g.Held==a,"Reject outside board");
             g.Discard(); g.Pick(b); g.Discard(); g.Pick(c); g.Discard();
             g.Retrieve(); Check(g.Held==c,"LIFO C"); Check(g.Place(Vector2.zero),"Retrieve and reattach");
@@ -66,7 +66,7 @@ public static class BoardGameVerification
             g.Retrieve(); Check(g.Held==a,"LIFO A"); g.Place(Vector2.zero);
             Check(g.RefreshOverlap() && a.outline.enabled && b.outline.enabled,"Overlap allowed with red borders");
             foreach(var i in g.items.Where(i=>i.state==BoardItemState.Floor).ToArray()) { g.Pick(i); g.Discard(); }
-            Check(g.CompletionIssue()=="겹쳐서 잘 안 보여.","Overlap completion message");
+            Check(g.CompletionIssue()=="겹쳐있는게 있네.","Overlap completion message");
             foreach(var i in g.items.Where(i=>i.state==BoardItemState.Board).ToArray()) { g.Pick(i); g.Discard(); }
             Check(g.TrashCount==21 && g.CompletionIssue()==null,"All-trash valid");
             g.Retrieve(); var saved=g.Held; saved.angle=27; Check(g.Place(new Vector2(.3f,.2f)),"Arbitrary final layout");

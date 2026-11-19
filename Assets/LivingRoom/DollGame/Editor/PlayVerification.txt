@@ -1,4 +1,7 @@
 오리 인형 회상 통합 재생 검사
+PROGRESS phase=0 scene=Room3_LivingRoom time=0 scale=1 paused=False manager=True stage=Curtain
+PASS: Doll memory starts inside Room3_Toy
+PROGRESS phase=1 scene=Room3_Toy time=4.435336 scale=1 paused=False manager=True stage=Toys
 PASS: 추격 시작 후 5초 동안 플레이어 바닥 관통 없음
 PASS: 현재 거실 인형 클릭으로 과거 거실 추격 시작
 PASS: 추격 중 기존 플레이어 조작 유지
@@ -12,17 +15,48 @@ PASS: 세탁기 시작 버튼 실제 콜라이더 클릭 가능
 PASS: 세탁기 시작 1회
 PASS: 세탁기 중복 시작 차단
 STATE: Washing
+PROGRESS phase=2 scene=Room3_Toy time=9.455105 scale=1 paused=False manager=True stage=Toys
 PASS: 세탁 관람 중 Sitting loop 상태 유지
+PROGRESS phase=2 scene=Room3_Toy time=14.45687 scale=1 paused=False manager=True stage=Toys
 STATE: MoveOutside
+PROGRESS phase=2 scene=Room3_Toy time=19.45794 scale=1 paused=False manager=True stage=Toys
 STATE: Drying
 PASS: 실제 Room3_Toy 마당으로 이동
 PASS: 감상 구간 HUD 숨김
+PROGRESS phase=2 scene=Room3_Toy time=24.48164 scale=1 paused=False manager=True stage=Toys
+STATE: AwaitDryDoll
+PROGRESS phase=2 scene=Room3_Toy time=29.50566 scale=1 paused=False manager=True stage=Toys
+PASS: First-person movement and view resume after drying
+PASS: Pickup instruction appears in the objective HUD
+PASS: Duck stays on rack while Winter waits
+PASS: Pickup is rejected from the lawn spawn
+PASS: Player walks into reach and picks up dried duck
+PASS: Duplicate pickup click rejected
+STATE: AwaitGiveDoll
+PROGRESS phase=2 scene=Room3_Toy time=34.49853 scale=1 paused=False manager=True stage=Toys
+PASS: Waiting for the player with Winter sitting
+PASS: No automatic departure before handover
+PASS: Empty-space click does not advance
+PASS: Duck is held after pickup
+PASS: Player gives duck to sitting Winter
+PASS: Duplicate click rejected
 STATE: ReturnDoll
+PROGRESS phase=2 scene=Room3_Toy time=39.32875 scale=1 paused=False manager=True stage=Toys
 STATE: RunToCushion
 PASS: 계단 각 단과 현관 바닥 경로를 통과
 PASS: 겨울이가 마당에서 현관 높이까지 상승
+PROGRESS phase=2 scene=Room3_Toy time=44.32049 scale=1 paused=False manager=True stage=Toys
 PASS: 집 문이 열린 뒤 겨울이가 진입
+PROGRESS phase=2 scene=Room3_Toy time=49.34245 scale=1 paused=False manager=True stage=Toys
 STATE: RestWithDoll
+PASS: 겨울이가 쿠션 안으로 파묻히지 않고 방석 높이에 위치
+PASS: 건조대 아래 점프 3회
+PASS: 마지막 장면 UI 없음
+REST DOG: (0.60, 1.17, -3.86) active=True doll=(0.93, 1.21, -3.93)
+Spitz enabled=True active=True bounds=Center: (0.52, 1.49, -3.85), Extents: (0.55, 0.34, 0.29)
+08_duck enabled=True active=True bounds=Center: (0.94, 1.33, -3.91), Extents: (0.14, 0.12, 0.16)
+STATE: Complete
+PROGRESS phase=2 scene=Room3_LivingRoom time=53.84364 scale=1 paused=False manager=True stage=Toys
 PASS: 완료 이벤트 정확히 1회
 PASS: 현재 거실 복귀
 PASS: Room3 인형 정리 완료 기록

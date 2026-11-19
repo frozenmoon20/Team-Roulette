@@ -67,7 +67,7 @@ namespace TeamRoulette.Room3.BoneEditor
             report.AppendLine("Input: 기존 Input System과 같은 Mouse 장치, 캐치 전용 클릭 액션");
             report.AppendLine("NavMeshAgent: " + nodes.Count(n => n.GetComponent<UnityEngine.AI.NavMeshAgent>()) + " / baked vertices: " + UnityEngine.AI.NavMesh.CalculateTriangulation().vertices.Length);
             report.AppendLine("기존 NavMesh 경로가 있으면 회수에 사용, 없으면 가까운 평평한 마당에서 이동");
-            report.AppendLine("기존 테니스공 / 터그 실행 여부는 방문 ID로 분기. 씬 직접 실행은 뼈다귀 미리보기");
+            report.AppendLine("기존 터그 실행 여부는 방문 ID로 분기. 씬 직접 실행은 뼈다귀 미리보기");
             report.AppendLine("Room3 Manager: GameManager.Flow.CompleteVisit(뼈다귀 장난감)");
             report.AppendLine("Squeak Clip: " + AssetDatabase.GetAssetPath(game.squeakClip) + " (Inspector에서 교체 가능)");
             report.AppendLine("기본 성공 횟수: " + game.requiredSuccesses + " / 투척 시간: " + game.flightSeconds + "초");

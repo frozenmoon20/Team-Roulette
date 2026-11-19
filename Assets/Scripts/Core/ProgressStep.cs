@@ -6,7 +6,7 @@ using UnityEngine;
 //   같은 이름은 여러 번 불러도 한 번만 센다. 팀원 스크립트는 고칠 필요 없음.
 public class ProgressStep : MonoBehaviour
 {
-    public string stepName = "커튼";   // 커튼 / 세수 / 밥 / 게시판 / 장난감 / 달력 / TV
+    public string stepName = "커튼";   // 커튼 / 세수 / 밥 / 게시판 / 장난감 / TV
 
     public void Complete()
     {

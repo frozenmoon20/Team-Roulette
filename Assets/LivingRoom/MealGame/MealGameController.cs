@@ -42,6 +42,7 @@ public sealed class MealGameController : MonoBehaviour
     public bool IsHoldingMealItem => Hand && Owns(Hand.Held);
     MealAction selected;
     GrabbableItem carried;
+    bool toastPoseApplied;
     Transform returnParent;
     Vector3 returnPosition, returnScale;
     Quaternion returnRotation;
@@ -60,9 +61,20 @@ public sealed class MealGameController : MonoBehaviour
         if (!carried || !Hand || Hand.Held != carried) return;
         Transform palm = Hand.palmPoint ? Hand.palmPoint : Hand.transform;
         if (carried.transform.parent != palm) return; // Wait for the hand animation.
+        var geometry = carried.GetComponent<MealGeometry>();
+        if (carried == rawToast || carried == cookedToast)
+        {
+            if (toastPoseApplied) return;
+            var camera = interactor.playerCamera.transform;
+            Quaternion supportRotation = camera.rotation * Quaternion.Euler(-28, 0, 0);
+            carried.transform.rotation = supportRotation *
+                Quaternion.Euler(geometry ? geometry.heldEuler : Vector3.zero);
+            MealGeometry.RestOnHand(carried.gameObject, palm.position, supportRotation, Hand.handModel);
+            toastPoseApplied = true;
+            return;
+        }
         Vector3 forward = Vector3.ProjectOnPlane(player.transform.forward, Vector3.up).normalized;
         if (forward.sqrMagnitude < .5f) forward = Vector3.forward;
-        var geometry = carried.GetComponent<MealGeometry>();
         carried.transform.rotation = Quaternion.LookRotation(forward, Vector3.up) *
             Quaternion.Euler(geometry ? geometry.heldEuler : Vector3.zero);
         MealGeometry.BottomAt(carried.gameObject, palm.position + player.transform.TransformVector(carried.positionOffset));
@@ -96,7 +108,7 @@ public sealed class MealGameController : MonoBehaviour
         OptionState.Instance.IsUnlocked(OptionType.Grab);
 
     public void ClearSelection() { selected = MealAction.None; }
-    public string Label(MealTarget target) => Time.time < hintUntil ? hint : target ? target.displayName : "";
+    public string Label(MealTarget target) => Time.time < hintUntil ? hint : target ? target.DisplayName : "";
     void Hint(string message) { hint = message; hintUntil = Time.time + 1.5f; }
 
     public bool CanUse(MealAction action)
@@ -141,9 +153,8 @@ public sealed class MealGameController : MonoBehaviour
                 jamToast.transform.rotation = MealGeometry.FlatRotation(jamToast);
                 MealGeometry.BottomAt(jamToast, toastOnPlatePoint.position);
                 JamApplied = true;
-                Hint("잼 토스트가 완성됐다.");
             }
-            else { selected = action; Hint(action == MealAction.Jam ? "이어서 토스트를 누르자." : "이어서 잼을 누르자."); }
+            else selected = action;
             return;
         }
 
@@ -234,6 +245,7 @@ public sealed class MealGameController : MonoBehaviour
         item.gameObject.SetActive(true);
         if (!Hand.Hold(item)) { item.gameObject.SetActive(visibleOnReturn); return false; }
         carried = item;
+        toastPoseApplied = false;
         return true;
     }
 

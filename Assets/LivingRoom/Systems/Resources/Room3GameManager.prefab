@@ -87,13 +87,6 @@ MonoBehaviour:
     onCompleted:
       m_PersistentCalls:
         m_Calls: []
-  - stage: 2
-    onAvailable:
-      m_PersistentCalls:
-        m_Calls: []
-    onCompleted:
-      m_PersistentCalls:
-        m_Calls: []
   - stage: 7
     onAvailable:
       m_PersistentCalls:

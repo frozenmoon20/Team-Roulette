@@ -95,7 +95,9 @@ namespace TeamRoulette.Room3.DollMemory
         public void Restore()
         {
             if(!captured) return; captured=false;
-            dog.SetPositionAndRotation(oldPosition,oldRotation); animator.runtimeAnimatorController=oldController; animator.applyRootMotion=rootMotion;
+            if (dog) dog.SetPositionAndRotation(oldPosition,oldRotation);
+            if (!animator) return;
+            animator.runtimeAnimatorController=oldController; animator.applyRootMotion=rootMotion;
             animator.enabled=oldAnimatorEnabled; animator.cullingMode=oldCulling;
             animator.speed=oldSpeed;
             if(agent) agent.enabled=oldAgent;

@@ -7,7 +7,8 @@ namespace TeamRoulette.Room3.DollMemory {
  if(IsOpen)yield break;
  if(!captured){closed=transform.rotation;pivot=transform.position;captured=true;}
  var start=transform.rotation;var end=Quaternion.AngleAxis(-100,Vector3.up)*closed;
- for(float t=0;t<.7f;t+=Time.deltaTime){transform.rotation=Quaternion.Slerp(start,end,Mathf.SmoothStep(0,1,t/.7f));yield return null;}transform.rotation=end;IsOpen=true;
+ const float duration = .95f;
+ for(float t=0;t<duration;t+=Time.deltaTime){transform.rotation=Quaternion.Slerp(start,end,Mathf.SmoothStep(0,1,t/duration));yield return null;}transform.rotation=end;IsOpen=true;
  }
  public void Restore(){if(captured){transform.SetPositionAndRotation(pivot,closed);IsOpen=false;captured=false;}}
  }

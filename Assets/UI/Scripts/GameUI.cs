@@ -246,7 +246,7 @@ namespace TeamRoulette.UI
             {
                 lineElapsed += Time.unscaledDeltaTime;
 
-                if (lineElapsed >= 2f)
+                if (lineElapsed >= (currentDialogue.secondsPerLine > 0 ? currentDialogue.secondsPerLine : 2f))
                     AdvanceDialogue();
             }
         }

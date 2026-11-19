@@ -35,7 +35,7 @@ public sealed class BoardGameController : MonoBehaviour
     Vector2 candidate;
     bool canPlace;
     Vector3 targetPoint;
-    public const string ControlHelp="좌클릭: 집기 / 붙이기 / 버리기 / 다시 꺼내기\nQ·E: 회전   F: 바닥에 놓기   G 2초 누르기: 완성";
+    public const string ControlHelp="Q·E: 회전   F: 바닥에 놓기   G: 완료 확인";
 
     void Awake() { ConfigureOverlayLayout(); }
     public void ConfigureOverlayLayout()
@@ -225,9 +225,9 @@ public sealed class BoardGameController : MonoBehaviour
     }
     public string CompletionIssue()
     {
-        if(Held || items.Any(i=>i.state==BoardItemState.Held)) return "손에 든 것을 마저 정리하자.";
-        if(items.Any(i=>i.state==BoardItemState.Floor)) return "바닥에 아직 정리되지 않은 것이 남아있다.";
-        if(RefreshOverlap()) return "겹쳐서 잘 안 보여.";
+        if(Held || items.Any(i=>i.state==BoardItemState.Held)) return "아직 손에 남아있어.";
+        if(items.Any(i=>i.state==BoardItemState.Floor)) return "바닥에 아직 남아있어.";
+        if(RefreshOverlap()) return "겹쳐있는게 있네.";
         return null;
     }
     public void TickFinish(bool pressed,float seconds)
@@ -243,7 +243,13 @@ public sealed class BoardGameController : MonoBehaviour
     public bool TryFinish()
     {
         if(!Active) return false;
-        message=CompletionIssue(); if(message!=null) { RefreshOverlay(); return false; }
+        var issue = CompletionIssue();
+        if (issue != null)
+        {
+            var ui = FindFirstObjectByType<TeamRoulette.UI.GameUI>();
+            TeamRoulette.Room3.DialogueManager.Speak(ui, issue);
+            return false;
+        }
         Completed=true;
         Release(); PlayerInteractor.ShowHint("게시판 정리 완료");
         TeamRoulette.Room3.GameManager.ReportComplete(TeamRoulette.Room3.GameStage.Board);
