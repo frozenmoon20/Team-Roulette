@@ -24,11 +24,11 @@ namespace TeamRoulette.Room3
         // 1. CurtainGame — 커튼 시작 / 완료
         public static readonly string[] CurtainStart =
         {
-            "겨울이...?", "겨울이야...?", "겨울아...", "겨울아!"
+
         };
         public static readonly string[] CurtainFinish =
         {
-            "겨울아...", "밝아...", "날씨 좋다..."
+            "밝아...", "날씨 좋다..."
         };
 
         // 2. 창문 열기 — 시작 / 완료
@@ -107,7 +107,7 @@ namespace TeamRoulette.Room3
         public const string TugFinish = "겨울이는 힘도 셌지.";
 
         // DollGame 대사
-        public const string DollStart = "겨울아 인형 빨아야지...!";
+        public const string DollStart = "겨울아, 인형 세탁해야 돼...!";
         public const string DollTaken = "금방 빨아줄게.";
         public const string DollWashing = "금방 될거야.";
         public const string DollReturned = "자, 여기 겨울이 오리!";

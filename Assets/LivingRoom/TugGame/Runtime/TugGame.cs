@@ -368,7 +368,7 @@ namespace TeamRoulette.Room3.TugPlay
         {
             Phase = TugPhase.Celebrating; carrying = true; RefreshUI();
             if (hand && hand.handModel) hand.handModel.SetActive(false);
-            SetStatus("겨울이가 신나게 로프를 흔듭니다!"); Play(biteState);
+            SetStatus(""); Play(biteState);
             float duration = Mathf.Max(.1f, celebrationSeconds);
             for (float t = 0; t < duration;)
             {
@@ -496,7 +496,7 @@ namespace TeamRoulette.Room3.TugPlay
             progress = Label("Rounds", new Vector2(.5f, .19f), new Vector2(700, 42), 23);
             status = Label("Status", new Vector2(.5f, .12f), new Vector2(900, 44), 23);
             content = sharedUI.GetComponent<SceneUIContent>();
-            if (content) { objective = new SceneUIContent.Objective { id = "TugGame.Play", text = "겨울이와 터크놀이" }; content.objectives.Insert(0, objective); content.Refresh(); }
+            if (content) { objective = new SceneUIContent.Objective { id = "TugGame.Play", text = "겨울이와 터그놀이" }; content.objectives.Insert(0, objective); content.Refresh(); }
         }
         TMP_Text Label(string label, Vector2 anchor, Vector2 size, float fontSize)
         {
@@ -510,7 +510,7 @@ namespace TeamRoulette.Room3.TugPlay
         void RefreshUI()
         {
             if (!prompt) return;
-            string[] arrows = { "위쪽", "왼쪽", "아래쪽", "오른쪽" };
+            string[] arrows = { "↑", "←", "↓", "→" };
             prompt.text = Phase == TugPhase.Waiting ? arrows[(int)ExpectedDirection] : "";
             progress.text = Phase == TugPhase.Completed ? ""
                 : RoundIndex + " / " + roundCount + " 라운드    " + RoundSuccesses + " / " + successesPerRound + "회 성공";

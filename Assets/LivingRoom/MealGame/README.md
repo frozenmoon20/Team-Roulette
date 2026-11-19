@@ -42,3 +42,19 @@ Raw and cooked toast positions at the toaster are used as authored. The baking r
 The full sequence was verified twice in Play Mode, covering both jam-click orders, scene ray targeting, ten-second cooking, pickup cancellation, horizontal toast/plate, upright cup, purchased plate alignment, blackout, eating, empty dishes and the player position at the purchased table. The scene's existing Room3 progression integration is retained. Verification uses temporary standalone test state and does not save test unlocks or progress.
 
 BeforePurchasedSwap.unity.bak is the pre-transfer scene backup. PurchasedTransfer.txt records the selected scene objects and their world positions.
+
+## Counter layout and timer update — 2026-11-19
+
+The preparation counter follows the reference order: cutlery, plate, cup, then the jam placement marker. The filled cup is aligned to the empty cup. The toast-on-plate marker stays with the relocated plate. Dining-table and toaster locations are preserved.
+
+The world-space timer is now 0.25 units in diameter. MealPieTimer renders only the remaining circular sector. The former background and digits are disabled; elapsed time and the completed state are transparent. The existing ten-second cooking sequence is unchanged.
+
+Hierarchy groups: Furniture, Items (Ingredients, Toast, Tableware, Cutlery), PlacementPoints (Counter, Toaster, DiningTable, PlayerView), and UI. Plate, jam toast, and the toast placement point remain an assembly. Runtime scripts are under Runtime; text reports and the pre-change scene backup are under Reports. Scripts were moved through AssetDatabase to preserve their GUIDs and scene references.
+
+LayoutVerification_20261119.txt records passing checks for countertop contact, jam placement, reference integrity, actual CanvasRenderer geometry, transparent elapsed sectors, real countdown progress, and toast completion. Shared hand/grab scripts and the Player prefab were not edited.
+
+## Hierarchy simplification — 2026-11-20
+
+The detailed Items and PlacementPoints subcategories have been removed. MealGame now has four broad organizational groups: Furniture, Items, PlacementPoints, UI. Functional plate/toast assemblies remain together.
+
+Twelve created empty containers were reset and repositioned with identity local rotation and unit local scale. Purchased prefab roots are not organizational empties and retain their authored transforms. Twenty-six model, placement and UI world matrices, object visibility states, and the plate assembly were checked before saving. Results: Reports/Simplify_20261119.txt.

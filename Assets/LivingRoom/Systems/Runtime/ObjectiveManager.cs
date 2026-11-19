@@ -10,7 +10,7 @@ namespace TeamRoulette.Room3
         Rinsing, SelectTowel, WipeFace, WashComplete, GetToast, PutToastInToaster,
         GetJam, PutJamOnCounter, WaitForToast, TakeToast, PutToastOnPlate, ApplyJam,
         PlacePlate, GetJuice, PourJuice, PlaceCup, EatMeal, ArrangeBoard, ResolveOverlap,
-        FinishBoard, TurnOnWater
+        FinishBoard, TurnOnWater, CloseBathroomDoor
     }
 
     [RequireComponent(typeof(SceneUIContent))]
@@ -19,7 +19,7 @@ namespace TeamRoulette.Room3
         // 기본 목표: 문구 수정 후 저장하고 Unity 컴파일이 끝나면 Play를 다시 시작하세요.
         public static string GetObjective(GameStage stage) => stage switch
         {
-            GameStage.Curtain => "커튼을 열자",
+            GameStage.Curtain => "거실 커튼을 열자",
             GameStage.Window => "창문을 열자",
             GameStage.Wash => "화장실에 가자",
             GameStage.Meal => "식사를 준비하자",
@@ -33,7 +33,8 @@ namespace TeamRoulette.Room3
         // 세부 목표: 게임은 아래의 ID만 요청하며, 표시 문구는 여기서만 수정합니다.
         public static string GetDetailObjective(GameStage stage, ObjectiveStep step) => (stage, step) switch
         {
-            (GameStage.Curtain, ObjectiveStep.FollowDog) => "커튼을 열자",
+            (GameStage.Curtain, ObjectiveStep.FollowDog) => "거실 커튼을 열자",
+            (GameStage.Wash, ObjectiveStep.CloseBathroomDoor) => "화장실 문을 닫자",
             (GameStage.Wash, ObjectiveStep.TurnOnWater) => "물을 틀자",
             (GameStage.Wash, ObjectiveStep.WetFace) => "물로 얼굴을 적시자",
             (GameStage.Wash, ObjectiveStep.SelectSoap) => "비누를 집자",

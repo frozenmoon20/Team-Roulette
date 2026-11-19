@@ -1,0 +1,17 @@
+Groups: Furniture / Items / PlacementPoints / UI
+Reset and repositioned: 12 empty containers
+Preserved world pose and scale: 26 renderer/placement/UI transforms
+All surviving object visibility flags preserved. Plate assembly preserved.
+MealGame: position=(0.0000, 0.0000, 0.0000), local rotation=(0,0,0), local scale=(1,1,1)
+Furniture: position=(0.0000, 0.0000, 0.0000), local rotation=(0,0,0), local scale=(1,1,1)
+Items: position=(-20.0070, 0.0000, -7.9960), local rotation=(0,0,0), local scale=(1,1,1)
+PlacementPoints: position=(-20.0070, 0.0000, -7.9960), local rotation=(0,0,0), local scale=(1,1,1)
+UI: position=(0.0000, 0.0000, 0.0000), local rotation=(0,0,0), local scale=(1,1,1)
+RawToast: position=(-7.4001, 1.7115, -3.8230), local rotation=(0,0,0), local scale=(1,1,1)
+Jam: position=(-7.4319, 1.6244, -6.0930), local rotation=(0,0,0), local scale=(1,1,1)
+CookedToast: position=(-7.4000, 1.7613, -3.8251), local rotation=(0,0,0), local scale=(1,1,1)
+Plate: position=(-7.4280, 1.6264, -6.3829), local rotation=(0,0,0), local scale=(1,1,1)
+JuiceCup: position=(-7.3230, 1.6264, -6.1764), local rotation=(0,0,0), local scale=(1,1,1)
+EmptyCup: position=(-7.4020, 1.6264, -5.8924), local rotation=(0,0,0), local scale=(1,1,1)
+JamToast: position=(-20.0070, 0.0020, -8.0209), local rotation=(0,0,0), local scale=(1,1,1)
+ALL CHECKS PASSED

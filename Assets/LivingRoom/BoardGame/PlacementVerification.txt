@@ -1,1 +1,1 @@
-PASS: board start, trash retrieve, placement at requested coordinates; all other items retain their horizontal and vertical positions after scene/group edits; completion.
+PASS: Q/E control labels without left-click help; objective remains nonempty during overlap; no upper empty-trash message; zero Z rotation placement; board start, retrieve, requested coordinates; other items retain positions; overlap outlines during game only; completion.

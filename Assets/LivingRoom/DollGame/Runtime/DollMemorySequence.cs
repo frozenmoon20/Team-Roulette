@@ -22,6 +22,7 @@ namespace TeamRoulette.Room3.DollMemory
         public DollWinter winter;
         public GameObject sceneDoll;
         public Transform entry, washerButton, drum, washerView, washerSeat, cushion, restView;
+        public ParticleSystem washerFoam;
         public Transform[] chasePoints, washerRoute; public Transform insideDoor, interiorEntry, entranceView; public DollDoor interiorDoor; public Renderer washerRenderer; public Material washerCutaway; Material[] washerMaterials; public DollYardBindings yardBinding; public Transform winterEntry;
         public float catchDistance=1.6f, washingSeconds=7, dryingSeconds=2.5f, restSeconds=3;
         const float DryDollReach = 1.75f;
@@ -247,6 +248,7 @@ namespace TeamRoulette.Room3.DollMemory
             Vector3 seated=washerView.position;
             yield return CameraMove(seated,washerView.rotation,.7f); if(handVisual)handVisual.gameObject.SetActive(false);
             SpeakDuringScene(Room3DialogueScript.DollWashing);
+            if (washerFoam) washerFoam.Play(true);
             Vector3 origin=drum.position;
             for(float t=0;t<washingSeconds;t+=Time.deltaTime)
             {
@@ -255,6 +257,7 @@ namespace TeamRoulette.Room3.DollMemory
                 winter.HoldSitting();
                 yield return null;
             }
+            if (washerFoam) washerFoam.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             yield return new WaitForSeconds(.5f); HoldDoll(); Next(DollMemoryState.MoveOutside);
         }
         IEnumerator TouchButton()
@@ -374,11 +377,12 @@ namespace TeamRoulette.Room3.DollMemory
             for(int i=0;i<yardBinding.returnRoute.Length;i++)
             {
                 OutdoorRouteIndex=i;
-                winter.Play(i>=1?"Walk_F_IP":"Trot_F_IP");
+                bool onStairs = yardBinding.returnRoute[i].position.y > yardBinding.dogStand.position.y + .1f;
+                winter.Play(onStairs ? "Walk_F_IP" : "Trot_F_IP");
                 float limit=25;
                 while(limit>0)
                 {
-                    bool reached=winter.GroundStep(yardBinding.returnRoute[i].position,i>=1?.85f:1.6f,yardBinding.walkingSurfaces,out var blocked);
+                    bool reached=winter.GroundStep(yardBinding.returnRoute[i].position,onStairs?.85f:1.6f,yardBinding.walkingSurfaces,out var blocked);
                     if(blocked){Debug.LogError("[DollMemory] 계단 바닥 지지 검사 실패: "+i+" "+winter.dog.position,this);yield break;}
                     OutdoorMaxHeight=Mathf.Max(OutdoorMaxHeight,winter.dog.position.y);
                     if(reached)break;
@@ -489,6 +493,7 @@ namespace TeamRoulette.Room3.DollMemory
         void Cleanup()
         {
             if(cleaning) return; cleaning=true;
+            if (washerFoam) washerFoam.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             foreach(var pair in blocked) if(pair.Key) pair.Key.enabled=pair.Value;
             foreach(var pair in hidden) if(pair.Key) pair.Key.SetActive(pair.Value);
             blocked.Clear(); hidden.Clear();

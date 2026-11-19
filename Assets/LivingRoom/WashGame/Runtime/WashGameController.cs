@@ -81,6 +81,12 @@ public sealed class WashGameController : MonoBehaviour
         if (!TeamRoulette.Room3.GameManager.CanPlay(TeamRoulette.Room3.GameStage.Wash)) return;
         if (CurrentStage == Stage.Idle)
         {
+            foreach (var door in FindObjectsByType<RestroomDoor>(FindObjectsSortMode.None))
+                if (door.gameObject.scene == gameObject.scene && door.IsOpen)
+                {
+                    TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Wash, TeamRoulette.Room3.ObjectiveStep.CloseBathroomDoor);
+                    return;
+                }
             if (action != WashAction.Water) { PlayerInteractor.ShowHint("세면대에서 먼저 물을 틀자."); return; }
             if (!OptionState.Instance) { PlayerInteractor.ShowHint("옵션 시스템 연결을 확인해주세요."); return; }
             if (!TeamRoulette.Room3.GameManager.TryBegin(TeamRoulette.Room3.GameStage.Wash)) return;
@@ -319,7 +325,8 @@ public sealed class WashGameController : MonoBehaviour
         material.SetFloat("_Radius", blurRadius);
         blurRuntime.SetFloat("_Radius", blurRadius);
         material.SetFloat("_Foam", foam);
-        material.SetFloat("_Wet", CurrentStage >= Stage.Wet && !finished ? 1 : 0);
+        bool soapOnFace = CurrentStage == Stage.Soaping || CurrentStage == Stage.RinseReady;
+        material.SetFloat("_Wet", CurrentStage >= Stage.Wet && !finished && !soapOnFace ? 1 : 0);
         material.SetFloat("_Wiping", wiping ? 1 : 0);
         material.SetFloat("_Aspect", viewCamera.aspect);
         toolImage.color = wiping ? new Color(.76f, .88f, 1, .85f) : CurrentStage == Stage.Soaping ? new Color(.79f, 1, .88f, .9f) : Color.white;

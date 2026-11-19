@@ -9,7 +9,7 @@ using Object = UnityEngine.Object;
 [InitializeOnLoad]
 public static class MealGameVerification
 {
-    const string Report = MealGameSetup.Folder + "/Verification.txt";
+    const string Report = MealGameSetup.Folder + "/Reports/Verification.txt";
     static IEnumerator checks;
     static double next;
     static string report;

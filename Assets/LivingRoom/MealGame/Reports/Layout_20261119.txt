@@ -1,0 +1,5 @@
+Plate bottom: (-7.3230, 1.6264, -6.3969)
+Cup bottom: (-7.3230, 1.6264, -6.1764)
+Jam placement: (-7.3230, 1.6264, -5.9874)
+Timer diameter: 0.25 world units
+Transparent radial countdown; no background or remaining numeric display.

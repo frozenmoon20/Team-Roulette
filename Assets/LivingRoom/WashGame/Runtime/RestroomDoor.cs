@@ -12,8 +12,11 @@ public sealed class RestroomDoor : MonoBehaviour, IInteractable, IHasName
     public void Interact()
     {
         if(Time.timeScale<=0)return;
-        TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Wash, TeamRoulette.Room3.ObjectiveStep.TurnOnWater);
         IsOpen=!IsOpen;
+        var wash = FindFirstObjectByType<WashGameController>();
+        if (!wash || wash.CurrentStage == WashGameController.Stage.Idle)
+            TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Wash,
+                IsOpen ? TeamRoulette.Room3.ObjectiveStep.CloseBathroomDoor : TeamRoulette.Room3.ObjectiveStep.TurnOnWater);
         from=transform.rotation;
         // Imported mesh axes can be tilted. Swing around the vertical world axis.
         target=Quaternion.AngleAxis(IsOpen?openAngle:0,Vector3.up)*closed;
