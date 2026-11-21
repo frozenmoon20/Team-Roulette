@@ -23386,6 +23386,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaveFlag
   id: Bedroom_HandCream
+  disableBeforeStart: []
   hideIfDone: []
   showIfDone: []
   poseTarget: {fileID: 0}
@@ -23752,6 +23753,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaveFlag
   id: Bedroom_HallStart
+  disableBeforeStart: []
   hideIfDone:
   - {fileID: 368819850}
   showIfDone: []
@@ -42165,6 +42167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaveFlag
   id: Bedroom_DogStairs
+  disableBeforeStart: []
   hideIfDone: []
   showIfDone: []
   poseTarget: {fileID: 0}
@@ -84858,6 +84861,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaveFlag
   id: Bedroom_MessageSent
+  disableBeforeStart: []
   hideIfDone:
   - {fileID: 1061246579}
   showIfDone: []
@@ -85127,6 +85131,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaveFlag
   id: Bedroom_Drawer
+  disableBeforeStart: []
   hideIfDone: []
   showIfDone: []
   poseTarget: {fileID: 0}
@@ -91518,6 +91523,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaveFlag
   id: Bedroom_Door
+  disableBeforeStart: []
   hideIfDone: []
   showIfDone: []
   poseTarget: {fileID: 0}
@@ -116214,6 +116220,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaveFlag
   id: Bedroom_Diary
+  disableBeforeStart: []
   hideIfDone: []
   showIfDone: []
   poseTarget: {fileID: 0}
@@ -124575,6 +124582,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaveFlag
   id: Bedroom_Frame
+  disableBeforeStart: []
   hideIfDone: []
   showIfDone: []
   poseTarget: {fileID: 0}

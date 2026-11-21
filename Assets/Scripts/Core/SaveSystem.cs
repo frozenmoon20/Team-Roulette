@@ -27,6 +27,7 @@ using TeamRoulette.UI;
 //   - 엔딩: 거실(마지막 체크포인트 씬)에서 타이틀로 돌아오면 "엔딩을 봤다"로 저장한다 (따로 연결할 것 없음).
 //     → 타이틀 하프톤이 완전히 걷히고, 이어하기 버튼이 숨는다.
 // 미니게임 도중: SaveGuard.Begin ~ End 사이에는 저장하지 않는다 (도중에 꺼도 미니게임 시작 전 상태로 이어하기)
+// 저장 표시: 저장 내용이 바뀔 때마다 Saved 알림 → SaveIndicator가 화면 구석에 "저장 중..."을 잠깐 띄움
 // 테스트: 에디터 맨 위 메뉴 Tools > Restore > 저장 지우기 / 저장 내용 보기
 public static class SaveSystem
 {
@@ -52,6 +53,7 @@ public static class SaveSystem
         public string objScene;              // 목표 상태를 저장한 씬
         public List<ObjState> objectives = new List<ObjState>();
         public bool objPanel;                // 목표창이 켜져 있었는지
+        public Room3State room3;             // 거실 진행 (Room3SaveBridge)
     }
 
     [Serializable]
@@ -156,6 +158,10 @@ public static class SaveSystem
         content = UnityEngine.Object.FindFirstObjectByType<SceneUIContent>(FindObjectsInactive.Include);
         panel = UnityEngine.Object.FindFirstObjectByType<ObjectivePanel>(FindObjectsInactive.Include);
         if (content != null) content.Changed += OnObjectivesChanged;
+
+        // 거실: 거실 매니저 연결 + 이어하기면 거실 진행 되살리기 (각 스크립트의 Start보다 먼저)
+        if (scene.name == Room3SaveBridge.LivingScene)
+            Room3SaveBridge.OnLivingLoaded(scene, (continued != null && continuedScene == scene.name) ? continued.room3 : null);
 
         // 이어하기면: 씬 준비가 다 끝난 뒤 목표창을 저장된 모양으로 되돌림
         if (continued != null && continuedScene == scene.name)
@@ -291,6 +297,9 @@ public static class SaveSystem
                     d.objectives.Add(new ObjState { id = item.id, visible = item.visible, completed = item.completed });
         }
         d.objPanel = panel != null && panel.IsShown;
+        // 거실 진행: 거실 매니저가 있으면 지금 상태, 없으면(다른 씬) 이전 저장값 유지
+        Room3State r3 = Room3SaveBridge.Export();
+        d.room3 = r3 ?? (old != null ? old.room3 : null);
         Write(d);
         Debug.Log("자동저장: " + d.scene + (string.IsNullOrEmpty(d.point) ? "" : " / " + d.point)
                   + " (해금 " + d.unlocked.Count + ", 완료 " + d.flags.Count + ", 거실 " + d.living.Count + ")");
@@ -302,7 +311,7 @@ public static class SaveSystem
         Data d = Load() ?? new Data { scene = CheckpointScenes[0] };
         d.endingSeen = true;
         d.halftone = 1f;
-        Write(d);
+        Write(d, false);
         Debug.Log("자동저장: 엔딩 봄");
     }
 
@@ -348,10 +357,17 @@ public static class SaveSystem
         pending = null;
     }
 
-    static void Write(Data d)
+    // 저장 내용이 실제로 바뀌었을 때 알림 ("저장 중..." 표시 SaveIndicator가 들음)
+    public static event Action Saved;
+
+    // notify = false: 알림 없이 조용히 저장 (엔딩 기록처럼 타이틀에서 하는 저장)
+    static void Write(Data d, bool notify = true)
     {
-        PlayerPrefs.SetString(Key, JsonUtility.ToJson(d));
+        string json = JsonUtility.ToJson(d);
+        bool changed = PlayerPrefs.GetString(Key, "") != json;   // 같은 내용을 다시 저장한 거면 표시 안 함
+        PlayerPrefs.SetString(Key, json);
         PlayerPrefs.Save();
+        if (changed && notify) Saved?.Invoke();
     }
 
 #if UNITY_EDITOR

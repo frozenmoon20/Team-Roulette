@@ -231,6 +231,8 @@ public class TitleMenu : MonoBehaviour
         PersistentSystems old = FindFirstObjectByType<PersistentSystems>();
         if (old != null) Destroy(old.gameObject);
         if (OptionState.Instance != null) Destroy(OptionState.Instance.gameObject);
+        if (TeamRoulette.Room3.GameManager.Instance != null)                  // 거실 진행 매니저도 (엔딩 뒤 새 게임이 거실 끝 상태로 시작하지 않게)
+            Destroy(TeamRoulette.Room3.GameManager.Instance.gameObject);
 
         // 3) 화면을 까맣게 덮고 → 씬 넘기기 → 다음 씬에서 서서히 밝아짐
         SceneFader.Go(scene, fadeOutTime, fadeInTime);

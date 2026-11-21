@@ -69906,7 +69906,7 @@ MonoBehaviour:
   fontSize: 48
   scrollSpeed: 70
   endDelay: 2
-  titleSceneName: 
+  titleSceneName: Title
   missingTitleMessage: "\uD0C0\uC774\uD2C0 \uD654\uBA74 \uC900\uBE44 \uC911\uC785\uB2C8\uB2E4."
 --- !u!1001 &1160696520
 PrefabInstance:
