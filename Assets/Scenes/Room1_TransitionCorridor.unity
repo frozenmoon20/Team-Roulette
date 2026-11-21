@@ -5269,6 +5269,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  knobTurn: {fileID: 0}
+  openedDialogue: {fileID: 0}
 --- !u!1 &1216510073
 GameObject:
   m_ObjectHideFlags: 0
@@ -8489,6 +8491,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c3cc20da8d228a346b8c4a6b261946cf, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1862838420}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c3cc20da8d228a346b8c4a6b261946cf, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1862838421}
     - targetCorrespondingSourceObject: {fileID: 3631097272191390097, guid: c3cc20da8d228a346b8c4a6b261946cf, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1862838419}
@@ -8552,6 +8557,18 @@ MonoBehaviour:
         m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
         m_MethodName: SetActive
         m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1862838421}
+        m_TargetAssemblyTypeName: SaveFlag, Assembly-CSharp
+        m_MethodName: Done
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -8678,6 +8695,33 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1862838421
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1862838415}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03cd2d07cbc8ab04782475e0113b29c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaveFlag
+  id: Transition_CallDone
+  disableBeforeStart:
+  - {fileID: 1862838418}
+  hideIfDone:
+  - {fileID: 1762130634}
+  - {fileID: 449444795}
+  showIfDone: []
+  poseTarget: {fileID: 0}
+  setLocalPosition: 0
+  doneLocalPosition: {x: 0, y: 0, z: 0}
+  setLocalRotation: 0
+  doneLocalEuler: {x: 0, y: 0, z: 0}
+  onRestored:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1001 &1886191308
 PrefabInstance:
   m_ObjectHideFlags: 0

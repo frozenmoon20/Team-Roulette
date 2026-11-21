@@ -13,6 +13,8 @@ using UnityEngine.Events;
 //        - Show If Done : 보일 것 (놓아 둔 물건, 열린 통로 …)
 //        - Pose Target  : 문 경첩·서랍처럼 위치·각도만 바뀌는 것 → 완료 위치·각도를 기록해 둠
 //        - On Restored  : 그 밖에 할 일 (목표창 갱신, DialogueInteractable.MarkUsed 등)
+//        - Disable Before Start : 씬이 열리자마자(다른 스크립트의 Start보다 먼저) 끌 스크립트
+//                                 → 시작하자마자 연출을 트는 스크립트(오프닝 컷신 등)를 아예 안 돌게 할 때
 // 원리: 씬은 다시 켜면 처음 모양으로 열린다. 그래서 저장된 "완료 목록"에 이 Id가 있으면,
 //       다른 스크립트들이 준비를 마친 뒤(한 프레임 뒤) 끝난 모양으로 덮어쓴다.
 // 완료 위치·각도 기록법 (Pose Target): 에디터에서 문을 "열린 각도"로 돌려 놓고 →
@@ -23,6 +25,8 @@ public class SaveFlag : MonoBehaviour
     public string id = "";
 
     [Header("다시 켰을 때 이미 끝나 있으면")]
+    [Tooltip("씬이 열리자마자 끌 스크립트 (그 스크립트의 Start가 아예 안 돎. 오프닝 연출 건너뛰기용)")]
+    public Behaviour[] disableBeforeStart;
     public GameObject[] hideIfDone;
     public GameObject[] showIfDone;
 
@@ -37,6 +41,13 @@ public class SaveFlag : MonoBehaviour
     public UnityEvent onRestored;
 
     public bool IsDone => SaveSystem.HasFlag(id);
+
+    // Awake는 모든 스크립트의 Start보다 먼저 → 여기서 끄면 그 스크립트의 Start(오프닝 연출)가 실행되지 않음
+    void Awake()
+    {
+        if (!SaveSystem.HasFlag(id) || disableBeforeStart == null) return;
+        foreach (Behaviour b in disableBeforeStart) if (b != null) b.enabled = false;
+    }
 
     IEnumerator Start()
     {

@@ -16,6 +16,8 @@ public class ObjectivePanel : MonoBehaviour
     public bool hideOnStart = true;          // 게임 시작 때 숨겨 두기
     public float fadeTime = 0.6f;            // 나타나고 사라지는 데 걸리는 시간 (초)
 
+    public bool IsShown { get; private set; }  // 지금 보이는 중인지 (자동저장이 확인)
+
     CanvasGroup group;
     SceneUIContent content;
     Coroutine fading;
@@ -30,6 +32,7 @@ public class ObjectivePanel : MonoBehaviour
         if (group == null) group = gameObject.AddComponent<CanvasGroup>();
 
         if (hideOnStart) group.alpha = 0f;
+        IsShown = group.alpha > 0.5f;
 
         // {n}이 들어 있는 목표는 원래 문구를 기억해 두고, 처음엔 0으로 표시
         if (content != null)
@@ -74,6 +77,9 @@ public class ObjectivePanel : MonoBehaviour
 
     void FadeTo(float target)
     {
+        bool changed = IsShown != (target > 0.5f);
+        IsShown = target > 0.5f;
+        if (changed) SaveSystem.Save();      // 목표창을 켜고 끈 것도 저장
         if (fading != null) StopCoroutine(fading);
         fading = StartCoroutine(Fade(target));
     }

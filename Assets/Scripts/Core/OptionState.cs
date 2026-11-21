@@ -82,6 +82,8 @@ public class OptionState : MonoBehaviour
     // 해당 옵션을 해금
     public void Unlock(OptionType type)
     {
+        // 이미 해금된 건 다시 알리지 않음 (이어하기 뒤 같은 걸 또 해도 해금 알림·효과음이 중복으로 뜨지 않게)
+        if (IsUnlocked(type)) return;
         unlocked[type] = true;
         OnOptionChanged?.Invoke(type, true);
     }

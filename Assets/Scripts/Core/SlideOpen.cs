@@ -27,6 +27,15 @@ public class SlideOpen : MonoBehaviour
         StartCoroutine(Move());
     }
 
+    // 이어하기용: 애니메이션 없이 바로 열린 자리로 (SaveFlag의 On Restored에 연결)
+    public void OpenInstant()
+    {
+        if (openPoint == null) return;
+        if (target == null) target = transform;
+        IsOpened = true;
+        target.position = openPoint.position;
+    }
+
     IEnumerator Move()
     {
         Vector3 from = target.position;

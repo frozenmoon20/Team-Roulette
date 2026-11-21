@@ -21,6 +21,8 @@ public class DevSkip : MonoBehaviour
 
     [Header("시작 상태")]
     public Transform startPoint;              // 플레이어를 옮길 자리 (비워 두면 안 옮김)
+    [Tooltip("이어하기 때 아직 이동이 해금 전이면(침대에 누워 있던 상태) Start Point 대신 침대에 눕힘")]
+    public BedLie bedLie;
     public List<OptionType> unlockOnSkip;     // 미리 해금할 옵션 (SFX, RotateCamera, Move, Hand …)
     public UnityEvent onSkip;                 // 그 밖에 할 일 (목표창 보이기, 목표 표시 등)
 
@@ -31,6 +33,7 @@ public class DevSkip : MonoBehaviour
     {
         continued = SaveSystem.ContinuedInto(gameObject.scene.name) && SaveSystem.ContinueUnlocked(OptionType.RotateCamera);
         active = continued || (skipIntro && Application.isEditor);
+        SaveGuard.introSkippedScene = active ? gameObject.scene.name : "";   // 건너뛰면 인트로의 SaveGuard가 저장을 멈추지 않게
         if (!active) return;
 
         if (openingDialogue != null) openingDialogue.playOnStart = false;
@@ -43,8 +46,15 @@ public class DevSkip : MonoBehaviour
         if (continued) Debug.Log("DevSkip: 이어하기 → 미니게임1·2 건너뜀", this);
         else Debug.LogWarning("DevSkip: 미니게임1·2를 건너뛰었습니다 (테스트용). 커밋 전에 Skip Intro를 끄세요.", this);
 
+        // 이어하기인데 아직 이동 전(꿈에서 깨어나 침대에 누워 있던 상태)이면 → 침대에 다시 눕힘
+        //   (Start Point에 세우면 이동이 잠겨 있어서 강아지 계단까지 못 가고 갇힘)
+        bool moveLocked = OptionState.Instance == null || !OptionState.Instance.IsUnlocked(OptionType.Move);
+        if (continued && moveLocked && bedLie != null)
+        {
+            StartCoroutine(LieNextFrame());
+        }
         // 플레이어 옮기기 (CharacterController는 켜진 채로 위치를 바꾸면 무시되므로 잠깐 끈다)
-        if (startPoint != null)
+        else if (startPoint != null)
         {
             FirstPersonPlayer player = FindFirstObjectByType<FirstPersonPlayer>();
             if (player != null)
@@ -61,5 +71,12 @@ public class DevSkip : MonoBehaviour
             foreach (OptionType opt in unlockOnSkip) OptionState.Instance.Unlock(opt);
 
         onSkip.Invoke();
+    }
+
+    // 플레이어의 다른 스크립트가 처음 자세를 다 잡은 뒤(한 프레임 뒤)에 눕혀야 덮어써지지 않음
+    System.Collections.IEnumerator LieNextFrame()
+    {
+        yield return null;
+        bedLie.LieDown();
     }
 }
