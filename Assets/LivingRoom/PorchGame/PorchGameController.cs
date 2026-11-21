@@ -15,10 +15,12 @@ namespace TeamRoulette.Room3
         [TextArea(5, 30)] public string creditsText = "게임이 끝났습니다.\n엔딩 크레딧이 내려갑니다.";
         public TMP_FontAsset font;
         [Min(1)] public float fontSize = 48;
+        [Tooltip("크레딧이 1초에 올라가는 거리입니다.")]
         [Min(1)] public float scrollSpeed = 70;
+        [Tooltip("크레딧이 지나간 뒤 타이틀로 이동하기 전 대기 시간입니다. 단위는 초입니다.")]
         [Min(0)] public float endDelay = 2;
-        [Header("타이틀 화면")]
-        [Tooltip("타이틀 씬을 만든 뒤 빌드의 씬 목록에 추가하고, 씬 이름 또는 경로를 입력하세요.")]
+        [Header("크레딧 이후 이동할 씬")]
+        [Tooltip("타이틀로 이동하려면 빌드 목록에 있는 씬 이름(예: Title) 또는 경로를 입력하세요.")]
         public string titleSceneName = "";
         [TextArea(2, 5)] public string missingTitleMessage = "타이틀 화면 준비 중입니다.";
         public bool IsRunning { get; private set; }
@@ -47,13 +49,17 @@ namespace TeamRoulette.Room3
             savedTimeScale = Time.timeScale;
             savedCursor = Cursor.lockState; savedVisible = Cursor.visible;
             if (!font) font = ui && ui.objectiveText ? ui.objectiveText.font : TMP_Settings.defaultFontAsset;
+            var roomAudio = RoomAudio.For(this);
+            roomAudio?.StopAll();
             foreach (var source in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
                 if (source.isPlaying) { pausedAudio.Add(source); source.Pause(); }
             // Keep the credits root alive while suspending the room and all its input/UI.
             foreach (var root in gameObject.scene.GetRootGameObjects())
-                if (root != transform.root.gameObject && root.activeSelf)
+                if (root != transform.root.gameObject && (!roomAudio || root != roomAudio.transform.root.gameObject) && root.activeSelf)
                     root.SetActive(false);
             BuildScreen();
+            roomAudio?.Play("Porch Door");
+            roomAudio?.Play("Credits Music");
             Time.timeScale = 0;
             Cursor.lockState = CursorLockMode.None; Cursor.visible = false;
             StartCoroutine(RollCredits());
@@ -102,7 +108,10 @@ namespace TeamRoulette.Room3
                 y += Mathf.Max(1, scrollSpeed) * Time.unscaledDeltaTime;
             }
             label.text = "";
-            yield return new WaitForSecondsRealtime(Mathf.Max(0, endDelay));
+            var roomAudio = RoomAudio.For(this);
+            roomAudio?.Stop("Credits Music");
+            roomAudio?.Play("Credits End Door");
+            yield return new WaitForSecondsRealtime(Mathf.Max(endDelay, roomAudio?.ClipDuration("Credits End Door") ?? 0f));
             CreditsFinished = true;
             if (!string.IsNullOrWhiteSpace(titleSceneName) &&
                 titleSceneName != gameObject.scene.name && titleSceneName != gameObject.scene.path &&

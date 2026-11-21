@@ -72,7 +72,6 @@ namespace TeamRoulette.Room3
         FirstPersonPlayer homePlayer;
         Vector3 homePosition;
         Quaternion homeRotation, homeCameraRotation;
-        GameStage visitStage;
 
         void Awake() { manager = GetComponent<GameManager>(); }
 
@@ -84,27 +83,26 @@ namespace TeamRoulette.Room3
             InitializeOptions();
             bool home = scene.name == LivingRoom;
             if (!home && scene.name != ToyRoom) return;
-            foreach (var node in scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Transform>(true)))
-            {
-                // Arranged copies are display-only and must never start another visit.
-                if (home && IsStoredToy(node)) continue;
-                string id = ToyIdentity(node.name);
-                bool toy = Array.IndexOf(ToyIds, id) >= 0;
-                bool target = home ? toy || id == "WindowClose" : toy;
-                if (!target) continue;
-                EnsureCollider(node.gameObject);
-                var binding = node.GetComponent<Room3FlowTarget>();
-                if (!binding) binding = node.gameObject.AddComponent<Room3FlowTarget>();
-                binding.Bind(this, id);
-            }
             if (home)
             {
                 var nodes = scene.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Transform>(true)).ToArray();
+                foreach (var node in nodes)
+                {
+                    // Arranged copies are display-only and must never start another visit.
+                    if (IsStoredToy(node)) continue;
+                    string id = ToyIdentity(node.name);
+                    if (Array.IndexOf(ToyIds, id) < 0) continue;
+                    EnsureCollider(node.gameObject);
+                    var binding = node.GetComponent<Room3FlowTarget>();
+                    if (!binding) binding = node.gameObject.AddComponent<Room3FlowTarget>();
+                    binding.Bind(this, id);
+                }
                 var closed = nodes.FirstOrDefault(node => node.name == "WindowClose");
                 var open = nodes.FirstOrDefault(node => node.name == "WindowOpen");
+                bool hasWindowGame = Find<WindowGameController>(scene);
                 bool complete = manager.IsComplete(GameStage.Window);
-                if (closed) closed.gameObject.SetActive(!Find<WindowGameController>(scene) && !complete);
-                if (open) open.gameObject.SetActive(!Find<WindowGameController>(scene) && complete);
+                if (closed) closed.gameObject.SetActive(!hasWindowGame && !complete);
+                if (open) open.gameObject.SetActive(!hasWindowGame && complete);
                 RefreshToyDisplay(scene);
             }
             else
@@ -134,7 +132,7 @@ namespace TeamRoulette.Room3
         static void EnsureCollider(GameObject target)
         {
             if (target.GetComponentsInChildren<Collider>(true).Any(c => c.enabled && !c.isTrigger)) return;
-            // Imported carrot model has no click collider. Fit one in the model's local space.
+            // Fit a collider in the model's local space when an imported toy has none.
             var renderers = target.GetComponentsInChildren<Renderer>(true);
             var bounds = new Bounds(Vector3.zero, Vector3.zero);
             bool first = true;
@@ -157,60 +155,38 @@ namespace TeamRoulette.Room3
 
         public void Click(Room3FlowTarget target)
         {
-            if (!target || !target.isActiveAndEnabled || IsTransitioning || EndingVisible || Time.timeScale <= 0) return;
+            if (!target || !target.isActiveAndEnabled || target.gameObject.scene.name != LivingRoom ||
+                VisitingObject != null || IsTransitioning || EndingVisible || Time.timeScale <= 0) return;
+            if (Array.IndexOf(ToyIds, target.ObjectId) < 0 || IsToyComplete(target.ObjectId)) return;
             var ui = FindFirstObjectByType<GameUI>();
             if (ui && ui.IsPaused) return;
             if (PlayerHand.Instance && PlayerHand.Instance.Held) { PlayerInteractor.ShowHint("먼저 내려놓자."); return; }
-            if (!string.IsNullOrEmpty(VisitingObject))
-            {
-                // The memory sequence completes through its own callback.
-                if (VisitingObject == "인형") return;
-                // Only the exact object used to enter can finish this visit.
-                if (target.gameObject.scene == visitScene && target.ObjectId == VisitingObject)
-                    StartCoroutine(ReturnHome());
-                return;
-            }
-            if (target.gameObject.scene.name != LivingRoom) return;
-            switch (target.ObjectId)
-            {
-                case "WindowClose":
-                    var windowGame = Find<WindowGameController>(target.gameObject.scene);
-                    if (windowGame) windowGame.Interact();
-                    break;
-                case "TV":
-                    // TV playback is handled locally by TVGameTarget on Screen.
-                    break;
-                default:
-                    if (Array.IndexOf(ToyIds, target.ObjectId) < 0 || IsToyComplete(target.ObjectId)) return;
-                    BeginVisit(target, GameStage.Toys, ToyRoom);
-                    break;
-            }
+            BeginToyVisit(target);
         }
 
-        void BeginVisit(Room3FlowTarget target, GameStage stage, string destination)
+        void BeginToyVisit(Room3FlowTarget target)
         {
-            if (!GameManager.CanPlay(stage)) return;
-            if (!Application.CanStreamedLevelBeLoaded(destination))
-            { Debug.LogError("Room3: add scene to Build Settings: " + destination, target); return; }
+            if (!GameManager.CanPlay(GameStage.Toys)) return;
+            if (!Application.CanStreamedLevelBeLoaded(ToyRoom))
+            { Debug.LogError("Room3: add scene to Build Settings: " + ToyRoom, target); return; }
             homeScene = target.gameObject.scene;
             homePlayer = Find<FirstPersonPlayer>(homeScene);
             if (!homePlayer) { Debug.LogError("Room3: living room player is missing.", target); return; }
             homePosition = homePlayer.transform.position;
             homeRotation = homePlayer.transform.rotation;
             homeCameraRotation = homePlayer.cameraRoot ? homePlayer.cameraRoot.localRotation : Quaternion.identity;
-            visitStage = stage;
             VisitingObject = target.ObjectId;
-            StartCoroutine(Visit(destination));
+            StartCoroutine(VisitToyRoom());
         }
 
-        IEnumerator Visit(string destination)
+        IEnumerator VisitToyRoom()
         {
             IsTransitioning = true;
             suspendedRoots.Clear();
             foreach (var root in homeScene.GetRootGameObjects())
                 if (root.activeSelf) { suspendedRoots.Add(root); root.SetActive(false); }
             AsyncOperation load = null;
-            try { load = SceneManager.LoadSceneAsync(destination, LoadSceneMode.Additive); }
+            try { load = SceneManager.LoadSceneAsync(ToyRoom, LoadSceneMode.Additive); }
             catch (Exception ex) { Debug.LogException(ex); }
             if (load == null)
             {
@@ -220,11 +196,11 @@ namespace TeamRoulette.Room3
                 yield break;
             }
             yield return load;
-            visitScene = SceneManager.GetSceneByName(destination);
+            visitScene = SceneManager.GetSceneByName(ToyRoom);
             SceneManager.SetActiveScene(visitScene);
             // The destination DialogueManager is now bound, so start lines play in the visit.
-            GameManager.TryBegin(visitStage);
-            // Let scene-local UI and player Start run before accepting a return click.
+            GameManager.TryBegin(GameStage.Toys);
+            // Let the scene-local UI and player finish initializing before starting a minigame.
             yield return null;
             IsTransitioning = false;
         }
@@ -247,15 +223,11 @@ namespace TeamRoulette.Room3
             yield return SceneManager.UnloadSceneAsync(visitScene);
             ResumeHome();
             VisitingObject = null;
-            if (visitStage == GameStage.Toys)
-            {
-                manager.CompleteToyVisit(id);
-                RefreshToyDisplay(homeScene);
-            }
-            else GameManager.ReportComplete(GameStage.TV);
+            manager.CompleteToyVisit(id);
+            RefreshToyDisplay(homeScene);
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-            // The returning click must not also interact with a living-room object.
+            // Let the living-room player and UI resume before accepting input.
             yield return null;
             IsTransitioning = false;
         }

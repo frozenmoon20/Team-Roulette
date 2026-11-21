@@ -15,19 +15,48 @@ namespace TeamRoulette.Room3.DollMemory
     public sealed class DollMemorySequence : MonoBehaviour
     {
         public const string ToyId="인형";
+        [Header("플레이어와 겨울이")]
         public FirstPersonPlayer player;
         public PlayerInteractor interactor;
         public Camera playerCamera;
         public GameUI sharedUI;
         public DollWinter winter;
         public GameObject sceneDoll;
-        public Transform entry, washerButton, drum, washerView, washerSeat, cushion, restView;
+        [Header("인형을 쫓는 구간")]
+        public Transform entry;
+        public Transform winterEntry;
+        public Transform[] chasePoints;
+        [Tooltip("플레이어가 겨울이를 클릭해 인형을 회수할 수 있는 거리입니다.")]
+        public float catchDistance=1.6f;
+
+        [Header("화장실과 세탁 연출")]
+        public Transform washerButton;
+        public Transform drum, washerView, washerSeat;
+        public Transform[] washerRoute;
         public ParticleSystem washerFoam;
-        public Transform[] chasePoints, washerRoute; public Transform insideDoor, interiorEntry, entranceView; public DollDoor interiorDoor; public Renderer washerRenderer; public Material washerCutaway; Material[] washerMaterials; public DollYardBindings yardBinding; public Transform winterEntry;
-        public float catchDistance=1.6f, washingSeconds=7, dryingSeconds=2.5f, restSeconds=3;
+        public Renderer washerRenderer;
+        public Material washerCutaway;
+        public float washingSeconds=7;
+
+        [Header("마당 건조와 집 안 복귀")]
+        public DollYardBindings yardBinding;
+        public float dryingSeconds=2.5f;
+        public Transform insideDoor, interiorEntry, entranceView;
+        public DollDoor interiorDoor;
+
+        [Header("쿠션에서 쉬는 장면")]
+        public Transform cushion;
+        public Transform restView;
+        public float restSeconds=3;
+
+        [Header("미리보기와 완료 이벤트")]
+        [Tooltip("마당 씬을 에디터에서 직접 재생할 때에도 자동으로 시작할지 설정합니다.")]
+        public bool previewWhenOpenedDirectly;
+        public UnityEvent onCompleted=new UnityEvent();
+
+        Material[] washerMaterials;
         const float DryDollReach = 1.75f;
         const string DryDollObjective = "말린 인형을 집자";
-        public UnityEvent onCompleted=new UnityEvent();
         public DollMemoryState State {get;private set;}
         public event Action<DollMemoryState> StateChanged;
         public bool Running => State!=DollMemoryState.Inactive && State!=DollMemoryState.Complete;
@@ -38,7 +67,6 @@ namespace TeamRoulette.Room3.DollMemory
         public int OutdoorRouteIndex {get;private set;} = -1;
         public float OutdoorMaxHeight {get;private set;}
         bool yardInputReady;
-        public bool previewWhenOpenedDirectly;
         readonly Dictionary<Behaviour,bool> blocked=new Dictionary<Behaviour,bool>();
         readonly Dictionary<GameObject,bool> hidden=new Dictionary<GameObject,bool>();
         Scene memoryScene; bool completed, cleaning;
@@ -46,7 +74,7 @@ namespace TeamRoulette.Room3.DollMemory
         Camera film; Transform doll, rackPoint, yardDoor;
         PlayerHand hand; Transform handVisual; Vector3 handPosition; Quaternion handRotation; bool handVisible; Transform handParent;
         Vector3 dogStart, chaseTarget; float chaseElapsed, pauseUntil; int chaseIndex;
-        Coroutine stateRoutine; AudioSource sound; AudioClip beep;
+        Coroutine stateRoutine;
         CanvasGroup fade; readonly List<Material> memoryMaterials=new List<Material>();
         string oldObjective; CursorLockMode cursor; bool cursorVisible;
         Room3FlowController Flow => GameManager.Instance ? GameManager.Instance.Flow:null;
@@ -61,10 +89,10 @@ namespace TeamRoulette.Room3.DollMemory
         public void Begin()
         {
             if(State!=DollMemoryState.Inactive || !winter || !sceneDoll || !player || !drum || !cushion) return;
+            RoomAudio.For(this)?.Play("Doll Music");
             cursor=Cursor.lockState; cursorVisible=Cursor.visible;
             oldObjective=sharedUI && sharedUI.objectiveText?sharedUI.objectiveText.text:"";
             memoryScene=gameObject.scene; winter.Capture(); if(winterEntry)winter.dog.SetPositionAndRotation(winterEntry.position,winterEntry.rotation); dogStart=winter.dog.position;
-            foreach(var target in Components<Room3FlowTarget>(memoryScene)) Block(target);
             Block(interactor);
             Hide(interactor?interactor.handIcon:null); Hide(interactor && interactor.nameText?interactor.nameText.gameObject:null);
             hand=player.GetComponentInChildren<PlayerHand>(true); if(hand) { Block(hand); if(hand.handModel) { handVisual=hand.handModel.transform; handParent=handVisual.parent; handPosition=handVisual.localPosition; handRotation=handVisual.localRotation; handVisible=handVisual.gameObject.activeSelf; } }
@@ -80,9 +108,6 @@ namespace TeamRoulette.Room3.DollMemory
             doll.SetParent(null,true); winter.Carry(doll); Hide(sceneDoll);
             film=new GameObject("Doll Memory Camera").AddComponent<Camera>(); SceneManager.MoveGameObjectToScene(film.gameObject,memoryScene);
             film.fieldOfView=52; film.enabled=false; film.nearClipPlane=.04f;
-            sound=gameObject.AddComponent<AudioSource>(); sound.playOnAwake=false;
-            float[] samples=new float[4410]; for(int i=0;i<samples.Length;i++) samples[i]=Mathf.Sin(i*2*Mathf.PI*1300/44100f)*.15f*(1-i/(float)samples.Length);
-            beep=AudioClip.Create("Washer button tick",samples.Length,1,44100,false); beep.SetData(samples,0);
             if(entry) player.Teleport(entry.position,entry.rotation,Quaternion.identity);
             chaseTarget=chasePoints.Length>0?chasePoints[0].position:dogStart;
             restroomDoor = Components<RestroomDoor>(memoryScene)
@@ -203,6 +228,7 @@ namespace TeamRoulette.Room3.DollMemory
         {
             Block(player); winter.Play("Pick_up_idle"); yield return new WaitForSeconds(.6f);
             HoldDoll(); if(handVisual) handVisual.gameObject.SetActive(true);
+            RoomAudio.For(this)?.Play("Doll Bark");
             DialogueManager.Speak(sharedUI, Room3DialogueScript.DollTaken);
             if(blocked.TryGetValue(player,out var enabled))player.enabled=enabled;
             if(interactor) { interactor.enabled=true; if(interactor.nameText)interactor.nameText.gameObject.SetActive(true); }
@@ -240,7 +266,9 @@ namespace TeamRoulette.Room3.DollMemory
             Block(player); Block(interactor); foreach(var b in player.GetComponentsInChildren<PlayerMotionFeel>(true)) Block(b);
             film.transform.SetPositionAndRotation(playerCamera.transform.position,playerCamera.transform.rotation); film.enabled=true;playerCamera.enabled=false;HoldDoll();
             if(handVisual)handVisual.SetParent(film.transform,true);
-            yield return TouchButton(); sound.PlayOneShot(beep);
+            yield return TouchButton();
+            var roomAudio = RoomAudio.For(this);
+            roomAudio?.Play("Washer Button");
             doll.SetParent(null,true); doll.position=drum.position; doll.rotation=drum.rotation;
             if(washerRenderer && washerCutaway){washerMaterials=washerRenderer.sharedMaterials;washerRenderer.sharedMaterials=washerMaterials.Select(m=>washerCutaway).ToArray();}
             winter.dog.SetPositionAndRotation(washerSeat.position,washerSeat.rotation);yield return winter.Sit();
@@ -249,6 +277,7 @@ namespace TeamRoulette.Room3.DollMemory
             yield return CameraMove(seated,washerView.rotation,.7f); if(handVisual)handVisual.gameObject.SetActive(false);
             SpeakDuringScene(Room3DialogueScript.DollWashing);
             if (washerFoam) washerFoam.Play(true);
+            roomAudio?.Play("Washer Running");
             Vector3 origin=drum.position;
             for(float t=0;t<washingSeconds;t+=Time.deltaTime)
             {
@@ -258,6 +287,7 @@ namespace TeamRoulette.Room3.DollMemory
                 yield return null;
             }
             if (washerFoam) washerFoam.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            roomAudio?.Stop("Washer Running");
             yield return new WaitForSeconds(.5f); HoldDoll(); Next(DollMemoryState.MoveOutside);
         }
         IEnumerator TouchButton()
@@ -344,6 +374,7 @@ namespace TeamRoulette.Room3.DollMemory
         }
         IEnumerator AwaitYardClick()
         {
+            RoomAudio.For(this)?.Play("Doll Bark");
             Objective("겨울이에게 인형을 건네주자");
             yield return null;
             while (Input.GetMouseButton(0)) yield return null;
@@ -437,6 +468,7 @@ namespace TeamRoulette.Room3.DollMemory
         IEnumerator Rest()
         {
             HideHUD(); if(handVisual) handVisual.gameObject.SetActive(false);
+            RoomAudio.For(this)?.Play("Doll Panting");
             winter.Play("Lie_start"); yield return new WaitForSeconds(.9f); winter.Play("Lie_loop_1");
             doll.SetParent(winter.dog,true); doll.localPosition=winter.restOffset; doll.localRotation=Quaternion.Euler(0,90,0);
             yield return new WaitForSeconds(Mathf.Max(3,restSeconds)); Next(DollMemoryState.Complete);
@@ -493,6 +525,10 @@ namespace TeamRoulette.Room3.DollMemory
         void Cleanup()
         {
             if(cleaning) return; cleaning=true;
+            var roomAudio = RoomAudio.For(this);
+            roomAudio?.Stop("Doll Music");
+            roomAudio?.Stop("Washer Running");
+            roomAudio?.Stop("Doll Panting");
             if (washerFoam) washerFoam.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             foreach(var pair in blocked) if(pair.Key) pair.Key.enabled=pair.Value;
             foreach(var pair in hidden) if(pair.Key) pair.Key.SetActive(pair.Value);
@@ -502,7 +538,7 @@ namespace TeamRoulette.Room3.DollMemory
             if(handVisual) { handVisual.SetParent(handParent,false); handVisual.localPosition=handPosition; handVisual.localRotation=handRotation; handVisual.gameObject.SetActive(handVisible); }
             if(sharedUI && sharedUI.objectiveText) sharedUI.objectiveText.text=oldObjective;
             foreach(var material in memoryMaterials)if(material)Destroy(material);memoryMaterials.Clear();
-            if(doll) Destroy(doll.gameObject); if(film) Destroy(film.gameObject); if(beep) Destroy(beep); if(sound) Destroy(sound); if(fade) Destroy(fade.gameObject);
+            if(doll) Destroy(doll.gameObject); if(film) Destroy(film.gameObject); if(fade) Destroy(fade.gameObject);
             Cursor.lockState=cursor; Cursor.visible=cursorVisible;
         }
         void OnDisable() { if(Running) { StopAllCoroutines(); Cleanup(); } }

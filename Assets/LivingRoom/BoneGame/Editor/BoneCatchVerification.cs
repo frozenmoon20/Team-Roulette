@@ -96,9 +96,8 @@ namespace TeamRoulette.Room3.BoneEditor
             game.onCompleted.AddListener(() => completed++);
             Check(game.requiredSuccesses == 5 && game.flightSeconds < .6f && game.dogDistance < 3, "기본 5회, 가까운 거리의 빠른 투척");
             Check(game.OwnsInput && !game.player.canMove && !game.player.canLook, "기존 플레이어 이동과 시점 고정");
-            foreach (var target in UnityEngine.Object.FindObjectsByType<Room3FlowTarget>(FindObjectsSortMode.None).Where(t => t.ObjectId == BoneCatchGame.ToyId)) target.Interact();
-            yield return .1;
-            Check(!flow.IsTransitioning && flow.VisitingObject == BoneCatchGame.ToyId, "마당 뼈다귀 재클릭으로 조기 복귀 불가");
+            Check(!game.gameObject.scene.GetRootGameObjects().Any(root => root.GetComponentInChildren<Room3FlowTarget>(true)),
+                "마당에 뼈다귀 재클릭 복귀 타깃이 없음");
             var ring = game.GetComponentsInChildren<LineRenderer>(true).Single();
             Check(ring.positionCount >= 32 && ring.transform.position == game.TargetPosition, "월드 공간에 원형 캐치 목표 표시");
             Check(!game.TryThrow(new Vector3(float.NaN, 0, 0)) && game.AttemptCount == 0, "잘못된 좌표 입력 방어");

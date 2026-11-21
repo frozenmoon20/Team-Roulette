@@ -13,6 +13,7 @@ public sealed class RestroomDoor : MonoBehaviour, IInteractable, IHasName
     {
         if(Time.timeScale<=0)return;
         IsOpen=!IsOpen;
+        TeamRoulette.Room3.RoomAudio.For(this)?.Play("Bathroom Door");
         var wash = FindFirstObjectByType<WashGameController>();
         if (!wash || wash.CurrentStage == WashGameController.Stage.Idle)
             TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Wash,

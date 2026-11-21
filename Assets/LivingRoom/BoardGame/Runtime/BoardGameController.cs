@@ -6,16 +6,21 @@ using UnityEngine;
 [DefaultExecutionOrder(500)]
 public sealed class BoardGameController : MonoBehaviour
 {
+    [Header("게시판과 게시물")]
     public Transform surface;
     public Vector2 boardSize = new Vector2(4.8f,1.8f);
     public BoardTarget boardTarget, trashTarget;
     public BoardItem[] items;
+    [Header("조작과 카메라")]
     public Camera viewCamera;
     public PlayerInteractor interactor;
     public FirstPersonPlayer player;
     public Behaviour[] otherInputs;
+    [Header("안내 화면")]
     public GameObject overlay;
     public TMP_Text instruction, prompt, progress;
+    [Header("배치와 상호작용 범위")]
+    [Tooltip("게시물을 놓을 때 허용하는 겹침 비율입니다.")]
     [Range(.05f,.8f)] public float overlapLimit=.25f;
     public float reach=3.5f;
     public bool Completed { get; private set; }
@@ -168,6 +173,7 @@ public sealed class BoardGameController : MonoBehaviour
     {
         if(!Active || Held || !item || !items.Contains(item) || (item.state!=BoardItemState.Board && item.state!=BoardItemState.Floor)) return;
         Held=item; item.state=BoardItemState.Held; item.angle=0; item.hitbox.enabled=false; RefreshOverlap();
+        TeamRoulette.Room3.RoomAudio.For(this)?.Play("Photo Pickup");
     }
     public bool Place(Vector2 p)
     {

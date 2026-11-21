@@ -158,10 +158,8 @@ namespace TeamRoulette.Room3.TugEditor
             Check(game.roundCount == 2 && game.successesPerRound == 5, "기본 2라운드 × 5회");
             Check(game.OwnsInput && !game.player.canMove && !game.player.canLook, "미니게임 이동·시점 잠금");
             game.onCompleted.AddListener(() => events++);
-            var targets = UnityEngine.Object.FindObjectsByType<Room3FlowTarget>(FindObjectsSortMode.None).Where(t => t.ObjectId == TugGame.ToyId && t.gameObject.scene == game.gameObject.scene).ToArray();
-            foreach (var target in targets) target.Interact();
-            yield return .2;
-            Check(flow.VisitingObject == TugGame.ToyId && !flow.IsTransitioning, "마당 로프 재클릭으로 퇴장 불가");
+            Check(!game.gameObject.scene.GetRootGameObjects().Any(root => root.GetComponentInChildren<Room3FlowTarget>(true)),
+                "마당에 로프 재클릭 복귀 타깃이 없음");
             var joint = game.CurrentRope.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "DEF_Rope_01");
             var tip = game.CurrentRope.GetComponentsInChildren<Transform>(true).FirstOrDefault(t => t.name == "RopeTip");
             Check(joint && tip && Vector3.Distance(joint.position, game.MouthGrip.position) < .03f && Vector3.Distance(tip.position, game.HandGrip.position) < .03f, "3D 로프 양 끝이 입·손 Attachment 추적");

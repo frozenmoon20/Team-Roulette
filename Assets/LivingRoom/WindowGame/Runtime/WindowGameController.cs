@@ -2,30 +2,34 @@ using System.Collections;
 using UnityEngine;
 using TeamRoulette.Room3;
 using TeamRoulette.UI;
+using VolumetricLights;
 
 // Scene-local visuals; progression remains owned by the existing Room3 GameManager.
 [DefaultExecutionOrder(200)]
 public sealed class WindowGameController : MonoBehaviour
 {
+    [Header("플레이어와 상호작용")]
     public CurtainGameController curtainGame;
     public FirstPersonPlayer player;
     public GameUI sharedUI;
     public Transform slidingWindow;
     public WindowGameTarget interactionTarget;
     public Collider interactionCollider;
+    [Header("커튼 바람 연출")]
     public GameObject[] staticCurtains;
     public GameObject[] animatedCurtains;
-    [Header("Local window poses")]
+    [SerializeField] VolumetricLight windowVolumetricLight;
+    [Header("창문의 로컬 위치와 회전")]
     public Vector3 closedPosition;
     public Vector3 closedRotation;
     public Vector3 openPosition;
     public Vector3 openRotation;
+    [Tooltip("창문이 닫힌 위치에서 열린 위치까지 이동하는 시간입니다. 단위는 초입니다.")]
     [Min(.1f)] public float openDuration = 2f;
-    [Header("Ventilation audio (shared AudioManager)")]
-    public AudioSource windSource;
-    public AudioClip windClip;
-    [Range(0f, 1f)] public float windVolume = .18f;
-    [Min(.01f)] public float windFadeSeconds = 1.2f;
+    [HideInInspector] public AudioSource windSource;
+    [HideInInspector] public AudioClip windClip;
+    [HideInInspector] public float windVolume = .18f;
+    [HideInInspector] public float windFadeSeconds = 1.2f;
     public bool WindowOpened { get; private set; }
     public bool WindActive { get; private set; }
     public bool IsOpening { get; private set; }
@@ -65,6 +69,7 @@ public sealed class WindowGameController : MonoBehaviour
         slidingWindow.localPosition = closedPosition;
         slidingWindow.localRotation = Quaternion.Euler(closedRotation);
         interactionTarget.enabled = false;
+        SetDustWind(1f);
         initialized = true;
     }
     void Start() { Bind(); }
@@ -86,8 +91,13 @@ public sealed class WindowGameController : MonoBehaviour
     void Refresh()
     {
         if (!initialized || !owner) return;
-        if (owner.IsComplete(GameStage.Window)) RestoreCompleted();
-        else if (interactionTarget) interactionTarget.enabled = CanInteract;
+        if (owner.IsComplete(GameStage.Window))
+        {
+            RestoreCompleted();
+            return;
+        }
+        if (!WindowOpened && owner.IsComplete(GameStage.Curtain)) SetDustWind(1f);
+        if (interactionTarget) interactionTarget.enabled = CanInteract;
     }
     void LateUpdate()
     {
@@ -100,7 +110,6 @@ public sealed class WindowGameController : MonoBehaviour
     {
         if (!CanInteract || Time.timeScale <= 0 || (sharedUI && sharedUI.IsPaused)) return;
         if (PlayerHand.Instance && PlayerHand.Instance.Held) { PlayerInteractor.ShowHint("손을 비워주세요."); return; }
-        if (!AudioManager.Instance) { Debug.LogError("WindowGame: shared AudioManager is missing.", this); return; }
         if (!GameManager.TryBegin(GameStage.Window)) return;
         ObjectiveManager.Request(GameStage.Window, ObjectiveStep.Default);
         IsOpening = true;
@@ -146,6 +155,7 @@ public sealed class WindowGameController : MonoBehaviour
         slidingWindow.localPosition = openPosition;
         slidingWindow.localRotation = Quaternion.Euler(openRotation);
         WindowOpened = true;
+        SetDustWind(5f);
         ApplyWind();
         IsOpening = false;
         ReleaseInput();
@@ -171,9 +181,18 @@ public sealed class WindowGameController : MonoBehaviour
             }
         }
         WindActive = true;
-        if (AudioManager.Instance)
+        PlayWind();
+    }
+
+    void PlayWind()
+    {
+        var roomAudio = RoomAudio.For(this);
+        if (roomAudio)
+            roomAudio.Play("Window Wind", windSource);
+        else if (AudioManager.Instance)
             AudioManager.Instance.PlaySceneLoop(windSource, windClip, windVolume, windFadeSeconds);
     }
+
     public void RestoreCompleted()
     {
         if (!initialized || IsOpening) return;
@@ -181,17 +200,26 @@ public sealed class WindowGameController : MonoBehaviour
         foreach (var curtain in animatedCurtains)
             foreach (var animation in curtain.GetComponentsInChildren<Animation>(true)) restart |= !animation.IsPlaying("idle");
         WindowOpened = true;
+        SetDustWind(5f);
         slidingWindow.localPosition = openPosition;
         slidingWindow.localRotation = Quaternion.Euler(openRotation);
         if (restart) ApplyWind();
         else
         {
             foreach (var curtain in staticCurtains) curtain.SetActive(false);
-            if (AudioManager.Instance && !windSource.isPlaying)
-                AudioManager.Instance.PlaySceneLoop(windSource, windClip, windVolume, windFadeSeconds);
+            if (!windSource || !windSource.isPlaying)
+                PlayWind();
         }
         interactionTarget.enabled = false;
     }
+
+    void SetDustWind(float speed)
+    {
+        if (!windowVolumetricLight || Mathf.Approximately(windowVolumetricLight.dustWindSpeed, speed)) return;
+        windowVolumetricLight.dustWindSpeed = speed;
+        windowVolumetricLight.Refresh();
+    }
+
     void OnDisable()
     {
         if (owner) owner.Changed -= Refresh;
@@ -205,6 +233,10 @@ public sealed class WindowGameController : MonoBehaviour
             slidingWindow.localRotation = Quaternion.Euler(closedRotation);
             IsOpening = false;
         }
-        if (AudioManager.Instance) AudioManager.Instance.StopSceneLoop(windSource);
+        var roomAudio = RoomAudio.For(this);
+        if (roomAudio)
+            roomAudio.Stop("Window Wind");
+        else if (AudioManager.Instance)
+            AudioManager.Instance.StopSceneLoop(windSource);
     }
 }

@@ -20,7 +20,7 @@ namespace TeamRoulette.Room3.BonePlay
     public sealed class BoneCatchGame : MonoBehaviour
     {
         public const string ToyId = "뼈다귀 장난감";
-        [Header("기존 씬 연결")]
+        [Header("플레이어·겨울이·장난감 연결")]
         public FirstPersonPlayer player;
         public Camera playerCamera;
         public PlayerInteractor interactor;
@@ -30,21 +30,28 @@ namespace TeamRoulette.Room3.BonePlay
         public GameObject sceneBone;
         public GameUI sharedUI;
         public Transform playerStand;
-        [Header("짧고 빠른 캐치")]
-        public bool autoStart = true, previewWhenOpenedDirectly = true, returnToLivingRoom = true;
+        [Header("시작과 거실 복귀")]
+        public bool autoStart = true;
+        [Tooltip("마당 씬을 에디터에서 직접 재생할 때에도 자동으로 시작할지 설정합니다.")]
+        public bool previewWhenOpenedDirectly = true;
+        public bool returnToLivingRoom = true;
+        [Header("성공 조건과 투척")]
+        [Tooltip("거실로 돌아가기까지 필요한 성공 횟수입니다.")]
         [Min(1)] public int requiredSuccesses = 5;
         [Min(.1f)] public float flightSeconds = .36f;
+        [Tooltip("조준 원의 기준 반경입니다. 단위는 미터입니다.")]
         [Min(.08f)] public float targetRadius = .25f;
+        [Header("겨울이 이동 범위와 카메라")]
         [Range(1.5f, 3)] public float dogDistance = 2.1f;
         public float sideDistance = .65f, jumpHeight = .65f, forwardDistance = .55f;
         public float eyeHeight = 1.05f, celebrationSeconds = 1.6f;
+        [Header("손과 주둥이의 장난감 위치")]
         public Vector3 heldOffset = new Vector3(.26f, -.25f, .56f);
         public Vector3 mouthOffset = new Vector3(0, 0, .025f);
         public Vector3 heldEuler = new Vector3(0, 0, 75), carriedEuler = Vector3.zero;
-        [Header("삑삑 소리")]
-        public AudioSource squeakSource;
-        public AudioClip squeakClip;
-        [Range(0, 1)] public float squeakVolume = .7f;
+        [HideInInspector] public AudioSource squeakSource;
+        [HideInInspector] public AudioClip squeakClip;
+        [HideInInspector] public float squeakVolume = .7f;
         [Header("기존 Animator 상태")]
         public string idleState = "Arm_Spitz|Idle_1", biteState = "Arm_Spitz|Attack_Bite_IP";
         public string leftState = "Arm_Spitz|Trot_R_IP", rightState = "Arm_Spitz|Trot_L_IP";
@@ -91,7 +98,6 @@ namespace TeamRoulette.Room3.BonePlay
         InputActionMap actions;
         InputAction click;
         Coroutine cycle;
-        readonly List<Behaviour> blockedTargets = new List<Behaviour>();
         readonly Dictionary<Behaviour, bool> previewGames = new Dictionary<Behaviour, bool>();
 
         IEnumerable<T> InScene<T>() where T : Component => gameObject.scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<T>(true));
@@ -176,12 +182,8 @@ namespace TeamRoulette.Room3.BonePlay
                 hand.enabled = false; hand.handModel.SetActive(true);
             }
             player.enabled = false; player.canMove = player.canLook = player.canJump = player.canSprint = false;
-            owned = true; BlockReturnClicks();
-        }
-        void BlockReturnClicks()
-        {
-            foreach (var target in InScene<Room3FlowTarget>())
-                if (target && target.enabled && target.ObjectId == ToyId) { blockedTargets.Add(target); target.enabled = false; }
+            owned = true;
+            RoomAudio.For(this)?.Play("Thin Ice");
         }
         void CreateBone()
         {
@@ -268,7 +270,6 @@ namespace TeamRoulette.Room3.BonePlay
         void Update()
         {
             if (!owned) return;
-            BlockReturnClicks();
             if (IsPaused || Phase != CatchPhase.Aiming || Mouse.current == null || !click.WasPressedThisFrame()) return;
             Vector2 position = Mouse.current.position.ReadValue();
             if (!playerCamera.pixelRect.Contains(position)) return;
@@ -348,11 +349,14 @@ namespace TeamRoulette.Room3.BonePlay
             sharedUI.GetComponent<DialogueManager>()?.PlayLines(new[] { Room3DialogueScript.BoneSuccess }, 1f);
             Vector3 center = winter.position; center.y = home.y;
             Play(happyState, runState);
+            var roomAudio = RoomAudio.For(this);
+            roomAudio?.Play("Bone Panting");
             yield return Animate(Mathf.Max(.5f, celebrationSeconds), t => {
                 float wave = Mathf.Sin(t * Mathf.PI * 4);
                 winter.position = center + right * (wave * .16f) + Vector3.up * (Mathf.Abs(wave) * .045f);
                 winter.rotation = Quaternion.LookRotation(-forward) * Quaternion.Euler(0, wave * 18, 0);
             });
+            roomAudio?.Stop("Bone Panting");
             winter.SetPositionAndRotation(center, Quaternion.LookRotation(Vector3.ProjectOnPlane(player.transform.position - center, Vector3.up)));
             Play(idleState); yield return Wait(.5f);
             var dialogue = DialogueManager.Speak(sharedUI, Room3DialogueScript.BoneFinish);
@@ -406,7 +410,15 @@ namespace TeamRoulette.Room3.BonePlay
             while (elapsed < seconds) { if (!IsPaused) { elapsed += Time.deltaTime; step(Mathf.Clamp01(elapsed / seconds)); } yield return null; }
         }
         IEnumerator Wait(float seconds) { yield return Animate(seconds, _ => { }); }
-        void Squeak() { SqueakCount++; if (squeakSource && squeakClip) squeakSource.PlayOneShot(squeakClip, squeakVolume); }
+        void Squeak()
+        {
+            SqueakCount++;
+            var roomAudio = RoomAudio.For(this);
+            if (roomAudio)
+                roomAudio.Play("Bone Squeak", squeakSource);
+            else if (squeakSource && squeakClip)
+                squeakSource.PlayOneShot(squeakClip, squeakVolume);
+        }
         void GiveToPlayer() { held = true; carried = false; }
         Vector3 HeldPoint
         {
@@ -454,6 +466,9 @@ namespace TeamRoulette.Room3.BonePlay
         void Restore()
         {
             if (!owned) return; owned = false;
+            var roomAudio = RoomAudio.For(this);
+            roomAudio?.Stop("Bone Panting");
+            roomAudio?.Stop("Thin Ice");
             actions?.Disable(); actions?.Dispose(); actions = null;
             foreach (var item in new[] { bone, marker, help }) if (item) { item.SetActive(false); Destroy(item); }
             if (ringMaterial) Destroy(ringMaterial);
@@ -479,7 +494,6 @@ namespace TeamRoulette.Room3.BonePlay
                 if (interactor.handIcon) interactor.handIcon.SetActive(oldHandIcon);
             }
             if (hand && hand.handModel) { hand.handModel.transform.localPosition = oldHandPos; hand.handModel.transform.localRotation = oldHandRot; hand.handModel.SetActive(oldHandVisible); hand.enabled = oldHandEnabled; }
-            foreach (var b in blockedTargets) if (b) b.enabled = true; blockedTargets.Clear();
             Cursor.lockState = oldCursor; Cursor.visible = oldCursorVisible;
         }
         void OnValidate() { requiredSuccesses = Mathf.Max(1, requiredSuccesses); flightSeconds = Mathf.Max(.18f, flightSeconds); targetRadius = Mathf.Max(.08f, targetRadius); }

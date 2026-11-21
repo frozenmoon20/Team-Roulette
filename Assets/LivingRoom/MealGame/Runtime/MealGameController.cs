@@ -1,30 +1,34 @@
 using System.Collections;
+using TeamRoulette.Room3;
 using TMPro;
 using UnityEngine;
 
 [DefaultExecutionOrder(300)]
 public sealed class MealGameController : MonoBehaviour
 {
-    [Header("Existing objects")]
-    public GrabbableItem rawToast, jam, juice, cookedToast, plate, juiceCup;
+    [Header("음식과 식기")]
+    public GrabbableItem rawToast;
+    public GrabbableItem jam, juice, cookedToast, plate, juiceCup;
     public GameObject jamToast, emptyCup, bakingToast;
+    [Header("플레이어 연결")]
     public PlayerInteractor interactor;
     public FirstPersonPlayer player;
 
-    [Header("Placement markers (move these in the Scene view)")]
-    public Transform jamPoint, cookedPopPoint, toastOnPlatePoint, plateTablePoint, cupTablePoint, eatingView;
-    [Tooltip("Player feet position after the meal; remains here after controls resume.")]
+    [Header("배치 지점과 카메라")]
+    public Transform jamPoint;
+    public Transform cookedPopPoint, toastOnPlatePoint, plateTablePoint, cupTablePoint, eatingView;
+    [Tooltip("식사가 끝난 뒤 플레이어가 서 있을 지점입니다. 씬 뷰에서 위치를 조정할 수 있습니다.")]
     public Transform playerAfterMeal;
-    [Header("Timer and ending")]
+    [Header("타이머와 화면 전환")]
     public GameObject timerPanel;
     public TMP_Text timerText;
     public CanvasGroup blackScreen;
+    [Header("굽기와 식사 시간 (초)")]
     [Min(.1f)] public float toastSeconds = 10f;
     [Min(0)] public float blackoutSeconds = .5f;
     [Min(.1f)] public float eatingSeconds = 3f;
-    [Header("Replaceable sound effects")]
-    public AudioSource toasterAudio, actionAudio;
-    public AudioClip dingSound, pourSound, eatSound;
+    [HideInInspector] public AudioSource toasterAudio, actionAudio;
+    [HideInInspector] public AudioClip dingSound, pourSound, eatSound;
 
     public bool CookingStarted { get; private set; }
     public bool ToastReady { get; private set; }
@@ -161,10 +165,12 @@ public sealed class MealGameController : MonoBehaviour
         if (action == MealAction.Fridge)
         {
             if (held) { Hint("먼저 내려놓자."); return; }
-            if (!CookingStarted) PickUp(rawToast, false);
-            else if (!JamOnCounter) PickUp(jam, false);
-            else if (PlateOnTable && !JuicePoured) PickUp(juice, false);
+            bool picked = false;
+            if (!CookingStarted) picked = PickUp(rawToast, false);
+            else if (!JamOnCounter) picked = PickUp(jam, false);
+            else if (PlateOnTable && !JuicePoured) picked = PickUp(juice, false);
             else Hint(PlateOnTable ? "컵을 테이블에 놓자." : "토스트를 준비해서 테이블에 놓자.");
+            if (picked) RoomAudio.For(this)?.Play("Fridge Pickup");
         }
         else if (action == MealAction.Toaster)
         {
@@ -202,12 +208,17 @@ public sealed class MealGameController : MonoBehaviour
                 emptyBounds.min.y - fullBounds.min.y, emptyBounds.center.z - fullBounds.center.z);
             emptyCup.SetActive(false);
             JuicePoured = true;
-            Play(actionAudio, pourSound);
+            PlaySound("Pour Juice", actionAudio, pourSound);
         }
         else if (action == MealAction.JuiceCup && JuicePoured && !CupOnTable && !held) PickUp(juiceCup, true);
         else if (action == MealAction.Table)
         {
-            if (held == plate && JamApplied && !PlateOnTable) { PlaceHeld(plateTablePoint); PlateOnTable = true; }
+            if (held == plate && JamApplied && !PlateOnTable)
+            {
+                PlaceHeld(plateTablePoint);
+                PlateOnTable = true;
+                RoomAudio.For(this)?.Play("Plate Down");
+            }
             else if (held == juiceCup && JuicePoured && !CupOnTable) { PlaceHeld(cupTablePoint); CupOnTable = true; }
             else { Hint("완성한 접시와 주스컵을 여기에 놓자."); return; }
             if (PlateOnTable && CupOnTable) StartCoroutine(FinishMeal());
@@ -300,7 +311,7 @@ public sealed class MealGameController : MonoBehaviour
         cookedToast.transform.SetPositionAndRotation(cookedPopPoint.position, cookedPopPoint.rotation);
         ToastReady = true;
         RequestObjective();
-        Play(toasterAudio, dingSound);
+        PlaySound("Toaster Ding", toasterAudio, dingSound);
     }
 
     IEnumerator FinishMeal()
@@ -318,7 +329,10 @@ public sealed class MealGameController : MonoBehaviour
         yield return new WaitForSeconds(blackoutSeconds);
         interactor.playerCamera.transform.SetPositionAndRotation(eatingView.position, eatingView.rotation);
         blackScreen.alpha = 0;
-        if (actionAudio && eatSound)
+        var roomAudio = RoomAudio.For(this);
+        if (roomAudio)
+            roomAudio.Play("Eating", actionAudio);
+        else if (actionAudio && eatSound)
         {
             actionAudio.clip = eatSound;
             actionAudio.loop = true;
@@ -329,7 +343,7 @@ public sealed class MealGameController : MonoBehaviour
     }
     void CompleteMeal()
     {
-        if (actionAudio) { actionAudio.Stop(); actionAudio.loop = false; }
+        StopEatingSound();
         jamToast.SetActive(false);
         juiceCup.gameObject.SetActive(false);
         emptyCup.SetActive(true);
@@ -406,9 +420,30 @@ public sealed class MealGameController : MonoBehaviour
             interactor.playerCamera.transform.localRotation = cameraRotation;
         }
     }
-    static void Play(AudioSource source, AudioClip clip) { if (source && clip) source.PlayOneShot(clip); }
+    void PlaySound(string id, AudioSource source, AudioClip clip)
+    {
+        var roomAudio = RoomAudio.For(this);
+        if (roomAudio)
+            roomAudio.Play(id);
+        else if (source && clip)
+            source.PlayOneShot(clip);
+    }
+
+    void StopEatingSound()
+    {
+        var roomAudio = RoomAudio.For(this);
+        if (roomAudio)
+            roomAudio.Stop("Eating");
+        else if (actionAudio)
+        {
+            actionAudio.Stop();
+            actionAudio.loop = false;
+        }
+    }
+
     void OnDisable()
     {
+        StopEatingSound();
         if (IsHoldingMealItem) ReturnHeld();
         RestoreControls();
         if (blackScreen) { blackScreen.alpha = 0; blackScreen.blocksRaycasts = false; }
