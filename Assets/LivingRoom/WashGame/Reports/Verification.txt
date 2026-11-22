@@ -1,5 +1,9 @@
 WashGame Play Mode verification
-FAILED: System.Exception: WashGame exists in scene
-  at WashGameVerification.Check (System.Boolean condition, System.String label) [0x00033] in C:\Users\PC\capstone\Team Roulette\Assets\LivingRoom\WashGame\Editor\WashGameVerification.cs:86 
-  at WashGameVerification+<Verify>d__16.MoveNext () [0x00063] in C:\Users\PC\capstone\Team Roulette\Assets\LivingRoom\WashGame\Editor\WashGameVerification.cs:113 
-  at WashGameVerification.Pump () [0x00036] in C:\Users\PC\capstone\Team Roulette\Assets\LivingRoom\WashGame\Editor\WashGameVerification.cs:76 
+PASS: Water interaction reaches wet stage
+PASS: Loaded scene references imported rain clip
+PASS: Loaded scene references imported rain texture
+PASS: Screen shader exposes rain texture
+PASS: Wet stage sends rain sheet to screen
+PASS: Rain frames advance in play mode
+PASS: Rain is hidden while applying soap
+RAIN CHECKS PASSED

@@ -29,7 +29,10 @@ using UnityEngine.SceneManagement;
  var p=bounds.center+outward*((outer+inner)*.5f-Vector3.Dot(bounds.center,outward));positions.Add(p);
  }
  var top=steps[steps.Length-1].bounds;positions.Add(top.center-outward*(Extent(top,outward)+.3f));positions.Add(b.houseDoor.position);
- var routeRoot=b.transform.Find("Stair Return Route");if(!routeRoot){routeRoot=new GameObject("Stair Return Route").transform;routeRoot.SetParent(b.transform,false);}
+ var returnGroup=b.transform.Find("Return Home");
+ var routeRoot=returnGroup?returnGroup.Find("Stair Return Route"):null;
+ if(!routeRoot)routeRoot=b.transform.Find("Stair Return Route");
+ if(!routeRoot){routeRoot=new GameObject("Stair Return Route").transform;routeRoot.SetParent(returnGroup?returnGroup:b.transform,false);}
  var log=new StringBuilder();var route=new Transform[positions.Count];
  for(int i=0;i<positions.Count;i++){
  var p=positions[i];var ray=new Ray(new Vector3(p.x,1.6f,p.z),Vector3.down);float ground=float.NegativeInfinity;string source="";

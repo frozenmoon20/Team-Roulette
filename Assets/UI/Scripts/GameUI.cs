@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace TeamRoulette.UI
@@ -43,7 +44,9 @@ namespace TeamRoulette.UI
         public GameObject dialoguePanel;
         public TMP_Text dialogueText;
         public TMP_Text objectiveText;
+        [SerializeField] Texture2D hudTape;
         public GameObject settings;
+        [SerializeField] internal Texture2D settingsPaper, selectedTabMark;
         public GameObject[] settingsPages;
         public Button[] tabButtons;
         public Button backButton;
@@ -65,6 +68,7 @@ namespace TeamRoulette.UI
 
         SceneUIContent content;
         DialogueSequence currentDialogue;
+        bool dialoguePlaysWhileFrozen;
 
         int line, lineStartedFrame, releaseAfterFrame;
         float lineElapsed;
@@ -80,8 +84,13 @@ namespace TeamRoulette.UI
         bool capturedBob;
 
         Coroutine captureRoutine;
+        GameViewport viewport;
+        GameUISettingsControls settingsControls;
+        bool returningToTitle;
+        Canvas houseMapCanvas;
         RenderTexture backdrop;
         Material runtimeBlur;
+        Sprite tapeSprite;
 
         public event Action<DialogueSequence> DialogueFinished;
 
@@ -150,6 +159,11 @@ namespace TeamRoulette.UI
             if (blurMaterial)
                 runtimeBlur = new Material(blurMaterial);
 
+            ApplyHudTape();
+            viewport = new GameViewport(canvas);
+            settingsControls = new GameUISettingsControls(this, SelectAspect, RequestTitle);
+            settingsControls.MarkRatio(viewport.Choice);
+            BuildGuideList();
             initialized = true;
         }
 
@@ -215,10 +229,10 @@ namespace TeamRoulette.UI
 
         void Update()
         {
-            if (inputOwner && inputOwner != this)
+            if (returningToTitle || (inputOwner && inputOwner != this))
                 return;
 
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (!dialoguePlaysWhileFrozen && Input.GetKeyDown(KeyCode.Escape))
             {
                 if (
                     ObjectInspectionManager.Instance != null &&
@@ -228,7 +242,9 @@ namespace TeamRoulette.UI
                     return;
                 }
 
-                if (pause)
+                if (pause && settingsControls.IsConfirming)
+                    settingsControls.SetConfirmation(false);
+                else if (pause)
                     CloseSettings();
                 else
                     OpenSettings();
@@ -236,7 +252,7 @@ namespace TeamRoulette.UI
                 return;
             }
 
-            if (pause || Time.timeScale == 0)
+            if (pause || (Time.timeScale == 0 && !dialoguePlaysWhileFrozen))
                 return;
 
             if (
@@ -253,6 +269,10 @@ namespace TeamRoulette.UI
 
         void LateUpdate()
         {
+            if (!initialized || returningToTitle) return;
+
+            viewport.Update();
+            blurredBackground.uvRect = viewport.Area;
             if (
                 releasePending &&
                 Time.frameCount > releaseAfterFrame &&
@@ -303,6 +323,40 @@ namespace TeamRoulette.UI
                 hasIncomplete ? "" : content.completedMessage;
         }
 
+        void ApplyHudTape()
+        {
+            if (!hudTape) return;
+
+            // Trim the transparent space around the tape and preserve its torn ends when resizing.
+            var source = new Rect(hudTape.width * .025f, hudTape.height * .14f,
+                hudTape.width * .95f, hudTape.height * .64f);
+            float cap = source.width * .075f;
+            tapeSprite = Sprite.Create(hudTape, source, new Vector2(.5f, .5f),
+                source.width / 5f, 0, SpriteMeshType.FullRect, new Vector4(cap, 0, cap, 0));
+
+            SetTapeImage(dialoguePanel.GetComponent<Image>());
+            if (objectiveText)
+                SetTapeImage(objectiveText.transform.parent.GetComponent<Image>());
+        }
+
+        void SetTapeImage(Image image)
+        {
+            if (!image) return;
+            image.sprite = tapeSprite;
+            image.type = Image.Type.Sliced;
+            image.color = Color.white;
+            image.raycastTarget = false;
+        }
+
+        static void FitDialoguePanelToText(TMP_Text label, RectTransform panel, float maxTextWidth, float minHeight)
+        {
+            Vector2 size = label.GetPreferredValues(label.text, maxTextWidth, Mathf.Infinity);
+            panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal,
+                Mathf.Clamp(size.x + 40f, 80f, maxTextWidth + 40f));
+            panel.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical,
+                Mathf.Max(minHeight, size.y + 20f));
+        }
+
         public void ShowDialogue(DialogueSequence sequence)
         {
             if (
@@ -327,6 +381,13 @@ namespace TeamRoulette.UI
             RenderLine();
         }
 
+        public void ShowDialogueWhileFrozen(DialogueSequence sequence)
+        {
+            ShowDialogue(sequence);
+            if (sequence && currentDialogue == sequence)
+                dialoguePlaysWhileFrozen = true;
+        }
+
         void RenderLine()
         {
             dialogueText.text = currentDialogue.lines[line];
@@ -337,23 +398,7 @@ namespace TeamRoulette.UI
             lineElapsed = 0;
             lineStartedFrame = Time.frameCount;
 
-            Vector2 size = dialogueText.GetPreferredValues(
-                dialogueText.text,
-                880f,
-                Mathf.Infinity
-            );
-
-            var panel = (RectTransform)dialoguePanel.transform;
-
-            panel.SetSizeWithCurrentAnchors(
-                RectTransform.Axis.Horizontal,
-                Mathf.Clamp(size.x + 40f, 80f, 920f)
-            );
-
-            panel.SetSizeWithCurrentAnchors(
-                RectTransform.Axis.Vertical,
-                Mathf.Max(56f, size.y + 20f)
-            );
+            FitDialoguePanelToText(dialogueText, (RectTransform)dialoguePanel.transform, 880f, 56f);
         }
 
         public void AdvanceDialogue()
@@ -370,6 +415,7 @@ namespace TeamRoulette.UI
             var finished = currentDialogue;
 
             currentDialogue = null;
+            dialoguePlaysWhileFrozen = false;
             dialoguePanel.SetActive(false);
 
             content.onDialogueFinished.Invoke();
@@ -397,6 +443,7 @@ namespace TeamRoulette.UI
 
             RefreshGuides();
             SelectPage(0);
+            settingsControls.MarkRatio(viewport.Choice);
 
             captureRoutine = StartCoroutine(CaptureBackground());
         }
@@ -448,7 +495,7 @@ namespace TeamRoulette.UI
 
         public void CloseSettings()
         {
-            if (!pause)
+            if (!pause || returningToTitle)
                 return;
 
             if (captureRoutine != null)
@@ -458,6 +505,7 @@ namespace TeamRoulette.UI
             }
 
             canvas.enabled = true;
+            settingsControls.SetConfirmation(false);
             pause = false;
 
             Time.timeScale = savedTimeScale;
@@ -477,6 +525,102 @@ namespace TeamRoulette.UI
                 EventSystem.current.SetSelectedGameObject(null);
 
             PlayerPrefs.Save();
+        }
+
+        void SelectAspect(int choice)
+        {
+            if (returningToTitle || choice == viewport.Choice) return;
+
+            viewport.Select(choice);
+            viewport.Update();
+            settingsControls.MarkRatio(choice);
+            // The pause image was captured at the old ratio. Retake it instead of stretching it.
+            if (captureRoutine != null) StopCoroutine(captureRoutine);
+            blurredBackground.gameObject.SetActive(false);
+            ReleaseBackdrop();
+            captureRoutine = StartCoroutine(CaptureBackground());
+        }
+
+        void RequestTitle()
+        {
+            if (!pause || returningToTitle || SceneFader.IsBusy ||
+                !Application.CanStreamedLevelBeLoaded(SaveSystem.TitleScene))
+                return;
+
+            StartCoroutine(ReturnToTitle());
+        }
+
+        IEnumerator ReturnToTitle()
+        {
+            returningToTitle = true;
+            settingsControls.SetLoading(true);
+
+            var gameplayScenes = new List<Scene>();
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+            {
+                Scene scene = SceneManager.GetSceneAt(i);
+                if (scene.isLoaded) gameplayScenes.Add(scene);
+            }
+
+            // The title supplies its own EventSystem when the additive scene activates.
+            var previousEventSystems = new List<EventSystem>();
+            foreach (var events in FindObjectsByType<EventSystem>(FindObjectsSortMode.None))
+            {
+                if (!events.isActiveAndEnabled) continue;
+                previousEventSystems.Add(events);
+                Remember(events);
+            }
+
+            // SaveSystem interprets a Single load of Title from the living room as the story ending.
+            // An additive load followed by unloading gameplay preserves the checkpoint and ending flag.
+            var load = SceneManager.LoadSceneAsync(SaveSystem.TitleScene, LoadSceneMode.Additive);
+            if (load != null) yield return load;
+            Scene title = SceneManager.GetSceneByName(SaveSystem.TitleScene);
+            if (!title.isLoaded || !SceneManager.SetActiveScene(title))
+            {
+                foreach (var events in previousEventSystems)
+                {
+                    if (events && blocked.Remove(events, out bool enabled))
+                        events.enabled = enabled;
+                }
+
+                returningToTitle = false;
+                settingsControls.SetLoading(false);
+                yield break;
+            }
+
+            // Scene cleanup can raise objective changes. Suppress writes until all gameplay scenes have unloaded.
+            SaveSystem.Hold();
+            int unloadingScenes = 0;
+
+            // Discard the live living room stage before TitleMenu can start another run.
+            var roomManager = TeamRoulette.Room3.GameManager.Instance;
+            if (roomManager) Destroy(roomManager.gameObject);
+
+            // Stop gameplay roots before resuming time on the title screen.
+            var uiRoot = transform.root.gameObject;
+            foreach (Scene scene in gameplayScenes)
+            {
+                if (!scene.isLoaded || scene == title) continue;
+                foreach (var root in scene.GetRootGameObjects())
+                    if (root != uiRoot && root.activeSelf) root.SetActive(false);
+                var unload = SceneManager.UnloadSceneAsync(scene);
+                if (unload == null) continue;
+                unloadingScenes++;
+                unload.completed += _ =>
+                {
+                    if (--unloadingScenes == 0) SaveSystem.Release(false);
+                };
+            }
+
+            if (unloadingScenes == 0) SaveSystem.Release(false);
+
+            pause = false;
+            viewport.Restore();
+            canvas.enabled = false;
+            Time.timeScale = 1f;
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
 
         void Remember(Behaviour component)
@@ -514,6 +658,14 @@ namespace TeamRoulette.UI
 
             Remember(player);
             Remember(motion);
+            var map = FindFirstObjectByType<HouseMap>();
+            if (map)
+            {
+                Remember(map);
+                var mapVisuals = map.transform.Find("HouseMapCanvas");
+                houseMapCanvas = mapVisuals ? mapVisuals.GetComponent<Canvas>() : null;
+                Remember(houseMapCanvas);
+            }
 
             foreach (var component in extraInputToBlock)
             {
@@ -561,7 +713,8 @@ namespace TeamRoulette.UI
 
             foreach (var pair in blocked)
             {
-                if (pair.Key)
+                if (pair.Key && !(returningToTitle &&
+                    (pair.Key is EventSystem || pair.Key is HouseMap || pair.Key == houseMapCanvas)))
                     pair.Key.enabled = pair.Value;
             }
 
@@ -574,8 +727,11 @@ namespace TeamRoulette.UI
             blocked.Clear();
             hidden.Clear();
 
-            Cursor.lockState = savedCursor;
-            Cursor.visible = savedCursorVisible;
+            if (!returningToTitle)
+            {
+                Cursor.lockState = savedCursor;
+                Cursor.visible = savedCursorVisible;
+            }
 
             capturedInput = false;
 
@@ -589,16 +745,98 @@ namespace TeamRoulette.UI
             {
                 settingsPages[i].SetActive(i == page);
 
-                tabButtons[i].image.color =
-                    i == page
-                        ? new Color(.30f, .33f, .36f)
-                        : new Color(.16f, .18f, .20f);
+                settingsControls.MarkTab(i, i == page);
             }
         }
 
         void OptionChanged(OptionType type, bool unlocked)
         {
             RefreshGuides();
+        }
+
+        void BuildGuideList()
+        {
+            if (guideKeys.Length == 0 || guideActions.Length == 0) return;
+            var template = (RectTransform)guideKeys[0].transform.parent;
+            var guideArea = GameViewport.MakeRect("Key Guide Scroll", template.parent);
+            guideArea.anchorMin = guideArea.anchorMax = template.anchorMin;
+            guideArea.pivot = new Vector2(.5f, 1f);
+            guideArea.anchoredPosition = template.anchoredPosition + Vector2.up * (template.sizeDelta.y / 2f);
+            guideArea.sizeDelta = new Vector2(template.sizeDelta.x, 310);
+            guideArea.gameObject.AddComponent<Image>().color = Color.clear;
+            guideArea.gameObject.AddComponent<RectMask2D>();
+
+            var list = GameViewport.MakeRect("Rows", guideArea);
+            list.anchorMin = new Vector2(0, 1);
+            list.anchorMax = Vector2.one;
+            list.pivot = new Vector2(.5f, 1);
+            list.anchoredPosition = Vector2.zero;
+
+            var scroll = guideArea.gameObject.AddComponent<ScrollRect>();
+            scroll.viewport = guideArea;
+            scroll.content = list;
+            scroll.horizontal = false;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 40f;
+            scroll.verticalScrollbar = BuildGuideScrollbar(guideArea);
+            scroll.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHide;
+
+            var actions = new List<TMP_Text>(guideActions);
+            var keys = new List<TMP_Text>(guideKeys);
+            float rowHeight = template.sizeDelta.y;
+            float step = rowHeight + 2f;
+            for (int i = 0; i < Mathf.Max(keyGuides.Count, guideKeys.Length); i++)
+            {
+                RectTransform row;
+                if (i < guideKeys.Length)
+                {
+                    row = (RectTransform)guideKeys[i].transform.parent;
+                    row.SetParent(list, false);
+                }
+                else
+                {
+                    row = Instantiate(template, list, false);
+                    row.name = "Guide " + i;
+                    actions.Add(row.Find(guideActions[0].name).GetComponent<TMP_Text>());
+                    keys.Add(row.Find(guideKeys[0].name).GetComponent<TMP_Text>());
+                }
+                row.anchorMin = row.anchorMax = new Vector2(.5f, 1f);
+                row.anchoredPosition = new Vector2(0, -rowHeight * .5f - i * step);
+            }
+
+            list.sizeDelta = new Vector2(0, keyGuides.Count * step);
+            guideActions = actions.ToArray();
+            guideKeys = keys.ToArray();
+            settingsControls.StyleGuides(scroll.verticalScrollbar, guideActions, guideKeys);
+        }
+
+        static Scrollbar BuildGuideScrollbar(RectTransform guideArea)
+        {
+            // A sibling stays outside the mask that clips the guide rows.
+            var track = GameViewport.MakeRect("Key Guide Scrollbar", guideArea.parent);
+            track.anchorMin = track.anchorMax = guideArea.anchorMax;
+            track.pivot = new Vector2(0f, 1f);
+            track.anchoredPosition = guideArea.anchoredPosition
+                + Vector2.right * (guideArea.sizeDelta.x * .5f + 8f);
+            track.sizeDelta = new Vector2(14f, guideArea.sizeDelta.y);
+            track.gameObject.AddComponent<Image>().color = new Color(.24f, .27f, .30f);
+
+            var slidingArea = GameViewport.MakeRect("Sliding Area", track);
+            GameViewport.Stretch(slidingArea, new Rect(0, 0, 1, 1));
+            slidingArea.offsetMin = new Vector2(2f, 2f);
+            slidingArea.offsetMax = new Vector2(-2f, -2f);
+
+            var handle = GameViewport.MakeRect("Handle", slidingArea);
+            GameViewport.Stretch(handle, new Rect(0, 0, 1, 1));
+            var handleImage = handle.gameObject.AddComponent<Image>();
+            handleImage.color = new Color(.67f, .71f, .75f);
+
+            var scrollbar = track.gameObject.AddComponent<Scrollbar>();
+            scrollbar.direction = Scrollbar.Direction.BottomToTop;
+            scrollbar.handleRect = handle;
+            scrollbar.targetGraphic = handleImage;
+            scrollbar.SetValueWithoutNotify(1f);
+            return scrollbar;
         }
 
         public void RefreshGuides()
@@ -626,8 +864,8 @@ namespace TeamRoulette.UI
 
                 guideKeys[i].color =
                     open
-                        ? Color.white
-                        : new Color(.55f, .57f, .60f);
+                        ? settingsControls.GuideInk
+                        : settingsControls.GuideLockedInk;
             }
         }
 
@@ -750,6 +988,9 @@ namespace TeamRoulette.UI
             content.Changed -= RefreshObjectives;
             OptionState.OnOptionChanged -= OptionChanged;
 
+            viewport.Restore();
+            settingsControls.SetConfirmation(false);
+
             if (pause)
             {
                 Time.timeScale = savedTimeScale;
@@ -790,6 +1031,8 @@ namespace TeamRoulette.UI
             if (content)
                 content.Changed -= RefreshObjectives;
 
+            viewport?.Destroy();
+            if (tapeSprite) Destroy(tapeSprite);
             if (runtimeBlur)
                 Destroy(runtimeBlur);
         }

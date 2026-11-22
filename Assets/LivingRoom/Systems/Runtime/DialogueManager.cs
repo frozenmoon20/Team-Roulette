@@ -24,11 +24,11 @@ namespace TeamRoulette.Room3
         // 1. CurtainGame — 커튼 시작 / 완료
         public static readonly string[] CurtainStart =
         {
-            "겨울이...?", "겨울이야...?", "겨울아...", "겨울아!"
+
         };
         public static readonly string[] CurtainFinish =
         {
-            "겨울아...", "밝아...", "날씨 좋다..."
+            "밝아...", "날씨 좋다..."
         };
 
         // 2. 창문 열기 — 시작 / 완료
@@ -58,27 +58,27 @@ namespace TeamRoulette.Room3
         };
         public static readonly string[] MealFinish =
         {
-            "이렇게 앉아서 먹는 것도 오랜만이네.", "장난감들이 어지러져있네... 장난감들도 이젠 정리해야지."
+            "이렇게 앉아서 먹는 것도 오랜만이네.", "장난감들이 어지러져있네... 이젠 정리해야지."
         };
 
         // 6. BoardGame — 게시판 시작 / 완료
         public static readonly string[] BoardStart =
         {
-            "겨울이 사진들이랑 친구와의 추억들...", "하나씩 다시 걸어 두자."
+            "겨울이 사진들이랑 친구와의 추억들...", "하나씩 정리해보자."
         };
         public static readonly string[] BoardFinish =
         {
             "함께 보낸 시간이 이렇게 많았구나.", "...이제 친구를 보러가자."
         };
 
-        // 8. TV / 어질리티 — 시작 / 완료
+        // 8. TV — 시작 / 완료
         public static readonly string[] TVStart =
         {
-            "너랑 어질리티하던 영상. 친구가 찍어줬었지.", 
+            "겨울이와 어질리티하던 영상. 친구가 찍어줬었지.", 
         };
         public static readonly string[] TVFinish =
         {
-            "저렇게 같이 신나게 뛰었었지...", "맞아, 그 때 메달도 받았었어.", "사진들이 떨어져있네..."
+            "저렇게 같이 신나게 뛰었었지...", "맞아, 그 때 메달도 받았었어.", "사진들이 떨어져있네."
         };
 
         // 9. 현관 — 시작 / 완료
@@ -103,15 +103,14 @@ namespace TeamRoulette.Room3
         public const string TugMiss = "겨울아 반대로 당기면...!";
         public const string TugRoundBreak = "겨울이 재밌었어?";
         public const string TugLookAtSky = "아, 날씨 좋다!";
-        public const string TugPlayAgain = "또 놀자고?";
-        public const string TugFinish = "겨울이는 힘도 셌지.";
+        public const string TugFinish = "겨울이 보고싶다.";
 
         // DollGame 대사
-        public const string DollStart = "겨울아 인형 빨아야지...!";
+        public const string DollStart = "겨울아, 인형 세탁해야 돼...!";
         public const string DollTaken = "금방 빨아줄게.";
         public const string DollWashing = "금방 될거야.";
         public const string DollReturned = "자, 여기 겨울이 오리!";
-        public const string DollFinish = "겨울이가 맨날 물고 다녔었지...";
+        public const string DollFinish = "겨울이가 엄청 좋아했는데.";
 
         // 아래는 연결 코드입니다. 대사 수정은 위 배열에서만 하면 됩니다.
         public static string[] GetStart(GameStage stage) => stage switch
@@ -165,7 +164,11 @@ namespace TeamRoulette.Room3
             // Curtain lines continue one at a time when Winter reaches each guide stop.
             PlayLines(stage == GameStage.Curtain ? lines.Take(1).ToArray() : lines);
         }
-        void OnComplete(GameStage stage) { PlayLines(Room3DialogueScript.GetFinish(stage)); }
+        void OnComplete(GameStage stage)
+        {
+            // PorchGame shows this line on the credits screen after the scroll.
+            if (stage != GameStage.Entrance) PlayLines(Room3DialogueScript.GetFinish(stage));
+        }
         public bool HasDialogue => pending.Count > 0 || (ui && ui.IsDialogueOpen);
 
         public static DialogueManager Speak(GameUI ui, params string[] lines)

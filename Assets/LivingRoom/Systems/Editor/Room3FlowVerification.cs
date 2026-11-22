@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TeamRoulette.Room3;
+using TeamRoulette.Room3.BonePlay;
+using TeamRoulette.Room3.DollMemory;
+using TeamRoulette.Room3.TugPlay;
 using TeamRoulette.UI;
 using TMPro;
 using UnityEditor;
@@ -224,22 +227,22 @@ public static class Room3FlowVerification
         if (feel) feel.enabled = false;
         var curtain = Find<CurtainGameController>(living);
         var board = Find<BoardGameController>(living);
-        var window = Target("WindowClose", living);
-        var windowOpen = living.GetRootGameObjects().SelectMany(root => root.GetComponentsInChildren<Transform>(true))
-            .First(item => item.name == "WindowOpen").gameObject;
-        var door = Target("Door", living);
-        window.Interact(); Target("TV", living).Interact(); Target("로프", living).Interact(); door.Interact();
+        var window = Find<WindowGameController>(living);
+        var tv = Find<TVGameController>(living);
+        var porch = Find<PorchGameController>(living);
+        var door = Find<PorchGameTarget>(living);
+        window.interactionTarget.Interact(); Find<TVGameTarget>(living).Interact(); Target(TugGame.ToyId, living).Interact(); door.Interact();
         yield return .15;
         Check(manager.CurrentStage == GameStage.Curtain && !flow.IsTransitioning && !flow.EndingVisible
-            && window.gameObject.activeSelf && !windowOpen.activeSelf, "Later stages cannot start before curtain");
+            && !window.IsOpening && !window.WindowOpened, "Later stages cannot start before curtain");
         curtain.RestoreCompleted();
         Check(GameManager.ReportComplete(GameStage.Curtain), "Curtain completion unlocks window");
-        CheckRay(window, living);
-        window.Interact();
-        Check(manager.CurrentStage == GameStage.Wash && !window.gameObject.activeSelf && windowOpen.activeSelf,
+        window.interactionTarget.Interact();
+        yield return WaitFor(() => manager.CurrentStage == GameStage.Wash, "Window completion unlocks wash");
+        Check(window.WindowOpened && !window.interactionTarget.enabled,
             "Window click permanently opens window and advances to wash");
-        window.Interact();
-        Check(manager.CurrentStage == GameStage.Wash && windowOpen.activeSelf, "Completed window cannot toggle closed");
+        window.interactionTarget.Interact();
+        Check(manager.CurrentStage == GameStage.Wash && window.WindowOpened, "Completed window cannot toggle closed");
         Find<WashGameController>(living).RestoreCompleted();
         Check(GameManager.ReportComplete(GameStage.Wash), "Wash completion unlocks meal");
         Find<MealGameController>(living).RestoreCompleted();
@@ -256,7 +259,7 @@ public static class Room3FlowVerification
         player.Teleport(player.transform.position, Quaternion.Euler(0, 37, 0), Quaternion.Euler(12, 0, 0));
         Vector3 savedPosition = player.transform.position;
         Quaternion savedRotation = player.transform.rotation, savedLook = player.cameraRoot.localRotation;
-        string[] toys = { "로프", "인형", "뼈다귀 장난감" };
+        string[] toys = { TugGame.ToyId, DollMemorySequence.ToyId, BoneCatchGame.ToyId };
         for (int i = 0; i < toys.Length; i++)
         {
             string id = toys[i];
@@ -272,18 +275,15 @@ public static class Room3FlowVerification
             CheckOptions(options);
             CheckSinglePlayerAndUI(guest);
             CheckObjective(guest, GameStage.Toys);
-            string other = "TV";
-            Target(other, guest).Interact();
-            yield return .1;
+            Check(!Find<Room3FlowTarget>(guest), "The yard has no toy return-click targets");
+            origin.Interact();
             Check(!flow.IsTransitioning && flow.VisitingObject == id && SceneManager.GetActiveScene() == guest,
-                "Different guest object cannot complete " + id);
-            if (id == TeamRoulette.Room3.DollMemory.DollMemorySequence.ToyId)
-                Find<TeamRoulette.Room3.DollMemory.DollMemorySequence>(guest).DebugComplete();
-            else
+                "The original toy cannot complete an active visit: " + id);
+            switch (id)
             {
-                var returning = Target(id, guest);
-                CheckRay(returning, guest);
-                returning.Interact();
+                case TugGame.ToyId: Find<TugGame>(guest).DebugComplete(); break;
+                case BoneCatchGame.ToyId: Find<BoneCatchGame>(guest).DebugComplete(); break;
+                case DollMemorySequence.ToyId: Find<DollMemorySequence>(guest).DebugComplete(); break;
             }
             yield return WaitFor(() => !flow.IsTransitioning && SceneManager.GetActiveScene() == living, "Return from " + id);
             Check(flow.CompletedToyCount == i + 1 && flow.IsToyComplete(id), "One-time toy completion recorded: " + id);
@@ -294,7 +294,7 @@ public static class Room3FlowVerification
                 && Quaternion.Angle(player.transform.rotation, savedRotation) < .01f
                 && Quaternion.Angle(player.cameraRoot.localRotation, savedLook) < .01f, "Player position, heading and camera pitch restored exactly");
             Check(curtain.Completed && curtain.curtainL.position == leftCurtain && curtain.curtainR.position == rightCurtain
-                && !window.gameObject.activeSelf && windowOpen.activeSelf, "Opened curtains and window stay unchanged");
+                && window.WindowOpened, "Opened curtains and window stay unchanged");
             Check(savedItem.transform.position == itemPosition && savedItem.transform.rotation == itemRotation
                 && savedItem.angle == 23 && !sentinel.activeSelf, "Board arrangement and inactive scene object remain unchanged");
             CheckOptions(options);
@@ -307,7 +307,6 @@ public static class Room3FlowVerification
                 "All three distinct toys are required before TV");
         }
         Check(manager.CurrentStage == GameStage.TV, "Toy completion unlocks TV");
-        var tv = Find<TVGameController>(living);
         tv.DebugComplete();
         yield return WaitFor(() => manager.CurrentStage == GameStage.Board, "TV completion unlocks board");
         Check(flow.CompletedToyCount == 3, "TV completion preserves toy progress");
@@ -315,7 +314,7 @@ public static class Room3FlowVerification
         Check(Vector3.Distance(player.transform.position, savedPosition) < .001f
             && Quaternion.Angle(player.transform.rotation, savedRotation) < .01f
             && Quaternion.Angle(player.cameraRoot.localRotation, savedLook) < .01f, "TV preserves original player pose");
-        Check(savedItem.transform.position == itemPosition && !sentinel.activeSelf && windowOpen.activeSelf,
+        Check(savedItem.transform.position == itemPosition && !sentinel.activeSelf && window.WindowOpened,
             "TV completion also preserves living scene state");
         CheckObjective(living, GameStage.Entrance);
         player.enabled = true;
@@ -325,7 +324,7 @@ public static class Room3FlowVerification
         Check(!player.isActiveAndEnabled && !Find<PlayerInteractor>(living).isActiveAndEnabled,
             "Ending stops player movement, camera input and interactions");
         Check(Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
-            .Any(text => text.text == "게임 종료"), "Ending displays Korean game-over label");
+            .Any(text => text.text == porch.creditsText), "Ending displays the configured credits");
         Check(Time.timeScale == 0 && !Find<GameUI>(living).isActiveAndEnabled,
             "Ending freezes time and disables settings input");
         door.Interact();

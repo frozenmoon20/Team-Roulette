@@ -1,0 +1,1 @@
+PASS: realtime Point Light under Lamp_wall_desk (1); warm color; intensity=1.5; range=3; soft shadows; position=(7.52, 3.08, -3.48); scene saved.

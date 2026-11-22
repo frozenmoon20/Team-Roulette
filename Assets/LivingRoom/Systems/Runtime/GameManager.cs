@@ -47,6 +47,8 @@ namespace TeamRoulette.Room3
         }
 
         public static GameManager Instance { get; private set; }
+        [Header("목표 시작·완료 이벤트")]
+        [Tooltip("목표별 이벤트 연결입니다. 목표 순서는 GameManager.Progression, 목표 문구는 ObjectiveManager에서 편집합니다.")]
         public StageContent[] stages = Defaults();
         public UnityEvent onRoomCompleted = new UnityEvent();
         public event Action Changed;

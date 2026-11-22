@@ -6,16 +6,21 @@ using UnityEngine;
 [DefaultExecutionOrder(500)]
 public sealed class BoardGameController : MonoBehaviour
 {
+    [Header("게시판과 게시물")]
     public Transform surface;
     public Vector2 boardSize = new Vector2(4.8f,1.8f);
     public BoardTarget boardTarget, trashTarget;
     public BoardItem[] items;
+    [Header("조작과 카메라")]
     public Camera viewCamera;
     public PlayerInteractor interactor;
     public FirstPersonPlayer player;
     public Behaviour[] otherInputs;
+    [Header("안내 화면")]
     public GameObject overlay;
     public TMP_Text instruction, prompt, progress;
+    [Header("배치와 상호작용 범위")]
+    [Tooltip("게시물을 놓을 때 허용하는 겹침 비율입니다.")]
     [Range(.05f,.8f)] public float overlapLimit=.25f;
     public float reach=3.5f;
     public bool Completed { get; private set; }
@@ -35,7 +40,7 @@ public sealed class BoardGameController : MonoBehaviour
     Vector2 candidate;
     bool canPlace;
     Vector3 targetPoint;
-    public const string ControlHelp="Q·E: 회전   F: 바닥에 놓기   G: 완료 확인";
+    public const string ControlHelp="게시물은 떼거나, 붙이거나, 쓰레기통에 버리거나, 다시 꺼낼 수 있다. 원하는대로 꾸며보자.\nQ: 내려놓기   E: 정리 끝";
 
     void Awake() { ConfigureOverlayLayout(); }
     public void ConfigureOverlayLayout()
@@ -114,8 +119,7 @@ public sealed class BoardGameController : MonoBehaviour
         Aim();
         if(Held)
         {
-            float turn=(Input.GetKey(KeyCode.E)?-1:0)+(Input.GetKey(KeyCode.Q)?1:0);
-            Held.angle=Mathf.Repeat(Held.angle+turn*90*Time.deltaTime,360);
+            Held.angle=0;
             Aim(); UpdateHeld();
         }
         if(wasLocked && Time.frameCount>beginFrame)
@@ -127,8 +131,8 @@ public sealed class BoardGameController : MonoBehaviour
                 else if(Held && canPlace) Place(candidate);
                 else if(!Held && hovered) Pick(hovered);
             }
-            if(Input.GetKeyDown(KeyCode.F) && Held) Drop();
-            TickFinish(Input.GetKey(KeyCode.G),Time.deltaTime);
+            if(Input.GetKeyDown(KeyCode.Q) && Held) Drop();
+            TickFinish(Input.GetKey(KeyCode.E),Time.deltaTime);
         }
         wasLocked=locked;
         RefreshOverlay();
@@ -168,13 +172,14 @@ public sealed class BoardGameController : MonoBehaviour
     public void Pick(BoardItem item)
     {
         if(!Active || Held || !item || !items.Contains(item) || (item.state!=BoardItemState.Board && item.state!=BoardItemState.Floor)) return;
-        Held=item; item.state=BoardItemState.Held; item.hitbox.enabled=false; RefreshOverlap();
+        Held=item; item.state=BoardItemState.Held; item.angle=0; item.hitbox.enabled=false; RefreshOverlap();
+        TeamRoulette.Room3.RoomAudio.For(this)?.Play("Photo Pickup");
     }
     public bool Place(Vector2 p)
     {
-        if(!Active || !Held || !BoardGeometry.Fits(p,Held.size,Held.angle,boardSize)) return false;
+        if(!Active || !Held || !BoardGeometry.Fits(p,Held.size,0,boardSize)) return false;
         SyncBoardCoordinates();
-        var item=Held; Held=null; item.state=BoardItemState.Board; item.boardPosition=p; item.order=++nextOrder;
+        var item=Held; Held=null; item.state=BoardItemState.Board; item.angle=0; item.boardPosition=p; item.order=++nextOrder;
         item.hitbox.enabled=true; ArrangeBoard(); RefreshOverlap(); return true;
     }
     public void Discard()
@@ -185,7 +190,7 @@ public sealed class BoardGameController : MonoBehaviour
     public void Retrieve()
     {
         if(!Active || Held) return;
-        if(trash.Count==0) { message="버린 물건이 없다"; return; }
+        if(trash.Count==0) return;
         var item=trash.Pop(); item.gameObject.SetActive(true); item.state=BoardItemState.Floor; Pick(item);
     }
     public bool Drop()
@@ -216,8 +221,7 @@ public sealed class BoardGameController : MonoBehaviour
         }
         if(Active && !Completed)
         {
-            var goal = bad ? TeamRoulette.Room3.ObjectiveStep.ResolveOverlap :
-                Held || items.Any(i=>i.state==BoardItemState.Floor || i.state==BoardItemState.Held) ?
+            var goal = bad || Held || items.Any(i=>i.state==BoardItemState.Floor || i.state==BoardItemState.Held) ?
                 TeamRoulette.Room3.ObjectiveStep.ArrangeBoard : TeamRoulette.Room3.ObjectiveStep.FinishBoard;
             TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Board, goal);
         }

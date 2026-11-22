@@ -32,6 +32,26 @@ public static class WashGameVerification
         {
             if(action=="setup") { WashGameSetup.Build(); Run(); }
             else if(action=="verify") Run();
+            else if(action=="verify-rain" && !EditorApplication.isPlayingOrWillChangePlaymode)
+                        {
+                var game = Object.FindFirstObjectByType<WashGameController>(FindObjectsInactive.Include);
+                var texture = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/LivingRoom/WashGame/rain-on-window-sheet.png");
+                if (!game || !texture) throw new InvalidOperationException("Imported rain texture or WashGame missing");
+                var serialized = new SerializedObject(game);
+                var property = serialized.FindProperty("rainSpriteSheet");
+                if (property.objectReferenceValue != texture)
+                {
+                    property.objectReferenceValue = texture;
+                    serialized.ApplyModifiedProperties();
+                    PrefabUtility.RecordPrefabInstancePropertyModifications(game);
+                    UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(game.gameObject.scene);
+                    if (!UnityEditor.SceneManagement.EditorSceneManager.SaveScene(game.gameObject.scene))
+                        throw new IOException("Could not save rain binding");
+                }
+                ShowGameView();
+                SessionState.SetString("WashGame.Pending", "verify-rain");
+                EditorApplication.EnterPlaymode();
+            }
             else if(action=="preview") Preview();
             else if(action=="connect") {WashGameSetup.AdoptExistingObjects();Run();}
             else if(action=="stop") EditorApplication.ExitPlaymode();
@@ -58,7 +78,7 @@ public static class WashGameVerification
         string pending=SessionState.GetString("WashGame.Pending","");SessionState.SetString("WashGame.Pending","");
         if(pending=="") return;
         report="WashGame Play Mode verification\n";
-        checks=pending=="verify"?Verify():PreviewRoutine();
+        checks=pending=="verify-rain" ? VerifyRain() : pending=="verify" ? Verify() : PreviewRoutine();
         next=EditorApplication.timeSinceStartup+.8;
         EditorApplication.update+=Pump;
     }
@@ -106,6 +126,37 @@ public static class WashGameVerification
         g.Click(WashAction.Water);
         yield return .5;
     }
+    static IEnumerator VerifyRain()
+    {
+        Application.runInBackground = true;
+        var game = Object.FindFirstObjectByType<WashGameController>();
+        var manager = TeamRoulette.Room3.GameManager.Instance;
+        if (manager && manager.CurrentStage == TeamRoulette.Room3.GameStage.Curtain)
+            TeamRoulette.Room3.GameManager.ReportComplete(TeamRoulette.Room3.GameStage.Curtain);
+        if (manager && manager.CurrentStage == TeamRoulette.Room3.GameStage.Window)
+            TeamRoulette.Room3.GameManager.ReportComplete(TeamRoulette.Room3.GameStage.Window);
+        game.Click(WashAction.Water);
+        game.Click(WashAction.Water);
+        Check(game.CurrentStage == WashGameController.Stage.Wet, "Water interaction reaches wet stage");
+        var material = game.screen.material;
+        var serialized = new SerializedObject(game);
+        var clip = AssetDatabase.LoadAssetAtPath<AnimationClip>("Assets/LivingRoom/WashGame/RainOnWindow.anim");
+        var sheet = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/LivingRoom/WashGame/rain-on-window-sheet.png");
+        Check(serialized.FindProperty("rainOnWindow").objectReferenceValue == clip && clip, "Loaded scene references imported rain clip");
+        Check(serialized.FindProperty("rainSpriteSheet").objectReferenceValue == sheet && sheet, "Loaded scene references imported rain texture");
+        Check(material.HasProperty("_RainTex"), "Screen shader exposes rain texture");
+        Check(material.GetFloat("_Wet") == 1 && material.GetTexture("_RainTex"), "Wet stage sends rain sheet to screen");
+        var firstFrame = material.GetVector("_RainFrame");
+        yield return .25;
+        Check(material.GetVector("_RainFrame") != firstFrame, "Rain frames advance in play mode");
+        Capture("04-rain-active");
+        yield return .25;
+        game.Click(WashAction.Soap);
+        Check(material.GetFloat("_Wet") == 0, "Rain is hidden while applying soap");
+        File.WriteAllText(Report, report + "RAIN CHECKS PASSED\n");
+        EditorApplication.ExitPlaymode();
+    }
+
     static IEnumerator Verify()
     {
         Application.runInBackground=true;
@@ -117,13 +168,22 @@ public static class WashGameVerification
         Object.DestroyImmediate(optionEditor);
         Check(!ShaderUtil.ShaderHasError(g.screenMaterial.shader),"WashScreen shader compiled");
         Check(g.screenMaterial.passCount==1 && g.blurMaterial && !ShaderUtil.ShaderHasError(g.blurMaterial.shader),"Composite uses one UI pass; blur passes are isolated");
-        Check(g.water && g.waterSound && g.dingSound,"Replaceable particle and audio references assigned");
+        Check((g.waterVisual || g.water) && g.waterSound && g.dingSound,"Replaceable particle and audio references assigned");
         OptionState.Instance.Lock(OptionType.Blur);
         bool playerEnabled=g.player.enabled,interactorEnabled=g.interactor.enabled;
         var cameraPosition=g.viewCamera.transform.localPosition;var originalTarget=g.viewCamera.targetTexture;
+        var manager = TeamRoulette.Room3.GameManager.Instance;
+        if (manager)
+        {
+            if (manager.CurrentStage == TeamRoulette.Room3.GameStage.Curtain)
+                TeamRoulette.Room3.GameManager.ReportComplete(TeamRoulette.Room3.GameStage.Curtain);
+            if (manager.CurrentStage == TeamRoulette.Room3.GameStage.Window)
+                TeamRoulette.Room3.GameManager.ReportComplete(TeamRoulette.Room3.GameStage.Window);
+            yield return .2;
+        }
         g.Click(WashAction.Soap);Check(g.CurrentStage==WashGameController.Stage.Idle,"Soap cannot skip water start");
         g.Click(WashAction.Water);yield return .5;
-        Check(g.CurrentStage==WashGameController.Stage.WaterRunning && g.BlurVisible && g.water.isPlaying,"First click starts live blur and water particles");
+        Check(g.CurrentStage==WashGameController.Stage.WaterRunning && g.BlurVisible && (g.waterVisual ? g.waterVisual.activeInHierarchy : g.water.isPlaying),"First click starts live blur and water particles");
         Check(g.player.enabled && g.player.canMove && !g.interactor.enabled && Cursor.lockState==CursorLockMode.Locked && !Cursor.visible,"Object selection locks the cursor for first-person aiming");
         Check(g.toolCursor.gameObject.activeSelf && g.toolCursor.sizeDelta==new Vector2(6,6),"Central crosshair remains visible during object selection");
         Check(!g.instruction.text.Contains("우클릭"),"Instructions no longer offer right-click exit");
@@ -174,7 +234,7 @@ public static class WashGameVerification
         g.Click(WashAction.Water);Check(g.CurrentStage==WashGameController.Stage.Rinsing,"Water starts timed rinse");
         yield return g.rinseSeconds+.3;
         Check(g.CurrentStage==WashGameController.Stage.TowelReady,"Rinse removes foam and enables towel");
-        Check(!g.water.isPlaying && g.water.particleCount==0,"Water is off before selecting the towel");
+        Check((g.waterVisual ? !g.waterVisual.activeSelf : !g.water.isPlaying && g.water.particleCount==0),"Water is off before selecting the towel");
         Check(g.SplashCount==2 && !g.runningAudio.isPlaying,"Exactly two water splash sounds, no loop");
         g.Click(WashAction.Towel);
         Check(!g.player.enabled && OptionState.Instance.IsUnlocked(OptionType.RotateCamera),"Towel painting freezes camera without changing RotateCamera option");
@@ -192,3 +252,4 @@ public static class WashGameVerification
         EditorApplication.ExitPlaymode();
     }
 }
+

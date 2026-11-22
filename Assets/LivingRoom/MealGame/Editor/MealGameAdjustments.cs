@@ -46,7 +46,7 @@ public static class MealGameAdjustments
         EditorUtility.SetDirty(g);
         EditorSceneManager.MarkSceneDirty(g.gameObject.scene);
         EditorSceneManager.SaveScene(g.gameObject.scene);
-        File.WriteAllText(MealGameSetup.Folder + "/PositionCheck.txt",
+        File.WriteAllText(MealGameSetup.Folder + "/Reports/PositionCheck.txt",
             "Floor Y: " + floorY.ToString("F3") + "\nPlayer feet marker: " + feet.ToString("F3") +
             "\nTable bounds: " + b + "\nCharacter radius: " + worldRadius.ToString("F3") + "\n");
         Selection.activeGameObject = marker.gameObject;

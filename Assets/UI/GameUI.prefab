@@ -99,8 +99,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 4
-  m_VerticalAlignment: 4096
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -499,7 +499,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 4096
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -1353,8 +1353,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 4
-  m_VerticalAlignment: 4096
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -1720,7 +1720,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 4096
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -1857,7 +1857,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 4096
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -1994,7 +1994,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 4096
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -2343,7 +2343,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 4096
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -2591,7 +2591,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 4096
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -2889,8 +2889,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 4
-  m_VerticalAlignment: 4096
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -3502,7 +3502,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 4096
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -3776,7 +3776,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 4096
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -4124,8 +4124,8 @@ MonoBehaviour:
   m_fontSizeMin: 18
   m_fontSizeMax: 72
   m_fontStyle: 0
-  m_HorizontalAlignment: 4
-  m_VerticalAlignment: 4096
+  m_HorizontalAlignment: 2
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -5813,7 +5813,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 4096
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -6087,7 +6087,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 4096
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -6753,22 +6753,38 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TeamRoulette.UI.GameUI
   keyGuides:
-  - action: "\uC190 / \uC0C1\uD638\uC791\uC6A9"
-    key: "\uB9C8\uC6B0\uC2A4 \uC67C\uCABD"
-    alwaysVisible: 0
-    unlock: 5
+  - action: "\uC9C0\uB3C4"
+    key: "TAB"
+    alwaysVisible: 1
+    unlock: 0
   - action: "\uACE0\uAC1C \uB3CC\uB9AC\uAE30"
     key: "\uB9C8\uC6B0\uC2A4"
     alwaysVisible: 0
     unlock: 1
   - action: "\uC774\uB3D9"
-    key: W / A / S / D
+    key: "W / A / S / D \uB610\uB294 \uBC29\uD5A5\uD0A4"
     alwaysVisible: 0
     unlock: 0
+  - action: "\uC190 / \uC0C1\uD638\uC791\uC6A9"
+    key: "\uB9C8\uC6B0\uC2A4 \uC67C\uCABD"
+    alwaysVisible: 0
+    unlock: 5
+  - action: "\uC810\uD504"
+    key: "SPACE"
+    alwaysVisible: 0
+    unlock: 11
   - action: "\uC7A1\uAE30 / \uB193\uAE30"
     key: "\uB9C8\uC6B0\uC2A4 \uC67C\uCABD"
     alwaysVisible: 0
     unlock: 2
+  - action: "\uBB3C\uAC74 \uB3CC\uB824\uB193\uAE30"
+    key: "\uB9C8\uC6B0\uC2A4 \uC624\uB978\uCABD"
+    alwaysVisible: 0
+    unlock: 2
+  - action: "\uB2EC\uB9AC\uAE30"
+    key: "\uC67C\uCABD SHIFT"
+    alwaysVisible: 0
+    unlock: 12
   - action: "\uD658\uACBD\uC124\uC815"
     key: ESC
     alwaysVisible: 1
@@ -6783,7 +6799,10 @@ MonoBehaviour:
   dialoguePanel: {fileID: 8688919974441613345}
   dialogueText: {fileID: 6366020977894574529}
   objectiveText: {fileID: 7243376193326181834}
+  hudTape: {fileID: 2800000, guid: b4794c85095c008488839e36365ece69, type: 3}
   settings: {fileID: 1066931665603765070}
+  settingsPaper: {fileID: 2800000, guid: fb7acf9b0aeaa12498bb77658f9352aa, type: 3}
+  selectedTabMark: {fileID: 2800000, guid: 21c1964df9ec41d4e9d2d1fb42c072d2, type: 3}
   settingsPages:
   - {fileID: 4805149489579543584}
   - {fileID: 7969821954499748729}
@@ -7801,7 +7820,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 4096
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1
@@ -8442,7 +8461,7 @@ MonoBehaviour:
   m_fontSizeMax: 72
   m_fontStyle: 0
   m_HorizontalAlignment: 1
-  m_VerticalAlignment: 4096
+  m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
   m_characterHorizontalScale: 1

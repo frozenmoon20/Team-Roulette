@@ -1,0 +1,30 @@
+MealGame counter layout and timer verification
+PASS: All timer and MealGame references are assigned
+PASS: Hierarchy group: Furniture
+PASS: Hierarchy group: Items
+PASS: Hierarchy group: PlacementPoints
+PASS: Hierarchy group: UI
+PASS: Items group: Ingredients
+PASS: Items group: Toast
+PASS: Items group: Tableware
+PASS: Items group: Cutlery
+PASS: Plate assembly references remain intact
+PASS: Plate and cup rest on countertop
+PASS: Jam placement is beyond the cup, matching the red spot
+PASS: Dish hierarchy is grouped without losing references
+PASS: Timer diameter is reduced to 0.25 world units
+PASS: Old rectangular background and digits are disabled
+PASS: Full countdown draws a circular sector
+PASS: The drawn area shrinks with remaining time
+PASS: The elapsed half has no geometry and is transparent
+PASS: Finished timer is completely transparent
+PASS: Existing hand pickup is still callable
+PASS: Ten-second countdown starts full
+PASS: CanvasRenderer receives a visible, full-sized timer mesh
+PASS: Fridge still gives jam
+PASS: Placing jam uses the new red-spot marker
+PASS: Placing jam frees the existing hand
+PASS: Pie countdown decreases during real gameplay
+PASS: The timer reaches transparent zero when toast is ready
+PASS: Toast completion behavior remains intact
+ALL CHECKS PASSED

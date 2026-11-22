@@ -1,0 +1,1 @@
+PASS: BoardCenterFillLight under BoardGame; realtime Point; intensity=0.35; range=3.5; warm neutral tint; no shadows; position=(6.87, 2.12, -2.25); board-center offset=(0,-0.1,0.9); scene saved.

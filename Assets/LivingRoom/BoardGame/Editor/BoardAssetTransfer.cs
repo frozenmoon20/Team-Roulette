@@ -126,12 +126,19 @@ public static class BoardAssetTransfer
             if(manager) typeof(TeamRoulette.Room3.GameManager).GetProperty("CurrentStage").SetValue(manager,TeamRoulette.Room3.GameStage.Board);
             Time.timeScale=1; game.enabled=true;
             game.boardTarget.Interact(); Check(game.Active,"Painting starts game");
+            Check(game.instruction.text==BoardGameController.ControlHelp && game.instruction.text.StartsWith("게시물은 떼거나"),"Description above controls");
+            Check(!game.instruction.text.Contains("좌클릭") && game.instruction.text.Contains("Q: 내려놓기   E: 정리 끝"),"Updated control guide");
+            game.Retrieve();
+            typeof(BoardGameController).GetMethod("RefreshOverlay",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).Invoke(game,null);
+            Check(!game.instruction.text.Contains("버린 물건이 없다"),"Empty trash message stays out of upper guide");
             var item=game.items[0]; game.Pick(item); game.Discard(); game.Retrieve(); Check(game.Held==item,"Mug trash LIFO retrieve");
             var anchors=game.items.Where(i=>i!=item && i.state==BoardItemState.Board).ToArray();
             // Reproduce moving the scene's item group without updating serialized board positions.
             foreach(var anchor in anchors) anchor.transform.position+=game.surface.right*.17f;
             var before=anchors.Select(i=>game.surface.InverseTransformPoint(i.transform.position)).ToArray();
+            item.angle=37;
             Check(game.Place(Vector2.zero),"Place retrieved item on new board");
+            Check(item.angle==0 && Quaternion.Angle(item.transform.rotation,game.surface.rotation)<.001f,"Placement resets board Z rotation to zero");
             for(int n=0;n<anchors.Length;n++)
             {
                 var after=game.surface.InverseTransformPoint(anchors[n].transform.position);
@@ -141,10 +148,16 @@ public static class BoardAssetTransfer
             var other=game.items.First(i=>i!=item && i.state==BoardItemState.Board);
             game.Pick(other);Check(game.Place(Vector2.zero),"Overlapping placement allowed");
             Check(game.RefreshOverlap() && item.outline.enabled && other.outline.enabled,"Red outlines during game only");
+            if(manager)
+            {
+                var details=(System.Collections.IDictionary)typeof(TeamRoulette.Room3.ObjectiveManager).GetField("details",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static).GetValue(null);
+                var step=(TeamRoulette.Room3.ObjectiveStep)details[TeamRoulette.Room3.GameStage.Board];
+                Check(!string.IsNullOrWhiteSpace(TeamRoulette.Room3.ObjectiveManager.GetDetailObjective(TeamRoulette.Room3.GameStage.Board,step)),"Overlapping items keep objective visible");
+            }
             foreach(var i in game.items){game.Pick(i);game.Discard();}
             Check(game.TryFinish() && game.Completed && !game.Active,"Completion returns controls");
             Check(game.items.All(i=>!i.outline.enabled),"No outlines after game");
-            File.WriteAllText(Folder+"/PlacementVerification.txt","PASS: board start, trash retrieve, placement at requested coordinates; all other items retain their horizontal and vertical positions after scene/group edits; completion.\n");
+            File.WriteAllText(Folder+"/PlacementVerification.txt","PASS: Q/E control labels without left-click help; objective remains nonempty during overlap; no upper empty-trash message; zero Z rotation placement; board start, retrieve, requested coordinates; other items retain positions; overlap outlines during game only; completion.\n");
         }
         catch(Exception e){File.AppendAllText(Folder+"/TransferReport.txt","FAILED: "+e);Debug.LogException(e);}
         finally{if(game && game.Active) game.enabled=false;EditorApplication.ExitPlaymode();}

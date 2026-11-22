@@ -56,6 +56,7 @@ public static class BoardGameSetup
             string marker=Folder+"/Editor/PlaceholderLayoutV2.txt";
             if(!File.Exists(marker))
             {
+                if(!AssetDatabase.IsValidFolder(Folder+"/Prefabs")) AssetDatabase.CreateFolder(Folder,"Prefabs");
                 foreach(var item in existing.items)
                 {
                     var label=item.GetComponentInChildren<TextMeshPro>();
@@ -74,7 +75,8 @@ public static class BoardGameSetup
             return;
         }
         var board=all.Single(t=>t.name=="게시판"); var bin=all.Single(t=>t.name=="쓰레기통");
-        Directory.CreateDirectory(Folder+"/Materials"); Directory.CreateDirectory(Folder+"/Prefabs");
+        Directory.CreateDirectory(Folder+"/Materials");
+        if(!AssetDatabase.IsValidFolder(Folder+"/Prefabs")) AssetDatabase.CreateFolder(Folder,"Prefabs");
         var root=new GameObject("BoardGame"); Undo.RegisterCreatedObjectUndo(root,"Create BoardGame");
         var game=root.AddComponent<BoardGameController>();
         Undo.SetTransformParent(board,root.transform,"Group board"); Undo.SetTransformParent(bin,root.transform,"Group trash");

@@ -100,7 +100,7 @@ public static class MealPurchasedSwap
         g.jamToast.SetActive(false);g.bakingToast.SetActive(false);
         g.plate.gameObject.SetActive(true);g.emptyCup.SetActive(true);
         EditorUtility.SetDirty(g);EditorSceneManager.MarkSceneDirty(scene);EditorSceneManager.SaveScene(scene);
-        File.WriteAllText(Folder+"/PurchasedTransfer.txt",string.Join("\n",assets.Select(p=>p.Key+" -> "+p.Value.position.ToString("F4")))+"\nTRANSFER COMPLETE\n");
+        File.WriteAllText(Folder+"/Reports/PurchasedTransfer.txt",string.Join("\n",assets.Select(p=>p.Key+" -> "+p.Value.position.ToString("F4")))+"\nTRANSFER COMPLETE\n");
         Selection.activeGameObject=g.gameObject;
         Debug.Log("MealGame purchased asset transfer complete.");
     }

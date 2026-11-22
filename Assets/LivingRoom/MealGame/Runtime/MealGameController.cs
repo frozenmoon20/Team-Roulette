@@ -1,0 +1,464 @@
+using System.Collections;
+using TeamRoulette.Room3;
+using TMPro;
+using UnityEngine;
+
+[DefaultExecutionOrder(300)]
+public sealed class MealGameController : MonoBehaviour
+{
+    [Header("음식과 식기")]
+    public GrabbableItem rawToast;
+    public GrabbableItem jam, juice, cookedToast, plate, juiceCup;
+    public GameObject jamToast, emptyCup, bakingToast;
+    [Header("플레이어 연결")]
+    public PlayerInteractor interactor;
+    public FirstPersonPlayer player;
+
+    [Header("배치 지점과 카메라")]
+    public Transform jamPoint;
+    public Transform cookedPopPoint, toastOnPlatePoint, plateTablePoint, cupTablePoint, eatingView;
+    [Tooltip("식사가 끝난 뒤 플레이어가 서 있을 지점입니다. 씬 뷰에서 위치를 조정할 수 있습니다.")]
+    public Transform playerAfterMeal;
+    [Header("타이머와 화면 전환")]
+    public GameObject timerPanel;
+    public TMP_Text timerText;
+    public CanvasGroup blackScreen;
+    [Header("굽기와 식사 시간 (초)")]
+    [Min(.1f)] public float toastSeconds = 10f;
+    [Min(0)] public float blackoutSeconds = .5f;
+    [Min(.1f)] public float eatingSeconds = 3f;
+    [HideInInspector] public AudioSource toasterAudio, actionAudio;
+    [HideInInspector] public AudioClip dingSound, pourSound, eatSound;
+
+    public bool CookingStarted { get; private set; }
+    public bool ToastReady { get; private set; }
+    public bool JamOnCounter { get; private set; }
+    public bool ToastOnPlate { get; private set; }
+    public bool JamApplied { get; private set; }
+    public bool PlateOnTable { get; private set; }
+    public bool JuicePoured { get; private set; }
+    public bool CupOnTable { get; private set; }
+    public bool Ending { get; private set; }
+    public bool Completed { get; private set; }
+    public float SecondsRemaining { get; private set; }
+
+    PlayerHand Hand => PlayerHand.Instance;
+    public bool IsHoldingMealItem => Hand && Owns(Hand.Held);
+    MealAction selected;
+    GrabbableItem carried;
+    bool toastPoseApplied;
+    Transform returnParent;
+    Vector3 returnPosition, returnScale;
+    Quaternion returnRotation;
+    bool returnActive;
+    string hint;
+    float hintUntil;
+    bool controlsSaved, playerEnabled, feelEnabled;
+    PlayerMotionFeel feel;
+    Vector3 cameraPosition;
+    Quaternion cameraRotation;
+
+    void LateUpdate()
+    {
+        // PalmPoint inherits the rotated wrist bone. Only MealGame objects are
+        // leveled here; the shared hand, pose and pickup code remain untouched.
+        if (!carried || !Hand || Hand.Held != carried) return;
+        Transform palm = Hand.palmPoint ? Hand.palmPoint : Hand.transform;
+        if (carried.transform.parent != palm) return; // Wait for the hand animation.
+        var geometry = carried.GetComponent<MealGeometry>();
+        if (carried == rawToast || carried == cookedToast)
+        {
+            if (toastPoseApplied) return;
+            var camera = interactor.playerCamera.transform;
+            Quaternion supportRotation = camera.rotation * Quaternion.Euler(-28, 0, 0);
+            carried.transform.rotation = supportRotation *
+                Quaternion.Euler(geometry ? geometry.heldEuler : Vector3.zero);
+            MealGeometry.RestOnHand(carried.gameObject, palm.position, supportRotation, Hand.handModel);
+            toastPoseApplied = true;
+            return;
+        }
+        Vector3 forward = Vector3.ProjectOnPlane(player.transform.forward, Vector3.up).normalized;
+        if (forward.sqrMagnitude < .5f) forward = Vector3.forward;
+        carried.transform.rotation = Quaternion.LookRotation(forward, Vector3.up) *
+            Quaternion.Euler(geometry ? geometry.heldEuler : Vector3.zero);
+        MealGeometry.BottomAt(carried.gameObject, palm.position + player.transform.TransformVector(carried.positionOffset));
+    }
+
+    void Start()
+    {
+        // Initialize GrabbableItem's cached bounds/home before any pose change.
+        foreach (var item in new[] { rawToast, jam, juice, cookedToast, plate, juiceCup })
+        {
+            item.gameObject.SetActive(true);
+            item.enabled = false; // Only this sequence may authorize a pickup.
+        }
+        rawToast.gameObject.SetActive(false);
+        jam.gameObject.SetActive(false);
+        juice.gameObject.SetActive(false);
+        cookedToast.gameObject.SetActive(false);
+        juiceCup.gameObject.SetActive(false);
+        jamToast.SetActive(false);
+        bakingToast.SetActive(false);
+        emptyCup.SetActive(true);
+        timerPanel.SetActive(false);
+        blackScreen.alpha = 0;
+        blackScreen.blocksRaycasts = false;
+    }
+
+    public bool Owns(GrabbableItem item) => item &&
+        (item == rawToast || item == jam || item == juice || item == cookedToast || item == plate || item == juiceCup);
+
+    bool CanPickUp => Hand && Hand.IsVisible && !Hand.Held && OptionState.Instance &&
+        OptionState.Instance.IsUnlocked(OptionType.Grab);
+
+    public void ClearSelection() { selected = MealAction.None; }
+    public string Label(MealTarget target) => Time.time < hintUntil ? hint : target ? target.DisplayName : "";
+    void Hint(string message) { hint = message; hintUntil = Time.time + 1.5f; }
+
+    public bool CanUse(MealAction action)
+    {
+        if (Ending || Completed || !TeamRoulette.Room3.GameManager.CanPlay(TeamRoulette.Room3.GameStage.Meal)) return false;
+        var held = Hand ? Hand.Held : null;
+        switch (action)
+        {
+            case MealAction.Fridge: return CanPickUp && (!CookingStarted || !JamOnCounter || (PlateOnTable && !JuicePoured));
+            case MealAction.Toaster: return held == rawToast || (CanPickUp && ToastReady && !ToastOnPlate);
+            case MealAction.Counter: return held == jam && !JamOnCounter;
+            case MealAction.Plate: return held == cookedToast || (CanPickUp && JamApplied && !PlateOnTable);
+            case MealAction.CookedToast: return CanPickUp && ToastReady && (!ToastOnPlate || (JamOnCounter && !JamApplied));
+            case MealAction.Jam: return !held && JamOnCounter && ToastOnPlate && !JamApplied;
+            case MealAction.JamToast: return CanPickUp && JamApplied && !PlateOnTable;
+            case MealAction.EmptyCup: return held == juice && !JuicePoured;
+            case MealAction.JuiceCup: return CanPickUp && JuicePoured && !CupOnTable;
+            case MealAction.Table: return (held == plate && JamApplied) || (held == juiceCup && JuicePoured);
+            default: return false;
+        }
+    }
+
+    // Every left click (including scenery/empty space) reaches here, breaking the pair.
+    public void Click(MealAction action)
+    {
+        try
+        {
+        if (Ending || Completed || Time.timeScale <= 0) return;
+        if (!TeamRoulette.Room3.GameManager.CanPlay(TeamRoulette.Room3.GameStage.Meal)) return;
+        if (action != MealAction.None && !TeamRoulette.Room3.GameManager.TryBegin(TeamRoulette.Room3.GameStage.Meal)) return;
+        MealAction previous = selected;
+        ClearSelection();
+        var held = Hand ? Hand.Held : null;
+        if (!held && JamOnCounter && ToastOnPlate && !JamApplied &&
+            (action == MealAction.Jam || action == MealAction.CookedToast))
+        {
+            if ((previous == MealAction.Jam && action == MealAction.CookedToast) ||
+                (previous == MealAction.CookedToast && action == MealAction.Jam))
+            {
+                cookedToast.gameObject.SetActive(false);
+                jamToast.SetActive(true);
+                jamToast.transform.rotation = MealGeometry.FlatRotation(jamToast);
+                MealGeometry.BottomAt(jamToast, toastOnPlatePoint.position);
+                JamApplied = true;
+            }
+            else selected = action;
+            return;
+        }
+
+        if (action == MealAction.Fridge)
+        {
+            if (held) { Hint("먼저 내려놓자."); return; }
+            bool picked = false;
+            if (!CookingStarted) picked = PickUp(rawToast, false);
+            else if (!JamOnCounter) picked = PickUp(jam, false);
+            else if (PlateOnTable && !JuicePoured) picked = PickUp(juice, false);
+            else Hint(PlateOnTable ? "컵을 테이블에 놓자." : "토스트를 준비해서 테이블에 놓자.");
+            if (picked) RoomAudio.For(this)?.Play("Fridge Pickup");
+        }
+        else if (action == MealAction.Toaster)
+        {
+            if (held == rawToast && !CookingStarted)
+            {
+                ConsumeHeld();
+                CookingStarted = true;
+                StartCoroutine(Toast());
+            }
+            else if (!held && ToastReady && !ToastOnPlate) PickUp(cookedToast, true);
+            else Hint(CookingStarted ? "토스트가 구워지고 있다." : "토스트를 먼저 가져오자.");
+        }
+        else if (action == MealAction.Counter && held == jam && !JamOnCounter)
+        {
+            PlaceHeld(jamPoint);
+            JamOnCounter = true;
+        }
+        else if (action == MealAction.CookedToast && !ToastOnPlate && ToastReady && !held) PickUp(cookedToast, true);
+        else if (action == MealAction.Plate && held == cookedToast && !ToastOnPlate)
+        {
+            PlaceHeld(toastOnPlatePoint);
+            ToastOnPlate = true;
+        }
+        else if ((action == MealAction.Plate || action == MealAction.JamToast) && JamApplied && !PlateOnTable && !held)
+            PickUp(plate, true);
+        else if (action == MealAction.EmptyCup && held == juice && !JuicePoured)
+        {
+            ConsumeHeld();
+            // Use the same bottom point even if the two placeholder meshes differ in height.
+            Bounds emptyBounds = MealGeometry.BoundsOf(emptyCup);
+            juiceCup.gameObject.SetActive(true);
+            juiceCup.transform.rotation = emptyCup.transform.rotation;
+            Bounds fullBounds = MealGeometry.BoundsOf(juiceCup.gameObject);
+            juiceCup.transform.position += new Vector3(emptyBounds.center.x - fullBounds.center.x,
+                emptyBounds.min.y - fullBounds.min.y, emptyBounds.center.z - fullBounds.center.z);
+            emptyCup.SetActive(false);
+            JuicePoured = true;
+            PlaySound("Pour Juice", actionAudio, pourSound);
+        }
+        else if (action == MealAction.JuiceCup && JuicePoured && !CupOnTable && !held) PickUp(juiceCup, true);
+        else if (action == MealAction.Table)
+        {
+            if (held == plate && JamApplied && !PlateOnTable)
+            {
+                PlaceHeld(plateTablePoint);
+                PlateOnTable = true;
+                RoomAudio.For(this)?.Play("Plate Down");
+            }
+            else if (held == juiceCup && JuicePoured && !CupOnTable) { PlaceHeld(cupTablePoint); CupOnTable = true; }
+            else { Hint("완성한 접시와 주스컵을 여기에 놓자."); return; }
+            if (PlateOnTable && CupOnTable) StartCoroutine(FinishMeal());
+        }
+        else if (held && action != MealAction.None) Hint("여기에 둘 건 아니다.");
+            }
+        finally { RequestObjective(); }
+    }
+
+    void RequestObjective()
+    {
+        if (Completed || !TeamRoulette.Room3.GameManager.CanPlay(TeamRoulette.Room3.GameStage.Meal)) return;
+        var held = Hand ? Hand.Held : null;
+        TeamRoulette.Room3.ObjectiveStep goal;
+        if (Ending || (PlateOnTable && CupOnTable)) goal = TeamRoulette.Room3.ObjectiveStep.EatMeal;
+        else if (!CookingStarted) goal = held == rawToast ? TeamRoulette.Room3.ObjectiveStep.PutToastInToaster : TeamRoulette.Room3.ObjectiveStep.GetToast;
+        else if (!JamOnCounter) goal = held == jam ? TeamRoulette.Room3.ObjectiveStep.PutJamOnCounter : TeamRoulette.Room3.ObjectiveStep.GetJam;
+        else if (!ToastReady) goal = TeamRoulette.Room3.ObjectiveStep.WaitForToast;
+        else if (!ToastOnPlate) goal = held == cookedToast ? TeamRoulette.Room3.ObjectiveStep.PutToastOnPlate : TeamRoulette.Room3.ObjectiveStep.TakeToast;
+        else if (!JamApplied) goal = TeamRoulette.Room3.ObjectiveStep.ApplyJam;
+        else if (!PlateOnTable) goal = TeamRoulette.Room3.ObjectiveStep.PlacePlate;
+        else if (!JuicePoured) goal = held == juice ? TeamRoulette.Room3.ObjectiveStep.PourJuice : TeamRoulette.Room3.ObjectiveStep.GetJuice;
+        else goal = TeamRoulette.Room3.ObjectiveStep.PlaceCup;
+        TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Meal, goal);
+    }
+
+    bool PickUp(GrabbableItem item, bool visibleOnReturn)
+    {
+        if (!CanPickUp) { Hint("손과 잡기 기능이 필요하다."); return false; }
+        returnParent = item.transform.parent;
+        returnPosition = item.transform.position;
+        returnRotation = item.transform.rotation;
+        returnScale = item.transform.localScale;
+        returnActive = visibleOnReturn;
+        item.gameObject.SetActive(true);
+        if (!Hand.Hold(item)) { item.gameObject.SetActive(visibleOnReturn); return false; }
+        carried = item;
+        toastPoseApplied = false;
+        return true;
+    }
+
+    public void ReturnHeld()
+    {
+        ClearSelection();
+        if (!IsHoldingMealItem) return;
+        var item = Hand.Held;
+        Hand.ReturnHeld();
+        if (item == carried)
+        {
+            item.transform.SetParent(returnParent, true);
+            item.transform.SetPositionAndRotation(returnPosition, returnRotation);
+            item.transform.localScale = returnScale;
+            item.gameObject.SetActive(returnActive);
+        }
+        item.enabled = false;
+        carried = null;
+        RequestObjective();
+    }
+
+    void ConsumeHeld()
+    {
+        var item = Hand.Held;
+        Hand.PlaceHeld(transform, true);
+        item.transform.SetParent(transform, true);
+        carried = null;
+    }
+    void PlaceHeld(Transform point)
+    {
+        var item = Hand.Held;
+        Hand.PlaceHeld(point, false);
+        item.transform.rotation = point.rotation;
+        MealGeometry.BottomAt(item.gameObject, point.position);
+        carried = null;
+    }
+
+    IEnumerator Toast()
+    {
+        bakingToast.SetActive(true);
+        timerPanel.SetActive(true);
+        SecondsRemaining = toastSeconds;
+        PlaySound("Toaster Ding", toasterAudio, dingSound);
+        while (SecondsRemaining > 0)
+        {
+            timerText.text = Mathf.CeilToInt(SecondsRemaining).ToString("00");
+            yield return null;
+            SecondsRemaining = Mathf.Max(0, SecondsRemaining - Time.deltaTime);
+        }
+        timerText.text = "00";
+        bakingToast.SetActive(false);
+        cookedToast.gameObject.SetActive(true);
+        cookedToast.transform.SetPositionAndRotation(cookedPopPoint.position, cookedPopPoint.rotation);
+        ToastReady = true;
+        RequestObjective();
+    }
+
+    IEnumerator FinishMeal()
+    {
+        Ending = true;
+        RequestObjective();
+        ClearSelection();
+        SaveControls();
+        blackScreen.alpha = 1;
+        blackScreen.blocksRaycasts = true;
+        MovePlayerToTable();
+        // All arrangement happens while the screen is black.
+        plate.PlaceAt(plateTablePoint); MealGeometry.BottomAt(plate.gameObject, plateTablePoint.position);
+        juiceCup.PlaceAt(cupTablePoint); MealGeometry.BottomAt(juiceCup.gameObject, cupTablePoint.position);
+        yield return new WaitForSeconds(blackoutSeconds);
+        interactor.playerCamera.transform.SetPositionAndRotation(eatingView.position, eatingView.rotation);
+        blackScreen.alpha = 0;
+        var roomAudio = RoomAudio.For(this);
+        float clipSeconds = roomAudio ? roomAudio.ClipDuration("Eating") : (eatSound ? eatSound.length : 0f);
+        float eatingStarted = Time.time;
+        for (int repeat = 0; repeat < 2; repeat++)
+        {
+            StopEatingSound();
+            if (roomAudio)
+            {
+                roomAudio.Play("Eating", actionAudio);
+                if (actionAudio) actionAudio.loop = false;
+            }
+            else if (actionAudio && eatSound)
+            {
+                actionAudio.clip = eatSound;
+                actionAudio.loop = false;
+                actionAudio.Play();
+            }
+            float pitch = actionAudio ? Mathf.Max(.01f, Mathf.Abs(actionAudio.pitch)) : 1f;
+            if (clipSeconds > 0) yield return new WaitForSeconds(clipSeconds / pitch);
+        }
+        StopEatingSound();
+        float remainingEatingTime = eatingSeconds - (Time.time - eatingStarted);
+        if (remainingEatingTime > 0) yield return new WaitForSeconds(remainingEatingTime);
+        CompleteMeal();
+    }
+    void CompleteMeal()
+    {
+        StopEatingSound();
+        jamToast.SetActive(false);
+        juiceCup.gameObject.SetActive(false);
+        emptyCup.SetActive(true);
+        emptyCup.transform.rotation = cupTablePoint.rotation;
+        Bounds b = MealGeometry.BoundsOf(emptyCup);
+        emptyCup.transform.position += cupTablePoint.position - new Vector3(b.center.x, b.min.y, b.center.z);
+        emptyCup.transform.SetParent(cupTablePoint, true);
+        Completed = true;
+        Ending = false;
+        blackScreen.blocksRaycasts = false;
+        timerPanel.SetActive(false);
+        RestoreControls();
+        TeamRoulette.Room3.GameManager.ReportComplete(TeamRoulette.Room3.GameStage.Meal);
+    }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    public void DebugComplete()
+    {
+        StopAllCoroutines();
+        if (IsHoldingMealItem) ReturnHeld();
+        MovePlayerToTable();
+        RestoreCompleted();
+        CompleteMeal();
+    }
+#endif
+
+    public void RestoreCompleted()
+    {
+        Completed = true;
+        CookingStarted = ToastReady = JamOnCounter = ToastOnPlate = JamApplied = PlateOnTable = JuicePoured = CupOnTable = true;
+        foreach (var item in new[] { rawToast, jam, juice, cookedToast, juiceCup }) item.gameObject.SetActive(false);
+        plate.gameObject.SetActive(true);
+        plate.transform.SetPositionAndRotation(plateTablePoint.position, plateTablePoint.rotation); MealGeometry.BottomAt(plate.gameObject, plateTablePoint.position);
+        jamToast.SetActive(false);
+        bakingToast.SetActive(false);
+        emptyCup.SetActive(true);
+        emptyCup.transform.rotation = cupTablePoint.rotation;
+        Bounds bounds = MealGeometry.BoundsOf(emptyCup);
+        emptyCup.transform.position += cupTablePoint.position - new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
+        timerPanel.SetActive(false);
+        blackScreen.alpha = 0;
+        blackScreen.blocksRaycasts = false;
+    }
+
+    void MovePlayerToTable()
+    {
+        if (!playerAfterMeal) return;
+        var body = player.GetComponent<CharacterController>();
+        bool wasEnabled = body && body.enabled;
+        if (body) body.enabled = false;
+        player.transform.SetPositionAndRotation(playerAfterMeal.position, playerAfterMeal.rotation);
+        if (body) body.enabled = wasEnabled;
+        Physics.SyncTransforms();
+    }
+
+    void SaveControls()
+    {
+        controlsSaved = true;
+        playerEnabled = player.enabled;
+        player.enabled = false;
+        feel = player.GetComponent<PlayerMotionFeel>();
+        if (feel) { feelEnabled = feel.enabled; feel.enabled = false; }
+        cameraPosition = interactor.playerCamera.transform.localPosition;
+        cameraRotation = interactor.playerCamera.transform.localRotation;
+    }
+    void RestoreControls()
+    {
+        if (!controlsSaved) return;
+        controlsSaved = false;
+        if (player) player.enabled = playerEnabled;
+        if (feel) feel.enabled = feelEnabled;
+        if (interactor && interactor.playerCamera)
+        {
+            interactor.playerCamera.transform.localPosition = cameraPosition;
+            interactor.playerCamera.transform.localRotation = cameraRotation;
+        }
+    }
+    void PlaySound(string id, AudioSource source, AudioClip clip)
+    {
+        var roomAudio = RoomAudio.For(this);
+        if (roomAudio)
+            roomAudio.Play(id);
+        else if (source && clip)
+            source.PlayOneShot(clip);
+    }
+
+    void StopEatingSound()
+    {
+        var roomAudio = RoomAudio.For(this);
+        if (roomAudio)
+            roomAudio.Stop("Eating");
+        else if (actionAudio)
+        {
+            actionAudio.Stop();
+            actionAudio.loop = false;
+        }
+    }
+
+    void OnDisable()
+    {
+        StopEatingSound();
+        if (IsHoldingMealItem) ReturnHeld();
+        RestoreControls();
+        if (blackScreen) { blackScreen.alpha = 0; blackScreen.blocksRaycasts = false; }
+    }
+}

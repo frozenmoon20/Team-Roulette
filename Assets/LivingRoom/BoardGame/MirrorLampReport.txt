@@ -1,0 +1,1 @@
+PASS: second BoardSpotLight mirrored relative to lamp centers along board horizontal axis. Position=(7.67, 3.08, -3.46); direction=(0.19, -0.89, 0.42); intensity=1; angle=105; scene saved.

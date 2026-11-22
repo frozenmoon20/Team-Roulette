@@ -4,7 +4,15 @@ namespace TeamRoulette.Room3.DollMemory
 {
     public sealed class DollYardBindings : MonoBehaviour
     {
-        public Transform dryingPoint, houseDoor, dogStand, view, insidePoint, approachPoint; public DollDoor door;
+        [Header("인형을 말리는 위치와 카메라")]
+        public Transform dryingPoint;
+        public Transform dogStand, view;
+
+        [Header("집으로 돌아가는 길")]
+        public Transform houseDoor;
+        public Transform insidePoint, approachPoint;
+        public DollDoor door;
+        [Tooltip("겨울이가 집에 들어갈 때 차례대로 지나가는 지점입니다.")]
         public Transform[] returnRoute;
         public Collider[] walkingSurfaces;
         public void RefreshWalkingSurfaces()

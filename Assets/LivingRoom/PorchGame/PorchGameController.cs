@@ -15,17 +15,21 @@ namespace TeamRoulette.Room3
         [TextArea(5, 30)] public string creditsText = "게임이 끝났습니다.\n엔딩 크레딧이 내려갑니다.";
         public TMP_FontAsset font;
         [Min(1)] public float fontSize = 48;
+        [Tooltip("크레딧이 1초에 올라가는 거리입니다.")]
         [Min(1)] public float scrollSpeed = 70;
+        [Tooltip("크레딧이 지나간 뒤 타이틀로 이동하기 전 대기 시간입니다. 단위는 초입니다.")]
         [Min(0)] public float endDelay = 2;
-        [Header("타이틀 화면")]
-        [Tooltip("타이틀 씬을 만든 뒤 빌드의 씬 목록에 추가하고, 씬 이름 또는 경로를 입력하세요.")]
-        public string titleSceneName = "";
+        [Header("크레딧 이후 이동할 씬")]
+        [Tooltip("타이틀로 이동하려면 빌드 목록에 있는 씬 이름(예: Title) 또는 경로를 입력하세요.")]
+        public string titleSceneName = "Title";
         [TextArea(2, 5)] public string missingTitleMessage = "타이틀 화면 준비 중입니다.";
         public bool IsRunning { get; private set; }
         public bool CreditsFinished { get; private set; }
         readonly List<AudioSource> pausedAudio = new List<AudioSource>();
         TextMeshProUGUI label;
         Canvas canvas;
+        DialogueSequence endingDialogue;
+        bool creditsStarted;
         bool transitioningToTitle;
         float savedTimeScale;
         CursorLockMode savedCursor;
@@ -42,21 +46,39 @@ namespace TeamRoulette.Room3
             if ((ui && ui.IsPaused) || (PlayerHand.Instance && PlayerHand.Instance.Held)) return;
             if (!GameManager.TryBegin(GameStage.Entrance)) return;
             IsRunning = true;
-            if (!GameManager.ReportComplete(GameStage.Entrance)) { IsRunning = false; return; }
+            StartCoroutine(PlayEnding(ui));
+        }
+
+        IEnumerator PlayEnding(GameUI ui)
+        {
+            var dialogue = ui ? ui.GetComponent<DialogueManager>() : null;
+            while ((dialogue && dialogue.HasDialogue) || (ui && ui.IsPaused))
+                yield return null;
+
+            if (!GameManager.ReportComplete(GameStage.Entrance))
+            {
+                IsRunning = false;
+                yield break;
+            }
             GameManager.Instance.Flow.BeginEnding();
             savedTimeScale = Time.timeScale;
             savedCursor = Cursor.lockState; savedVisible = Cursor.visible;
+            creditsStarted = true;
             if (!font) font = ui && ui.objectiveText ? ui.objectiveText.font : TMP_Settings.defaultFontAsset;
+            var roomAudio = RoomAudio.For(this);
+            roomAudio?.StopAll();
             foreach (var source in FindObjectsByType<AudioSource>(FindObjectsSortMode.None))
                 if (source.isPlaying) { pausedAudio.Add(source); source.Pause(); }
             // Keep the credits root alive while suspending the room and all its input/UI.
             foreach (var root in gameObject.scene.GetRootGameObjects())
-                if (root != transform.root.gameObject && root.activeSelf)
+                if (root != transform.root.gameObject && (!roomAudio || root != roomAudio.transform.root.gameObject) && root.activeSelf)
                     root.SetActive(false);
             BuildScreen();
+            roomAudio?.Play("Porch Door");
+            roomAudio?.Play("Credits Music");
             Time.timeScale = 0;
             Cursor.lockState = CursorLockMode.None; Cursor.visible = false;
-            StartCoroutine(RollCredits());
+            yield return RollCredits(ui);
         }
 
         void BuildScreen()
@@ -82,18 +104,18 @@ namespace TeamRoulette.Room3
             label = text.GetComponent<TextMeshProUGUI>();
             label.font = font; label.fontSize = fontSize; label.color = Color.white;
             label.alignment = TextAlignmentOptions.Center; label.raycastTarget = false;
-            label.text = creditsText;
             var textRect = label.rectTransform;
             textRect.anchorMin = new Vector2(.1f, 0); textRect.anchorMax = new Vector2(.9f, 0);
             textRect.pivot = new Vector2(.5f, 0); textRect.sizeDelta = Vector2.zero;
         }
 
-        IEnumerator RollCredits()
+        IEnumerator RollCredits(GameUI ui)
         {
             Canvas.ForceUpdateCanvases();
             var viewport = (RectTransform)label.transform.parent;
             float height = Mathf.Max(fontSize, label.GetPreferredValues(creditsText, viewport.rect.width * .8f, Mathf.Infinity).y);
             label.rectTransform.sizeDelta = new Vector2(0, height);
+            label.text = creditsText;
             float y = -height - 40;
             while (y < viewport.rect.height + 40)
             {
@@ -102,7 +124,28 @@ namespace TeamRoulette.Room3
                 y += Mathf.Max(1, scrollSpeed) * Time.unscaledDeltaTime;
             }
             label.text = "";
-            yield return new WaitForSecondsRealtime(Mathf.Max(0, endDelay));
+            var roomAudio = RoomAudio.For(this);
+            roomAudio?.Stop("Credits Music");
+            float endSoundStartedAt = Time.realtimeSinceStartup;
+            roomAudio?.Play("Credits End Door");
+            if (ui && ui.canvas && ui.dialoguePanel && ui.dialoguePanel.transform.IsChildOf(ui.canvas.transform))
+            {
+                ui.transform.root.gameObject.SetActive(true);
+                // Keep the dialogue panel in its original layout while hiding the rest of the HUD.
+                for (var branch = ui.dialoguePanel.transform; branch != ui.canvas.transform; branch = branch.parent)
+                    foreach (Transform sibling in branch.parent)
+                        if (sibling != branch) sibling.gameObject.SetActive(false);
+                canvas.sortingOrder = ui.canvas.sortingOrder - 1;
+                endingDialogue = ScriptableObject.CreateInstance<DialogueSequence>();
+                endingDialogue.lines = Room3DialogueScript.EntranceFinish;
+                ui.ShowDialogueWhileFrozen(endingDialogue);
+                while (ui && ui.isActiveAndEnabled && ui.IsDialogueOpen) yield return null;
+                Destroy(endingDialogue);
+                endingDialogue = null;
+            }
+            float remainingDelay = Mathf.Max(endDelay, roomAudio?.ClipDuration("Credits End Door") ?? 0f) -
+                (Time.realtimeSinceStartup - endSoundStartedAt);
+            if (remainingDelay > 0f) yield return new WaitForSecondsRealtime(remainingDelay);
             CreditsFinished = true;
             if (!string.IsNullOrWhiteSpace(titleSceneName) &&
                 titleSceneName != gameObject.scene.name && titleSceneName != gameObject.scene.path &&
@@ -122,6 +165,7 @@ namespace TeamRoulette.Room3
                 }
             }
             label.text = missingTitleMessage;
+            label.alignment = TextAlignmentOptions.Center;
             var rect = label.rectTransform;
             rect.anchorMin = Vector2.zero; rect.anchorMax = Vector2.one;
             rect.pivot = new Vector2(.5f, .5f); rect.offsetMin = new Vector2(80, 80); rect.offsetMax = new Vector2(-80, -80);
@@ -129,13 +173,14 @@ namespace TeamRoulette.Room3
 
         void LateUpdate()
         {
-            if (!IsRunning) return;
+            if (!creditsStarted || transitioningToTitle) return;
             Cursor.lockState = CursorLockMode.None; Cursor.visible = false;
         }
 
         void OnDestroy()
         {
-            if (!IsRunning) return;
+            if (endingDialogue) Destroy(endingDialogue);
+            if (!creditsStarted) return;
             Time.timeScale = transitioningToTitle ? 1 : savedTimeScale;
             Cursor.lockState = transitioningToTitle ? CursorLockMode.None : savedCursor;
             Cursor.visible = transitioningToTitle || savedVisible;

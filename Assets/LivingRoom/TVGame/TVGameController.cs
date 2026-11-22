@@ -11,17 +11,21 @@ namespace TeamRoulette.Room3
 {
     public sealed class TVGameController : MonoBehaviour
     {
-        public Transform screen;
+        [Header("재생할 영상")]
         public VideoClip clip;
         public Texture thumbnail;
+        [Header("영상 음량")]
+        [Tooltip("원본 음량은 1입니다. 0은 음소거, 2는 두 배입니다. 게임 내 효과음 설정도 적용됩니다.")]
+        [Range(0f, 10f)] public float videoVolume = 1f;
+
+        [Header("TV 화면과 플레이어 연결")]
+        public Transform screen;
         public FirstPersonPlayer player;
         public Camera viewCamera;
         public TMP_FontAsset font;
+        [Header("표시와 재생 준비")]
         [Min(1)] public float prepareTimeout = 30;
         [Min(0)] public float surfaceOffset = .03f;
-        [Header("영상 소리")]
-        [Tooltip("영상 소리의 증폭 배율입니다. 0은 음소거, 1은 원래 음량, 2는 2배, 10은 10배입니다. 게임 내 효과음 설정도 함께 적용됩니다.")]
-        [Range(0f, 10f)] public float videoVolume = 1f;
 
         enum State { Black, Thumbnail, Confirm, Preparing, Playing, Restoring }
         State state;
@@ -121,7 +125,13 @@ namespace TeamRoulette.Room3
             var ui = FindFirstObjectByType<GameUI>();
             if ((ui && ui.IsPaused) || (!IsComplete && !GameManager.CanPlay(GameStage.TV))) return;
             if (PlayerHand.Instance && PlayerHand.Instance.Held) return;
-            if (state == State.Black) { SetStandby(true); return; }
+            if (state == State.Black)
+            {
+                if (!GameManager.TryBegin(GameStage.TV)) return;
+                SetStandby(true);
+                RoomAudio.For(this)?.Play("TV Power");
+                return;
+            }
             // The first-person ray must hit the central play button, not the surrounding thumbnail.
             if (viewCamera && !RectTransformUtility.RectangleContainsScreenPoint(playIcon.rectTransform,
                     viewCamera.ViewportToScreenPoint(new Vector3(.5f, .5f)), viewCamera)) return;
@@ -140,8 +150,7 @@ namespace TeamRoulette.Room3
         public void Accept()
         {
             if (state != State.Confirm) return;
-            // TryBegin runs while GameUI is blocked, before any screen is covered by video.
-            if (!GameManager.TryBegin(GameStage.TV)) { Decline(); return; }
+            if (!GameManager.CanPlay(GameStage.TV)) { Decline(); return; }
             BeginPlayback();
         }
 

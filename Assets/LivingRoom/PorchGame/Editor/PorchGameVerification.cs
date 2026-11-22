@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using TeamRoulette.Room3;
+using TeamRoulette.UI;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -89,12 +90,24 @@ public static class PorchGameVerification
         Check(hitSides == 2, "문 양쪽에서 실제 클릭 광선이 독립 영역에 적중");
         // Speed up only this non-persistent test run.
         game.scrollSpeed = 1100; game.endDelay = .1f;
-        game.titleSceneName = "__Porch_Missing_Title__";
+        Check(game.titleSceneName == "Title" && Application.CanStreamedLevelBeLoaded("Title"), "Title is configured and loadable");
         game.Interact();
+        var ui = UnityEngine.Object.FindFirstObjectByType<GameUI>();
+        float startDeadline = Time.realtimeSinceStartup + 30;
+        while (Time.realtimeSinceStartup < startDeadline &&
+            (!ui.IsDialogueOpen || ui.dialogueText.text != Room3DialogueScript.EntranceStart[0]))
+            yield return null;
+        Check(ui.IsDialogueOpen && ui.dialogueText.text == Room3DialogueScript.EntranceStart[0] && Time.timeScale > 0,
+            "Entrance dialogue is shown before credits pause the room");
+        ui.AdvanceDialogue();
+        while (Time.timeScale > 0 && Time.realtimeSinceStartup < startDeadline) yield return null;
         Check(game.IsRunning && manager.IsFinished && manager.Flow.EndingVisible, "현관 목표 완료와 크레딧 시작");
         Check(Time.timeScale == 0 && !UnityEngine.Object.FindFirstObjectByType<FirstPersonPlayer>(), "방과 플레이어 조작 정지");
         yield return null;
         var text = game.GetComponentsInChildren<TextMeshProUGUI>().Single();
+        while (text.text != game.creditsText && Time.realtimeSinceStartup < startDeadline)
+            yield return null;
+        Check(text.text == game.creditsText, "Credits are visible after the entrance dialogue");
         var initialY = text.rectTransform.anchoredPosition.y;
         float until = Time.realtimeSinceStartup + .15f;
         while (Time.realtimeSinceStartup < until) yield return null;
@@ -102,10 +115,17 @@ public static class PorchGameVerification
         var enumerator = typeof(PorchGameController).GetMethod("RollCredits", BindingFlags.Instance | BindingFlags.NonPublic);
         Check(enumerator != null, "크레딧 코루틴 연결");
         until = Time.realtimeSinceStartup + 8;
-        while (!game.CreditsFinished && Time.realtimeSinceStartup < until) yield return null;
-        Check(game.CreditsFinished && text.text == game.missingTitleMessage, "타이틀 씬이 없으면 준비 중 문구 표시");
-        Check(game.gameObject.activeInHierarchy && text.gameObject.activeInHierarchy, "엔딩 화면 활성 상태 유지");
-        game.Interact(); Check(manager.IsFinished, "반복 클릭으로 엔딩 중복 실행 차단");
+        while (ui && !ui.IsDialogueOpen && Time.realtimeSinceStartup < until)
+            yield return null;
+        Check(ui && ui.IsDialogueOpen && ui.dialoguePanel.activeInHierarchy &&
+            ui.dialogueText.text == Room3DialogueScript.EntranceFinish[0] && text.text == "" &&
+            Time.timeScale == 0 && !game.CreditsFinished,
+            "The original dialogue panel shows the final line after the credits");
+        until = Time.realtimeSinceStartup + 10;
+        while (UnityEngine.SceneManagement.SceneManager.GetActiveScene().name != "Title" && Time.realtimeSinceStartup < until)
+            yield return null;
+        Check(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name == "Title" && Time.timeScale == 1,
+            "Title loads and the game clock resumes");
     }
 }
 #endif

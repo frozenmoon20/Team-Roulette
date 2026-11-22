@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -19,9 +18,10 @@ namespace TeamRoulette.UI.Editor
                 if (data.objectives.Count != 0 || data.dialogue || data.playDialogueOnStart) throw new Exception("Shared prefab contains example content.");
                 if (prefab.GetComponentsInChildren<Transform>(true).Any(t => GameObjectUtility.GetMonoBehavioursWithMissingScriptCount(t.gameObject) != 0)) throw new Exception("Missing script.");
                 if (!ui.objectiveText || !ui.dialogueText || !ui.settings || !prefab.GetComponent<PawProgress>().graphic) throw new Exception("Missing UI reference.");
-                if (ui.keyGuides.Any(g => g.key == "SPACE" || g.key == "TAB")) throw new Exception("Removed key guide remains.");
+                if (ui.keyGuides.Any(g => g == null || string.IsNullOrWhiteSpace(g.action) || string.IsNullOrWhiteSpace(g.key)))
+                    throw new Exception("Incomplete key guide.");
                 if (AssetDatabase.GetDependencies("Assets/UI/GameUI.prefab", true).Any(p => p.StartsWith("Assets/UI/Examples/") || p.StartsWith("Assets/StoreAssets/"))) throw new Exception("Example or private asset dependency.");
-                File.WriteAllText("Assets/UI/ShareReport.txt", "PASS: Shared prefab references, clean content, key guides and dependencies.\n");
+                Debug.Log("PASS: Shared prefab references, clean content, key guides and dependencies.");
             }
             finally { PrefabUtility.UnloadPrefabContents(prefab); }
         }

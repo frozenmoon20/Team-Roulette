@@ -43,6 +43,7 @@ public static class BoardPhotoSetup
         game.boardSize=new Vector2(measured.size.x*.9f,measured.size.y*.9f);
         foreach(var file in Files)if(!AssetDatabase.LoadAssetAtPath<Texture2D>(Folder+"/Gyeoul/"+file+".png"))throw new Exception("Missing image: "+file);
         Directory.CreateDirectory(Folder+"/Materials/Photos");Directory.CreateDirectory(Folder+"/Meshes/Photos");AssetDatabase.Refresh();
+        if(!AssetDatabase.IsValidFolder(Folder+"/Prefabs")) AssetDatabase.CreateFolder(Folder,"Prefabs");
         var report=new System.Text.StringBuilder();
         for(int n=0;n<21;n++)
         {

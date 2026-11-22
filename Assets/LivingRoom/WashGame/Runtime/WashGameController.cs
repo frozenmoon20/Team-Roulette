@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TeamRoulette.Room3;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,26 +10,34 @@ using UnityEngine.Rendering;
 public sealed class WashGameController : MonoBehaviour
 {
     public enum Stage { Idle, WaterRunning, Wet, Soaping, RinseReady, Rinsing, TowelReady, Wiping, Complete }
-    [Header("Scene references")]
+    [Header("플레이어와 세면대")]
     public FirstPersonPlayer player;
     public PlayerInteractor interactor;
     public Camera viewCamera;
     public Transform washView;
     public ParticleSystem water;
+    public GameObject waterVisual;
+    [SerializeField] AnimationClip rainOnWindow;
+    [SerializeField] Texture2D rainSpriteSheet;
+    float rainStartTime;
+    [Header("세면 화면과 진행 표시")]
     public Canvas overlay;
     public RawImage screen;
     public TMP_Text instruction;
     public Image progressFill;
     public RectTransform toolCursor;
     public Image toolImage;
-    public AudioSource actionAudio, runningAudio;
-    public AudioClip waterSound, dingSound;
+    [HideInInspector] public AudioSource actionAudio, runningAudio;
+    [HideInInspector] public AudioClip waterSound, dingSound;
     public Material screenMaterial, blurMaterial;
     public Behaviour[] otherInputs;
-    [Header("Adjustable gameplay")]
+    [Header("비누와 수건 완료 조건")]
+    [Tooltip("수건으로 닦아야 하는 화면 비율입니다. 0.9는 90%입니다.")]
     [Range(.5f, .95f)] public float requiredCoverage = .9f;
+    [Tooltip("비누로 문질러야 하는 화면 비율입니다. 0.9는 90%입니다.")]
     [Range(.5f, .99f)] public float soapRequiredCoverage = .9f;
     [Range(.03f, .2f)] public float brushRadius = .10f;
+    [Header("흐림과 헹굼 연출")]
     [Range(1, 15)] public float blurRadius = 7;
     [Min(.1f)] public float rinseSeconds = 1.1f;
 
@@ -55,6 +64,14 @@ public sealed class WashGameController : MonoBehaviour
     readonly Dictionary<Behaviour, bool> blocked = new Dictionary<Behaviour, bool>();
     readonly Dictionary<GameObject, bool> hidden = new Dictionary<GameObject, bool>();
 
+    void SetWaterFlow(bool active)
+    {
+        if (waterVisual) waterVisual.SetActive(active);
+        if (!water) return;
+        if (active) water.Play();
+        else water.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+    }
+
     void Awake()
     {
         // Keep the completion gauge at the top even when using the shared GameUI overlay.
@@ -65,7 +82,7 @@ public sealed class WashGameController : MonoBehaviour
             track.offsetMin = track.offsetMax = Vector2.zero;
         }
         overlay.gameObject.SetActive(false);
-        if (water) water.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        SetWaterFlow(false);
     }
     void Start()
     {
@@ -81,6 +98,12 @@ public sealed class WashGameController : MonoBehaviour
         if (!TeamRoulette.Room3.GameManager.CanPlay(TeamRoulette.Room3.GameStage.Wash)) return;
         if (CurrentStage == Stage.Idle)
         {
+            foreach (var door in FindObjectsByType<RestroomDoor>(FindObjectsSortMode.None))
+                if (door.gameObject.scene == gameObject.scene && door.IsOpen)
+                {
+                    TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Wash, TeamRoulette.Room3.ObjectiveStep.CloseBathroomDoor);
+                    return;
+                }
             if (action != WashAction.Water) { PlayerInteractor.ShowHint("세면대에서 먼저 물을 틀자."); return; }
             if (!OptionState.Instance) { PlayerInteractor.ShowHint("옵션 시스템 연결을 확인해주세요."); return; }
             if (!TeamRoulette.Room3.GameManager.TryBegin(TeamRoulette.Room3.GameStage.Wash)) return;
@@ -88,10 +111,10 @@ public sealed class WashGameController : MonoBehaviour
             return;
         }
         if (action == WashAction.Water && CurrentStage == Stage.WaterRunning)
-        { SplashCount++; actionAudio.PlayOneShot(waterSound); SetStage(Stage.Wet); }
+        { SplashCount++; PlaySound("Wash Splash", waterSound); SetStage(Stage.Wet); }
         else if (action == WashAction.Soap && CurrentStage == Stage.Wet) SetStage(Stage.Soaping);
         else if (action == WashAction.Water && CurrentStage == Stage.RinseReady)
-        { SplashCount++; actionAudio.PlayOneShot(waterSound); rinseTime = 0; SetStage(Stage.Rinsing); }
+        { SplashCount++; PlaySound("Wash Splash", waterSound); rinseTime = 0; SetStage(Stage.Rinsing); }
         else if (action == WashAction.Towel && CurrentStage == Stage.TowelReady) SetStage(Stage.Wiping);
     }
 
@@ -144,9 +167,18 @@ public sealed class WashGameController : MonoBehaviour
         presentationCamera.allowMSAA = false;
         RenderPipelineManager.endCameraRendering += RenderBlur;
         overlay.gameObject.SetActive(true);
-        water.Play();
-        if (runningAudio) runningAudio.Stop();
+        SetWaterFlow(true);
+        RoomAudio.For(this)?.Play("Running Water", runningAudio);
         SetStage(Stage.WaterRunning);
+    }
+
+    void PlaySound(string id, AudioClip clip)
+    {
+        var roomAudio = RoomAudio.For(this);
+        if (roomAudio)
+            roomAudio.Play(id);
+        else if (actionAudio && clip)
+            actionAudio.PlayOneShot(clip);
     }
 
     void EnsureTarget()
@@ -189,7 +221,17 @@ public sealed class WashGameController : MonoBehaviour
         {
             paused = isPaused;
             if (runningAudio) { if (paused) runningAudio.Pause(); else runningAudio.UnPause(); }
-            if (actionAudio) { if (paused) actionAudio.Pause(); else actionAudio.UnPause(); }
+            var roomAudio = RoomAudio.For(this);
+            if (roomAudio)
+            {
+                roomAudio.SetPaused("Wash Splash", paused);
+                roomAudio.SetPaused("Wash Ding", paused);
+            }
+            else if (actionAudio)
+            {
+                if (paused) actionAudio.Pause();
+                else actionAudio.UnPause();
+            }
         }
         if (paused || lostFocus)
         {
@@ -242,7 +284,7 @@ public sealed class WashGameController : MonoBehaviour
         Mask.Stroke(from, to, brushRadius, viewCamera.aspect, towel);
         if ((towel ? Mask.TowelCoverage : Mask.SoapCoverage) >= (towel ? requiredCoverage : soapRequiredCoverage))
         {
-            actionAudio.PlayOneShot(dingSound);
+            PlaySound("Wash Ding", dingSound);
             if (towel)
             {
                 SetStage(Stage.Complete);
@@ -257,6 +299,7 @@ public sealed class WashGameController : MonoBehaviour
     void SetStage(Stage stage)
     {
         CurrentStage = stage; enteredFrame = Time.frameCount; dragging = false;
+        if (stage == Stage.Wet || stage == Stage.Rinsing) rainStartTime = Time.time;
         var goal = stage switch
         {
             Stage.WaterRunning => TeamRoulette.Room3.ObjectiveStep.WetFace,
@@ -272,8 +315,8 @@ public sealed class WashGameController : MonoBehaviour
         TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Wash, goal);
         if (stage == Stage.TowelReady)
         {
-            if (water) water.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-            if (runningAudio) runningAudio.Stop();
+            SetWaterFlow(false);
+            StopRunningWater();
         }
         SetPaintingFreeze(stage == Stage.Soaping || stage == Stage.Wiping);
         ApplyCursorMode();
@@ -307,6 +350,28 @@ public sealed class WashGameController : MonoBehaviour
         }
     }
 
+    void UpdateRainFrame(bool visible)
+    {
+        bool hasRain = visible && rainOnWindow && rainSpriteSheet;
+        material.SetFloat("_Wet", hasRain ? 1f : 0f);
+        if (!hasRain) return;
+
+        const int columns = 11;
+        const int rows = 11;
+        const int frameCount = 120;
+        int frame = Mathf.FloorToInt((Time.time - rainStartTime) * rainOnWindow.frameRate) % frameCount;
+        int column = frame % columns;
+        int row = rows - 1 - frame / columns;
+        float texelX = 1f / rainSpriteSheet.width;
+        float texelY = 1f / rainSpriteSheet.height;
+        material.SetTexture("_RainTex", rainSpriteSheet);
+        material.SetVector("_RainFrame", new Vector4(
+            (float)column / columns + .5f * texelX,
+            (float)row / rows + .5f * texelY,
+            1f / columns - texelX,
+            1f / rows - texelY));
+    }
+
     void UpdateVisuals()
     {
         if (!material) return;
@@ -319,7 +384,8 @@ public sealed class WashGameController : MonoBehaviour
         material.SetFloat("_Radius", blurRadius);
         blurRuntime.SetFloat("_Radius", blurRadius);
         material.SetFloat("_Foam", foam);
-        material.SetFloat("_Wet", CurrentStage >= Stage.Wet && !finished ? 1 : 0);
+        bool soapOnFace = CurrentStage == Stage.Soaping || CurrentStage == Stage.RinseReady;
+        UpdateRainFrame(CurrentStage >= Stage.Wet && !finished && !soapOnFace);
         material.SetFloat("_Wiping", wiping ? 1 : 0);
         material.SetFloat("_Aspect", viewCamera.aspect);
         toolImage.color = wiping ? new Color(.76f, .88f, 1, .85f) : CurrentStage == Stage.Soaping ? new Color(.79f, 1, .88f, .9f) : Color.white;
@@ -391,8 +457,8 @@ public sealed class WashGameController : MonoBehaviour
         if(player){player.canMove=savedMove;player.canLook=savedLook;player.externalCursorControl=savedCursorControl;}
         RenderPipelineManager.endCameraRendering -= RenderBlur;
         if(presentationCamera) { presentationCamera.enabled=false;Destroy(presentationCamera.gameObject);presentationCamera=null; }
-        if (water) water.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-        if (runningAudio) runningAudio.Stop();
+        SetWaterFlow(false);
+        StopRunningWater();
         if (overlay) overlay.gameObject.SetActive(false);
         if (viewCamera)
         {
@@ -415,5 +481,12 @@ public sealed class WashGameController : MonoBehaviour
         Cursor.lockState = cursorLock; Cursor.visible = cursorVisible;
     }
     void OnApplicationFocus(bool focus) { lostFocus = !focus; dragging = false; }
+    void StopRunningWater()
+    {
+        RoomAudio.For(this)?.Stop("Running Water");
+        if (runningAudio) runningAudio.Stop();
+    }
+
     void OnDisable() { OptionState.OnOptionChanged -= OnOptionChanged; StopAllCoroutines(); if (CurrentStage != Stage.Complete) CurrentStage = Stage.Idle; Release(); }
 }
+
