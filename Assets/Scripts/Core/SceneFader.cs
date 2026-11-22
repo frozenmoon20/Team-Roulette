@@ -10,6 +10,7 @@ using UnityEngine.UI;
 //   SceneFader.Go("Corridor");                 // 까매졌다가 넘어가서 밝아짐
 //   SceneFader.Go("Corridor", startBlack: true); // 이미 화면이 까만 상태(눈 감기 연출 등)에서 바로 넘어가서 밝아짐
 //   SceneFader.Go("Room3_LivingRoom", color: Color.white); // 하얗게 넘어가기
+//   yield return SceneFader.CoverIn(); ... SceneFader.CoverOut();  // 로딩은 직접 하고 화면만 덮었다 걷기
 // 넘어갈 씬은 File > Build Profiles의 Scene List에 들어 있어야 한다.
 public class SceneFader : MonoBehaviour
 {
@@ -22,6 +23,39 @@ public class SceneFader : MonoBehaviour
     Color color = Color.black;
 
     public static bool IsBusy => running != null;
+
+    // ===== 씬 이름 없이 화면만 덮었다 걷기 (로딩을 직접 하는 쪽에서 씀, 예: GameUI의 타이틀로 나가기) =====
+    // 사용: yield return SceneFader.CoverIn();   → 화면이 까매질 때까지 기다림
+    //       (직접 씬 불러오기)
+    //       SceneFader.CoverOut();               → 잠깐 뒤 스스로 밝아지고 사라짐 (부른 쪽이 사라져도 괜찮음)
+    public static IEnumerator CoverIn(float time = 1f)
+    {
+        if (running != null) yield break;
+        GameObject go = new GameObject("SceneFader");
+        DontDestroyOnLoad(go);
+        SceneFader f = go.AddComponent<SceneFader>();
+        f.color = Color.black;
+        f.startBlack = false;
+        f.MakeBlack();
+        running = f;
+        yield return f.Fade(0f, 1f, time);
+    }
+
+    public static void CoverOut(float time = 1.2f, float hold = 0.3f)
+    {
+        if (running == null) return;
+        running.StartCoroutine(running.Uncover(time, hold));
+    }
+
+    IEnumerator Uncover(float time, float hold)
+    {
+        yield return new WaitForSecondsRealtime(hold);
+        yield return null;                   // 새 씬의 Start들이 한 번 돌고 나서
+        yield return null;
+        yield return Fade(1f, 0f, time);
+        running = null;
+        Destroy(gameObject);
+    }
 
     public static void Go(string sceneName, float fadeOutTime = 1f, float fadeInTime = 1.2f, float holdBlack = 0.3f, bool startBlack = false, Color? color = null)
     {

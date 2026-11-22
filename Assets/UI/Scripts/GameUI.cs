@@ -555,6 +555,9 @@ namespace TeamRoulette.UI
             returningToTitle = true;
             settingsControls.SetLoading(true);
 
+            // 먼저 화면을 까맣게 덮음 (새 게임/이어하기와 같은 전환). 로딩 방식(Additive)은 그대로라 엔딩 판정·저장은 전과 같음
+            yield return SceneFader.CoverIn(1f);
+
             var gameplayScenes = new List<Scene>();
             for (int i = 0; i < SceneManager.sceneCount; i++)
             {
@@ -586,6 +589,7 @@ namespace TeamRoulette.UI
 
                 returningToTitle = false;
                 settingsControls.SetLoading(false);
+                SceneFader.CoverOut(0.3f, 0f);   // 실패하면 덮개를 바로 걷음
                 yield break;
             }
 
@@ -621,6 +625,9 @@ namespace TeamRoulette.UI
             Time.timeScale = 1f;
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+
+            // 타이틀이 준비되면 덮개가 스스로 걷힘 (이 GameUI가 사라져도 덮개는 남아서 처리)
+            SceneFader.CoverOut(1.2f, 0.3f);
         }
 
         void Remember(Behaviour component)

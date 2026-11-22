@@ -23,6 +23,12 @@ using UnityEngine.UI;
 //       게이지는 "목표 높이"만 정해 두고, 지도가 펼쳐져 있을 때만 그 높이까지 천천히 따라 올라간다
 //       (접혀 있는 동안 해금하면, 다음에 펼쳤을 때 차오르는 걸 볼 수 있다).
 // 사용: _Systems 프리팹(씬이 바뀌어도 살아남음)을 열어 이 스크립트를 붙이고, Font 칸에 NotoSansKR-Regular SDF를 넣는다.
+// 메모지 배경: Paper Sprite 칸에 UI_Background(메모지 이미지)를 넣으면 어두운 판 대신 메모지 위에 지도가 그려진다.
+//   메모지는 지도보다 조금 크게(Paper Extra) 깔려서 왼쪽 스프링 구멍·위쪽 테이프가 지도 칸을 가리지 않는다.
+//   종이가 밝으니 제목·층 글자는 짙은 색(Paper Ink)으로 바뀐다. 칸(침실·복도·거실)은 그대로 어두운 색.
+//   비워 두면 예전 어두운 판 그대로.
+//   Paper Follows Halftone: 게임 초반(하프톤이 짙을 때)엔 메모지도 어둠에 묻혀 어둡고, 하프톤이 걷힐수록 밝아진다.
+//     메모지 밝기에 맞춰 글자는 밝은 글자 ↔ 짙은 글자 중 더 잘 보이는 쪽으로 자동으로 바뀐다.
 public class HouseMap : MonoBehaviour
 {
     [Header("글꼴 (한글 SDF 폰트)")]
@@ -55,6 +61,17 @@ public class HouseMap : MonoBehaviour
     public Color pipOn = Color.white;                                // 켜진 점
     public Color pipOff = new Color(0.32f, 0.32f, 0.35f, 1f);        // 꺼진 점
 
+    [Header("메모지 배경 (선택: 넣으면 어두운 판 대신 메모지)")]
+    public Sprite paperSprite;                                       // UI_Background (Texture Type = Sprite)
+    public Color paperTint = Color.white;                            // 메모지 색 조정 (흰색 = 원본 그대로)
+    public Vector4 paperExtra = new Vector4(26f, 26f, 10f, 12f);     // 지도보다 더 깔리는 크기 (왼쪽, 위, 오른쪽, 아래)
+    public Color paperInk = new Color(0.16f, 0.15f, 0.14f, 1f);      // 메모지 위 제목 글자
+    public Color paperInkSoft = new Color(0.30f, 0.28f, 0.26f, 1f);  // 메모지 위 개수·층·계단 글자
+    public bool paperFollowsHalftone = true;                         // 체크: 하프톤이 걷힐수록 메모지가 밝아짐
+    public Color paperTintStart = new Color(0.34f, 0.33f, 0.32f, 1f);// 게임 초반(하프톤 가장 짙을 때) 메모지 색 → 끝은 Paper Tint
+    public Color paperInkLight = new Color(0.90f, 0.88f, 0.84f, 1f); // 메모지가 어두울 때 제목 글자
+    public Color paperInkLightSoft = new Color(0.76f, 0.73f, 0.68f, 1f); // 메모지가 어두울 때 개수·층·계단 글자
+
     [Header("게이지가 차오르는 속도 (1 = 1초에 칸 전체)")]
     public float gaugeSpeed = 0.8f;
 
@@ -77,6 +94,9 @@ public class HouseMap : MonoBehaviour
 
     Room bedroom, hallway, living;
     TextMeshProUGUI headerLeft, headerRight;
+    Image paperImage;                    // 메모지 (없으면 null)
+    TextMeshProUGUI[] subTexts;          // 2층·계단·1층 글자
+    float paperShownT = -1f;             // 마지막으로 칠한 메모지 밝기 (같으면 다시 안 칠함)
     CanvasGroup group;
     Sprite circle;
     bool built, open;
@@ -136,13 +156,48 @@ public class HouseMap : MonoBehaviour
         // 2) 펼치기/접기 (투명도를 목표값으로 천천히)
         group.alpha = Mathf.MoveTowards(group.alpha, open ? 1f : 0f, Time.unscaledDeltaTime / Mathf.Max(fadeTime, 0.01f));
 
-        // 3) 게이지는 펼쳐져 있을 때만 차오름
+        // 3) 메모지 밝기 (하프톤에 맞춰)
+        if (paperImage != null && group.alpha > 0f) UpdatePaperLook();
+
+        // 4) 게이지는 펼쳐져 있을 때만 차오름
         if (group.alpha > 0.5f)
         {
             StepGauge(bedroom);
             StepGauge(hallway);
             StepGauge(living);
         }
+    }
+
+    // 메모지 밝기: 하프톤 값(0 = 가장 짙음, 1 = 다 걷힘)에 따라 Paper Tint Start → Paper Tint
+    // 글자는 그 밝기 위에서 더 잘 보이는 쪽(밝은 글자 / 짙은 글자)으로
+    void UpdatePaperLook()
+    {
+        float t = paperFollowsHalftone ? Mathf.Clamp01(HalftoneController.CurrentValue) : 1f;
+        if (Mathf.Abs(t - paperShownT) < 0.005f) return;
+        paperShownT = t;
+
+        Color tint = Color.Lerp(paperTintStart, paperTint, t);
+        paperImage.color = tint;
+
+        // 메모지 원래 색(밝은 회갈색)에 tint를 곱한 밝기로 판단
+        Color paperColor = new Color(0.80f * tint.r, 0.77f * tint.g, 0.71f * tint.b);
+        bool darkText = Contrast(paperColor, paperInk) >= Contrast(paperColor, paperInkLight);
+        headerLeft.color = darkText ? paperInk : paperInkLight;
+        Color soft = darkText ? paperInkSoft : paperInkLightSoft;
+        headerRight.color = soft;
+        foreach (TextMeshProUGUI s in subTexts) s.color = soft;
+    }
+
+    static float Luminance(Color c)
+    {
+        float L(float v) => v <= 0.03928f ? v / 12.92f : Mathf.Pow((v + 0.055f) / 1.055f, 2.4f);
+        return 0.2126f * L(c.r) + 0.7152f * L(c.g) + 0.0722f * L(c.b);
+    }
+
+    static float Contrast(Color a, Color b)
+    {
+        float la = Luminance(a), lb = Luminance(b);
+        return (Mathf.Max(la, lb) + 0.05f) / (Mathf.Min(la, lb) + 0.05f);
     }
 
     // 해금 직후 한 번: 카메라 조작 안내가 끝난 뒤 같은 자막 자리에 "Tab : 해금 현황 보기"
@@ -200,14 +255,29 @@ public class HouseMap : MonoBehaviour
         float pad = 14f, gap = 6f, header = 22f, floorLabel = 16f, stair = 20f;
         float h = pad + header + floorLabel + roomHeight + stair + floorLabel + roomHeight + pad;
         RectTransform panel = MakeRect("Panel", canvasGo.transform, new Vector2(margin.x, -margin.y), new Vector2(width, h));
-        MakeImage(panel, panelColor);
+        bool paper = paperSprite != null;
+        if (paper)
+        {
+            // 메모지: 지도보다 조금 크게, 지도 뒤에 (먼저 만들어야 뒤에 그려짐)
+            RectTransform pr = MakeRect("Paper", panel, new Vector2(-paperExtra.x, paperExtra.y),
+                new Vector2(width + paperExtra.x + paperExtra.z, h + paperExtra.y + paperExtra.w));
+            Image pi = MakeImage(pr, paperTint);
+            pi.sprite = paperSprite;
+            pi.preserveAspect = false;
+            paperImage = pi;
+        }
+        else MakeImage(panel, panelColor);
+        Color titleColor = paper ? paperInk : Color.white;
+        Color countColor = paper ? paperInkSoft : new Color(0.75f, 0.73f, 0.68f);
+        Color subColor = paper ? paperInkSoft : new Color(0.5f, 0.5f, 0.53f);
 
         float inner = width - pad * 2f;
         float y = -pad;
-        headerLeft = MakeText("Title", panel, new Vector2(pad, y), new Vector2(inner, header), 15f, TextAlignmentOptions.Left, Color.white);
-        headerRight = MakeText("Count", panel, new Vector2(pad, y), new Vector2(inner, header), 13f, TextAlignmentOptions.Right, new Color(0.75f, 0.73f, 0.68f));
+        headerLeft = MakeText("Title", panel, new Vector2(pad, y), new Vector2(inner, header), 15f, TextAlignmentOptions.Left, titleColor);
+        headerRight = MakeText("Count", panel, new Vector2(pad, y), new Vector2(inner, header), 13f, TextAlignmentOptions.Right, countColor);
         y -= header;
-        MakeText("Floor2", panel, new Vector2(pad, y), new Vector2(inner, floorLabel), 10f, TextAlignmentOptions.Left, new Color(0.5f, 0.5f, 0.53f)).text = "2층";
+        TextMeshProUGUI floor2 = MakeText("Floor2", panel, new Vector2(pad, y), new Vector2(inner, floorLabel), 10f, TextAlignmentOptions.Left, subColor);
+        floor2.text = "2층";
         y -= floorLabel;
 
         float bedW = (inner - gap) * 0.56f;
@@ -215,9 +285,12 @@ public class HouseMap : MonoBehaviour
         bedroom = MakeRoom(HouseProgress.Area.Bedroom, "침실", panel, new Vector2(pad, y), new Vector2(bedW, roomHeight));
         hallway = MakeRoom(HouseProgress.Area.Hallway, "복도", panel, new Vector2(pad + bedW + gap, y), new Vector2(hallW, roomHeight));
         y -= roomHeight;
-        MakeText("Stair", panel, new Vector2(pad, y), new Vector2(inner - 10f, stair), 11f, TextAlignmentOptions.Right, new Color(0.5f, 0.5f, 0.53f)).text = "↓ 계단";
+        TextMeshProUGUI stairText = MakeText("Stair", panel, new Vector2(pad, y), new Vector2(inner - 10f, stair), 11f, TextAlignmentOptions.Right, subColor);
+        stairText.text = "↓ 계단";
         y -= stair;
-        MakeText("Floor1", panel, new Vector2(pad, y), new Vector2(inner, floorLabel), 10f, TextAlignmentOptions.Left, new Color(0.5f, 0.5f, 0.53f)).text = "1층";
+        TextMeshProUGUI floor1 = MakeText("Floor1", panel, new Vector2(pad, y), new Vector2(inner, floorLabel), 10f, TextAlignmentOptions.Left, subColor);
+        floor1.text = "1층";
+        subTexts = new[] { floor2, stairText, floor1 };
         y -= floorLabel;
         living = MakeRoom(HouseProgress.Area.Living, "거실", panel, new Vector2(pad, y), new Vector2(inner, roomHeight));
     }
