@@ -11612,7 +11612,7 @@ MonoBehaviour:
   lockedMessage: 
   lockedDialogue: {fileID: 216656533}
   positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 0, y: 0, z: 0}
+  rotationOffset: {x: -64, y: 0, z: 0}
 --- !u!65 &176051244
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -12085,8 +12085,8 @@ MonoBehaviour:
   holdStyle: 0
   lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
   lockedDialogue: {fileID: 1001622837}
-  positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 0, y: 0, z: 0}
+  positionOffset: {x: 0, y: 0, z: -0.02}
+  rotationOffset: {x: 94.98, y: 0, z: 0}
 --- !u!65 &186756184
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -14008,7 +14008,7 @@ MonoBehaviour:
   lockedMessage: 
   lockedDialogue: {fileID: 216656533}
   positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 0, y: 0, z: 0}
+  rotationOffset: {x: -87.94, y: 0, z: 0}
 --- !u!65 &220112025
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -28223,7 +28223,7 @@ MonoBehaviour:
   lockedMessage: 
   lockedDialogue: {fileID: 216656533}
   positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 0, y: 0, z: 0}
+  rotationOffset: {x: -87.94, y: 0, z: 0}
 --- !u!1001 &449824196
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -35630,8 +35630,8 @@ MonoBehaviour:
   holdStyle: 0
   lockedMessage: 
   lockedDialogue: {fileID: 1001622837}
-  positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 0, y: 0, z: 0}
+  positionOffset: {x: 0, y: 0, z: 0.02}
+  rotationOffset: {x: 20.9, y: 0, z: 0}
 --- !u!65 &594878281
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -45117,13 +45117,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5004464830b8a424e9183d437dd1cb2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DevSkip
-  skipIntro: 0
+  skipIntro: 1
   openingDialogue: {fileID: 1769209431}
   hideOnSkip:
   - {fileID: 498462706}
   startPoint: {fileID: 1247591374}
   bedLie: {fileID: 102194007}
-  unlockOnSkip: 00000000010000000800000005000000
+  unlockOnSkip: 0000000001000000080000000500000002000000
   onSkip:
     m_PersistentCalls:
       m_Calls:
@@ -97940,7 +97940,7 @@ MonoBehaviour:
   lockedMessage: 
   lockedDialogue: {fileID: 216656533}
   positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 0, y: 0, z: 0}
+  rotationOffset: {x: -81.47, y: 0, z: 0}
 --- !u!65 &1666859792
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -101588,7 +101588,7 @@ MonoBehaviour:
   lockedMessage: 
   lockedDialogue: {fileID: 216656533}
   positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 0, y: 0, z: 0}
+  rotationOffset: {x: -87.94, y: 0, z: 0}
 --- !u!65 &1728484737
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -105020,7 +105020,7 @@ MonoBehaviour:
   lockedMessage: 
   lockedDialogue: {fileID: 1001622837}
   positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 0, y: 0, z: 0}
+  rotationOffset: {x: -87.92, y: 0, z: 0}
 --- !u!65 &1785722638
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -109130,7 +109130,7 @@ MonoBehaviour:
   lockedMessage: 
   lockedDialogue: {fileID: 1001622837}
   positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 0, y: 0, z: 0}
+  rotationOffset: {x: -87.92, y: 0, z: 0}
 --- !u!65 &1862070531
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -112152,8 +112152,8 @@ MonoBehaviour:
   holdStyle: 0
   lockedMessage: "\uC190\uC5D0 \uD798\uC774 \uB4E4\uC5B4\uAC00\uC9C0 \uC54A\uB294\uB2E4."
   lockedDialogue: {fileID: 1001622837}
-  positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 0, y: 0, z: 0}
+  positionOffset: {x: 0, y: 0.07, z: 0}
+  rotationOffset: {x: -84.94, y: 0, z: 0}
 --- !u!65 &1888383267
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -126978,8 +126978,8 @@ MonoBehaviour:
   holdStyle: 0
   lockedMessage: 
   lockedDialogue: {fileID: 1001622837}
-  positionOffset: {x: 0, y: 0, z: 0}
-  rotationOffset: {x: 0, y: 0, z: 0}
+  positionOffset: {x: 0, y: 0.07, z: 0}
+  rotationOffset: {x: -84.94, y: 0, z: 0}
 --- !u!65 &2129327007
 BoxCollider:
   m_ObjectHideFlags: 0
