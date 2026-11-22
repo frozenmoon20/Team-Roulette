@@ -232,10 +232,16 @@ public class SokobanGameManager : MonoBehaviour
             nextPath.SetActive(true);
 
         SceneUIContent ui =
-            FindFirstObjectByType<SceneUIContent>();
+    FindFirstObjectByType<SceneUIContent>();
 
-        if (ui != null)
-            ui.CompleteObjective("sokoban");
+if (ui != null)
+{
+    // 소코반 목표 완료
+    ui.CompleteObjective("sokoban");
+
+    // 서랍 퍼즐 목표 공개
+    ui.RevealObjective("drawer_puzzle");
+}
 
         Debug.Log("소코반 전체 클리어!");
 
