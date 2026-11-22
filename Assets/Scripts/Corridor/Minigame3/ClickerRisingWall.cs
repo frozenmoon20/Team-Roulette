@@ -1,6 +1,7 @@
 
 using System.Collections;
 using UnityEngine;
+using TeamRoulette.UI;
 
 public class ClickerRisingWall : MonoBehaviour
 {
@@ -24,6 +25,9 @@ public class ClickerRisingWall : MonoBehaviour
 
     [Header("돌벽 상승 효과음")]
     public AudioClip wallRiseSound;
+
+    [Header("첫 번째 벽 목표 표시")]
+public bool revealEndingObjectiveOnOpen = false;
 
     [Range(0f, 1f)]
     public float soundVolume = 0.8f;
@@ -70,14 +74,22 @@ public class ClickerRisingWall : MonoBehaviour
         difference.y = 0f;
 
         if (difference.sqrMagnitude <=
-            hintDistance * hintDistance)
-        {
-            hintShown = true;
+    hintDistance * hintDistance)
+{
+    // 클릭커를 획득한 후에만 안내 표시
+    ClickerPocketController clickerController =
+        FindFirstObjectByType<ClickerPocketController>();
 
-            PlayerInteractor.ShowHint(
-                hintMessage
-            );
-        }
+    if (clickerController == null ||
+        !clickerController.HasClicker)
+        return;
+
+    hintShown = true;
+
+    PlayerInteractor.ShowHint(
+        hintMessage
+    );
+}
     }
 
     public void RaiseWall()
@@ -164,6 +176,16 @@ public class ClickerRisingWall : MonoBehaviour
         transform.position = target;
 
         isOpened = true;
-        isRising = false;
+isRising = false;
+
+// 첫 번째 벽이 완전히 열린 후 엔딩 목표 공개
+if (revealEndingObjectiveOnOpen)
+{
+    SceneUIContent ui =
+        FindFirstObjectByType<SceneUIContent>();
+
+    if (ui != null)
+        ui.RevealObjective("ending_corridor");
+}
     }
 }

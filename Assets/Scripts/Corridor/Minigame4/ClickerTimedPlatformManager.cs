@@ -149,8 +149,10 @@ public class ClickerTimedPlatformManager : MonoBehaviour
 
         // 기존 안내 문구
         if (!hintShown &&
-            !running &&
-            activationPoint != null)
+    !running &&
+    activationPoint != null &&
+    clickerController != null &&
+    clickerController.HasClicker)
         {
             if (HorizontalDistance(
                 player.transform.position,

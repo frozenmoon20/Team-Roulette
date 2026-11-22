@@ -1,11 +1,8 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-// 손에 든 물건(GrabbableItem)을 넣거나 올려 두는 곳 (선반, 빨래통, 쓰레기통 등)
-// 맞지 않는 물건을 넣으려 하면: wrongItemDialogue(대화창)가 나온다.
-//   wrongItemDialogue를 비워 두면 예전처럼 화면 아래 짧은 글자(wrongItemMessage)가 뜬다 (기존 PlaceSpot은 그대로 동작).
-// 빈손으로 클릭하면: emptyHandDialogue (예: LP 플레이어 "…판이 없네.") / 다 놓은 뒤 클릭하면: doneDialogue
-//   둘 다 비워 두면 예전처럼 아무 일도 없다. → 상호작용 오브젝트를 따로 두지 않고 PlaceSpot 하나로 처리할 수 있다.
+// 손에 든 물건(GrabbableItem)을 넣거나 올려 두는 곳
+// 선반, 빨래통, 장난감 상자 등에 사용
 public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
 {
     public string displayName = "";
@@ -16,22 +13,32 @@ public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
     public Transform[] placePoints;
 
     public bool hideOnPlace;
-    public string wrongItemMessage = "여기에 둘 건 아니다.";
-    public DialogueStep wrongItemDialogue;   // 맞지 않는 물건일 때 대사 (넣으면 위 글자 대신 이게 나옴)
-    public DialogueStep emptyHandDialogue;   // 빈손으로 클릭했을 때 대사 (비워 두면 아무 일 없음)
-    public DialogueStep doneDialogue;        // 다 놓은 뒤 다시 클릭했을 때 대사 (비워 두면 아무 일 없음)
-    public bool disablePlacedColliders = true;   // 놓은 물건의 충돌체를 끔 (통 안 물건이 클릭을 가로채거나 다시 집히지 않게)
-    [Header("효과음 (비워 두면 소리 없음)")]
-    public AudioClip placeClip;              // 물건을 하나 넣을 때마다 나는 소리 (쓰레기통: 툭, 빨래통: 부스럭)
-    [Range(0f, 1f)] public float placeVolume = 0.8f;
 
-    public UnityEvent onPlaced;              // 물건을 하나 넣을 때마다 (필요할 때만 연결)
+    public string wrongItemMessage = "여기에 둘 건 아니다.";
+
+    public DialogueStep wrongItemDialogue;
+    public DialogueStep emptyHandDialogue;
+    public DialogueStep doneDialogue;
+
+    // 놓은 물건의 충돌체를 끌지 여부
+    public bool disablePlacedColliders = true;
+
+    [Header("효과음 (비워 두면 소리 없음)")]
+    public AudioClip placeClip;
+
+    [Range(0f, 1f)]
+    public float placeVolume = 0.8f;
+
+    public UnityEvent onPlaced;
     public UnityEvent onAllPlaced;
 
     public string DisplayName => displayName;
+
     public int PlacedCount { get; private set; }
+
     public bool useExactPlacement;
 
+    // 해당 물건을 놓을 수 있는지 확인
     public bool CanAccept(GrabbableItem item)
     {
         if (item == null || acceptItems == null)
@@ -44,37 +51,51 @@ public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
     {
         PlayerHand hand = PlayerHand.Instance;
 
-        // 이미 다 놓았으면
-        if (acceptItems != null && acceptItems.Length > 0 && PlacedCount >= acceptItems.Length)
+        // 이미 모든 물건을 놓았을 때
+        if (acceptItems != null &&
+            acceptItems.Length > 0 &&
+            PlacedCount >= acceptItems.Length)
         {
             PlayDialogue(doneDialogue);
             return;
         }
 
-        // 빈손이면
+        // 손에 아무것도 없을 때
         if (hand == null || hand.Held == null)
         {
             PlayDialogue(emptyHandDialogue);
             return;
         }
 
+        // 놓을 수 없는 물건일 때
         if (!CanAccept(hand.Held))
         {
             if (wrongItemDialogue != null)
             {
-                if (!wrongItemDialogue.IsPlaying) wrongItemDialogue.Play();   // 대화창으로
+                if (!wrongItemDialogue.IsPlaying)
+                    wrongItemDialogue.Play();
             }
-            else PlayerInteractor.ShowHint(wrongItemMessage);                 // 대사가 없으면 예전처럼 글자로
+            else
+            {
+                PlayerInteractor.ShowHint(wrongItemMessage);
+            }
+
             return;
         }
 
+        // 다음 배치 위치 가져오기
         Transform targetPoint = GetNextPlacePoint();
+
+        // 현재 들고 있는 물건 저장
         GrabbableItem placedItem = hand.Held;
 
+        // 물건 배치
         if (useExactPlacement && !hideOnPlace)
         {
             GrabbableItem item = hand.Held;
+
             hand.PlaceHeld(targetPoint, false);
+
             item.PlaceExactlyAt(targetPoint);
         }
         else
@@ -82,19 +103,70 @@ public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
             hand.PlaceHeld(targetPoint, hideOnPlace);
         }
 
-        // 놓은 물건의 충돌체 끄기: 켜져 있으면 다음에 이 통을 클릭할 때 안에 든 물건이 먼저 맞아서
-        //   통 이름·대사가 안 나오고, 놓은 물건을 다시 집을 수도 있음
-        if (disablePlacedColliders && placedItem != null)
-            foreach (Collider c in placedItem.GetComponentsInChildren<Collider>()) c.enabled = false;
+        // ============================================
+        // [수정] 놓은 장난감의 Rigidbody 고정
+        // ============================================
+        //
+        // 집기 전:
+        // Rigidbody 중력 정상 작동
+        //
+        // 손에 들었을 때:
+        // PlayerHand에서 물리 일시 정지
+        //
+        // 박스에 놓은 후:
+        // Collider가 꺼지는 물건은 위치 고정
+        //
+        // 이를 통해 장난감이 박스 바닥을
+        // 통과하여 떨어지는 현상 방지
+        // ============================================
 
+        if (!hideOnPlace &&
+            disablePlacedColliders &&
+            placedItem != null)
+        {
+            Rigidbody rb =
+                placedItem.GetComponent<Rigidbody>();
+
+            if (rb != null)
+            {
+                // 기존 이동 속도 제거
+                rb.linearVelocity = Vector3.zero;
+
+                // 기존 회전 속도 제거
+                rb.angularVelocity = Vector3.zero;
+
+                // 물리 시뮬레이션으로 움직이지 않도록 고정
+                rb.isKinematic = true;
+            }
+        }
+
+        // ============================================
+        // 기존 기능: 놓은 물건의 Collider 비활성화
+        // ============================================
+
+        if (disablePlacedColliders && placedItem != null)
+        {
+            foreach (Collider c in
+                placedItem.GetComponentsInChildren<Collider>())
+            {
+                c.enabled = false;
+            }
+        }
+
+        // 배치한 물건 수 증가
         PlacedCount++;
-        AudioManager.Play(placeClip, placeVolume);   // 효과음 (효과음 해금 전엔 안 남, 설정 볼륨 따름)
+
+        // 배치 효과음
+        AudioManager.Play(placeClip, placeVolume);
+
+        // 물건 하나 배치 시 이벤트
         onPlaced.Invoke();
 
-        // 다 놓아도 이 컴포넌트는 끄지 않음 (끄면 마우스를 대도 이름이 안 뜨고 Done Dialogue도 안 나옴)
-        //   다 놓은 뒤 클릭은 위쪽의 "이미 다 놓았으면" 검사에서 Done Dialogue로 처리됨
+        // 모든 물건 배치 완료
         if (PlacedCount >= acceptItems.Length)
+        {
             onAllPlaced.Invoke();
+        }
     }
 
     // 이어하기용 (SavePlaceSpot이 부름): 손을 거치지 않고, 이벤트·소리 없이 물건을 넣은 상태로 만든다
@@ -109,16 +181,32 @@ public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
         item.enabled = false;                         // 다시 못 집게
 
         if (disablePlacedColliders)
+        {
             foreach (Collider c in item.GetComponentsInChildren<Collider>(true)) c.enabled = false;
+
+            // 위 놓기와 같게: 충돌체를 끈 물건은 떨어지지 않도록 물리 고정
+            Rigidbody rb = item.GetComponent<Rigidbody>();
+            if (rb != null && !hideOnPlace)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.isKinematic = true;
+            }
+        }
 
         PlacedCount++;
     }
 
+    // 대사 출력
     static void PlayDialogue(DialogueStep step)
     {
-        if (step != null && !step.IsPlaying) step.Play();
+        if (step != null && !step.IsPlaying)
+        {
+            step.Play();
+        }
     }
 
+    // 다음 물건을 놓을 위치 결정
     Transform GetNextPlacePoint()
     {
         if (placePoints != null &&
@@ -129,7 +217,9 @@ public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
         }
 
         if (placePoint != null)
+        {
             return placePoint;
+        }
 
         return transform;
     }

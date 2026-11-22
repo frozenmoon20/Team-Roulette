@@ -52,6 +52,27 @@ namespace TeamRoulette.CorridorEnding
         public AudioSource clickAudioSource;
         public AudioClip clickSound;
 
+
+[Header("겨울이 이별 엔딩 BGM")]
+public AudioSource endingBgmSource;
+public AudioClip endingBgmClip;
+
+[Range(0f, 1f)]
+public float endingBgmStartVolume = 0.008f;
+
+[Range(0f, 1f)]
+public float endingBgmMaxVolume = 0.32f;
+
+[Min(0.01f)]
+public float endingBgmFadeInDuration = 6f;
+
+[Min(0.01f)]
+public float endingBgmFadeOutDuration = 2.5f;
+
+private Coroutine endingBgmFadeRoutine;
+private bool endingBgmStarted;
+
+
         [Range(0f, 1f)]
         public float clickVolume = 0.9f;
 
@@ -494,6 +515,7 @@ public float endingDoorSoundVolume = 0.8f;
                 handPetPoint != null)
             {
                 // 추가: 쓰다듬기 시작 시 한 번만 재생
+                StartEndingBgm();
                 AudioManager.Play(
                     pettingSound,
                     pettingSoundVolume
@@ -731,6 +753,9 @@ AudioManager.Play(
 
             if (whiteLightBehindDoor != null)
                 whiteLightBehindDoor.SetActive(true);
+                // 문 뒤에서 빛이 나오기 시작하면
+// 엔딩 BGM을 서서히 줄인다.
+FadeOutEndingBgm();
 
             float elapsed = 0f;
 
@@ -1129,6 +1154,113 @@ AudioManager.Play(
 
             return Vector3.Distance(a, b);
         }
+
+private void StartEndingBgm()
+{
+    if (endingBgmStarted ||
+        endingBgmSource == null ||
+        endingBgmClip == null)
+        return;
+
+    endingBgmStarted = true;
+
+    if (endingBgmFadeRoutine != null)
+        StopCoroutine(endingBgmFadeRoutine);
+
+    endingBgmSource.Stop();
+
+    // 반복 없이 한 번만 재생
+    endingBgmSource.clip = endingBgmClip;
+    endingBgmSource.loop = false;
+    endingBgmSource.playOnAwake = false;
+    endingBgmSource.spatialBlend = 0f;
+
+    // 게임 설정의 배경음악 볼륨 반영
+    float musicVolume = Mathf.Clamp01(
+        PlayerPrefs.GetFloat("Roulette.UI.Music", 1f)
+    );
+
+    float startVolume =
+        Mathf.Min(endingBgmStartVolume, endingBgmMaxVolume)
+        * musicVolume;
+
+    float targetVolume =
+        endingBgmMaxVolume * musicVolume;
+
+    // 아주 작은 소리에서 시작
+    endingBgmSource.volume = startVolume;
+    endingBgmSource.Play();
+
+    endingBgmFadeRoutine = StartCoroutine(
+        FadeEndingBgm(
+            startVolume,
+            targetVolume,
+            endingBgmFadeInDuration,
+            false
+        )
+    );
+}
+
+private void FadeOutEndingBgm()
+{
+    if (!endingBgmStarted ||
+        endingBgmSource == null ||
+        !endingBgmSource.isPlaying)
+        return;
+
+    // 진행 중인 페이드인을 중단
+    if (endingBgmFadeRoutine != null)
+        StopCoroutine(endingBgmFadeRoutine);
+
+    // 현재 볼륨에서 자연스럽게 감소
+    endingBgmFadeRoutine = StartCoroutine(
+        FadeEndingBgm(
+            endingBgmSource.volume,
+            0f,
+            endingBgmFadeOutDuration,
+            true
+        )
+    );
+}
+
+private IEnumerator FadeEndingBgm(
+    float from,
+    float to,
+    float duration,
+    bool stopAtEnd)
+{
+    duration = Mathf.Max(0.01f, duration);
+
+    float elapsed = 0f;
+
+    while (elapsed < duration &&
+           endingBgmSource != null &&
+           endingBgmSource.isPlaying)
+    {
+        elapsed += Time.deltaTime;
+
+        float t = Mathf.SmoothStep(
+            0f,
+            1f,
+            Mathf.Clamp01(elapsed / duration)
+        );
+
+        endingBgmSource.volume =
+            Mathf.Lerp(from, to, t);
+
+        yield return null;
+    }
+
+    if (endingBgmSource != null)
+    {
+        endingBgmSource.volume = to;
+
+        if (stopAtEnd)
+            endingBgmSource.Stop();
+    }
+
+    endingBgmFadeRoutine = null;
+}
 
         private void OnDisable()
         {
