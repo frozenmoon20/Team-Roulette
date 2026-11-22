@@ -45117,7 +45117,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5004464830b8a424e9183d437dd1cb2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DevSkip
-  skipIntro: 1
+  skipIntro: 0
   openingDialogue: {fileID: 1769209431}
   hideOnSkip:
   - {fileID: 498462706}

@@ -80,6 +80,7 @@ public static class SaveSystem
     static string pendingPoint;              // 이어하기로 옮겨 갈 저장 지점 (SavePoint가 확인)
     static Data continued;                   // 이어하기로 불러온 내용 (그 씬에 있는 동안 DevSkip 등이 확인)
     static string continuedScene = "";       // 이어하기로 들어간 씬 (다른 씬으로 넘어가면 비움)
+    static bool continueApplied;             // 이어하기 내용을 이미 한 번 적용했는지 (같은 씬을 다시 열 때 또 적용하지 않게)
 
     public static bool HasSave => PlayerPrefs.HasKey(Key);
 
@@ -102,7 +103,7 @@ public static class SaveSystem
     {
         // 게임(Play)이 시작될 때마다 기록을 비움 (에디터 설정에 따라 지난 Play의 값이 남는 걸 막음)
         currentScene = ""; currentPoint = ""; flags.Clear(); hold = 0; pointHold = false;
-        pending = null; pendingPoint = null; continued = null; continuedScene = "";
+        pending = null; pendingPoint = null; continued = null; continuedScene = ""; continueApplied = false;
         SceneManager.sceneLoaded -= OnSceneLoaded;
         SceneManager.sceneLoaded += OnSceneLoaded;
         OptionState.OnOptionChanged -= OnOptionChanged;     // 해금될 때마다 저장
@@ -149,6 +150,10 @@ public static class SaveSystem
 
         // 이어하기로 들어간 씬을 떠났으면 이어하기 기록을 비움
         if (continuedScene != scene.name) { continuedScene = ""; continued = null; pendingPoint = null; }
+        // 같은 씬을 한 번 더 연 것(예: 거실 인형 회상이 끝나고 거실을 다시 열 때)은 이어하기가 아님
+        //   → 이어하기 때 불러온 옛 저장(목표, 거실 진행)으로 지금 진행을 되돌리지 않게 비움
+        else if (continueApplied) { continuedScene = ""; continued = null; pendingPoint = null; }
+        continueApplied = !string.IsNullOrEmpty(continuedScene);
 
         // 새 씬에 들어왔으면 그 씬의 시작 지점부터 (이어하기면 PrepareContinue가 미리 맞춰 둬서 그 지점 유지)
         if (currentScene != scene.name) { currentScene = scene.name; currentPoint = ""; }
@@ -329,6 +334,7 @@ public static class SaveSystem
         pendingPoint = pending.point;
         continued = pending;
         continuedScene = pending.scene;
+        continueApplied = false;             // 이번에 여는 씬이 이어하기 첫 적용
         return pending.scene;
     }
 
@@ -340,6 +346,7 @@ public static class SaveSystem
         pendingPoint = null;
         continued = null;
         continuedScene = "";
+        continueApplied = false;
         flags.Clear();
         currentScene = "";
         currentPoint = "";
