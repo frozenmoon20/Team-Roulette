@@ -37,6 +37,7 @@ namespace TeamRoulette.Room3
 
         [Header("이 씬의 배경음악과 효과음")]
         [SerializeField] private List<Sound> sounds = new List<Sound>();
+        private bool started;
 
         public static RoomAudio For(Component caller)
         {
@@ -47,10 +48,21 @@ namespace TeamRoulette.Room3
             return null;
         }
 
-        private void OnEnable() => OptionState.OnOptionChanged += OnOptionChanged;
+        private void OnEnable()
+        {
+            OptionState.OnOptionChanged += OnOptionChanged;
+            if (!started)
+                return;
+
+            // Returning from an additive visit re-enables this object without running Start again.
+            foreach (var sound in sounds)
+                if (sound.playOnStart && sound.loop && sound.category == Category.BackgroundMusic)
+                    Play(sound.id);
+        }
 
         private void Start()
         {
+            started = true;
             foreach (var sound in sounds)
                 if (sound.playOnStart)
                     Play(sound.id);

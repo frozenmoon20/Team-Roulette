@@ -299,6 +299,7 @@ public sealed class MealGameController : MonoBehaviour
         bakingToast.SetActive(true);
         timerPanel.SetActive(true);
         SecondsRemaining = toastSeconds;
+        PlaySound("Toaster Ding", toasterAudio, dingSound);
         while (SecondsRemaining > 0)
         {
             timerText.text = Mathf.CeilToInt(SecondsRemaining).ToString("00");
@@ -311,7 +312,6 @@ public sealed class MealGameController : MonoBehaviour
         cookedToast.transform.SetPositionAndRotation(cookedPopPoint.position, cookedPopPoint.rotation);
         ToastReady = true;
         RequestObjective();
-        PlaySound("Toaster Ding", toasterAudio, dingSound);
     }
 
     IEnumerator FinishMeal()
@@ -330,15 +330,28 @@ public sealed class MealGameController : MonoBehaviour
         interactor.playerCamera.transform.SetPositionAndRotation(eatingView.position, eatingView.rotation);
         blackScreen.alpha = 0;
         var roomAudio = RoomAudio.For(this);
-        if (roomAudio)
-            roomAudio.Play("Eating", actionAudio);
-        else if (actionAudio && eatSound)
+        float clipSeconds = roomAudio ? roomAudio.ClipDuration("Eating") : (eatSound ? eatSound.length : 0f);
+        float eatingStarted = Time.time;
+        for (int repeat = 0; repeat < 2; repeat++)
         {
-            actionAudio.clip = eatSound;
-            actionAudio.loop = true;
-            actionAudio.Play();
+            StopEatingSound();
+            if (roomAudio)
+            {
+                roomAudio.Play("Eating", actionAudio);
+                if (actionAudio) actionAudio.loop = false;
+            }
+            else if (actionAudio && eatSound)
+            {
+                actionAudio.clip = eatSound;
+                actionAudio.loop = false;
+                actionAudio.Play();
+            }
+            float pitch = actionAudio ? Mathf.Max(.01f, Mathf.Abs(actionAudio.pitch)) : 1f;
+            if (clipSeconds > 0) yield return new WaitForSeconds(clipSeconds / pitch);
         }
-        yield return new WaitForSeconds(eatingSeconds);
+        StopEatingSound();
+        float remainingEatingTime = eatingSeconds - (Time.time - eatingStarted);
+        if (remainingEatingTime > 0) yield return new WaitForSeconds(remainingEatingTime);
         CompleteMeal();
     }
     void CompleteMeal()

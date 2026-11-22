@@ -1,1 +1,0 @@
-removed placeholder Door; retained credits controller and click target

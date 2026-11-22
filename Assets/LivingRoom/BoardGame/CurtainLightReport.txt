@@ -1,0 +1,1 @@
+PASS: reference linked and scene saved; starts off; curtain reveal switches light on; closed state off; completed curtain restore activates both light component and GameObject. Brightness and position preserved.

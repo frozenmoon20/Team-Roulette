@@ -293,9 +293,38 @@ namespace TeamRoulette.Room3.DollMemory
         IEnumerator TouchButton()
         {
             if(!handVisual) { yield return new WaitForSeconds(.35f); yield break; }
-            handVisual.gameObject.SetActive(true); Vector3 start=handVisual.position; Quaternion rotation=handVisual.rotation;
-            for(float t=0;t<.7f;t+=Time.deltaTime) { float a=Mathf.Sin(t/.7f*Mathf.PI); handVisual.position=Vector3.Lerp(start,washerButton.position-film.transform.right*.065f,a); yield return null; }
-            handVisual.SetPositionAndRotation(start,rotation);
+            handVisual.gameObject.SetActive(true);
+            Vector3 start = handVisual.position;
+            string indexBoneName = hand.GetComponent<HandPose>()?.bonePrefix + HandPose.Finger.Index + "3";
+            Transform indexJoint = handVisual.GetComponentsInChildren<Transform>(true)
+                .FirstOrDefault(bone => bone.name == indexBoneName);
+
+            const float halfPress = .35f;
+            for (float elapsed = 0; elapsed < halfPress; elapsed += Time.deltaTime)
+            {
+                MoveHandToButton(Mathf.Sin(elapsed / halfPress * Mathf.PI * .5f));
+                yield return null;
+            }
+            MoveHandToButton(1f);
+            yield return null;
+            for (float elapsed = Time.deltaTime; elapsed < halfPress; elapsed += Time.deltaTime)
+            {
+                MoveHandToButton(Mathf.Cos(elapsed / halfPress * Mathf.PI * .5f));
+                yield return null;
+            }
+            handVisual.position = start;
+
+            void MoveHandToButton(float progress)
+            {
+                Vector3 target = washerButton.position;
+                if (indexJoint)
+                {
+                    // The last index bone is at the start of the distal segment.
+                    Vector3 fingertip = indexJoint.position + (indexJoint.position - indexJoint.parent.position) * .65f;
+                    target -= fingertip - handVisual.position;
+                }
+                handVisual.position = Vector3.Lerp(start, target, progress);
+            }
         }
         void HideHUD()
         {

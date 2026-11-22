@@ -65,6 +65,7 @@ namespace TeamRoulette.UI
 
         SceneUIContent content;
         DialogueSequence currentDialogue;
+        bool dialoguePlaysWhileFrozen;
 
         int line, lineStartedFrame, releaseAfterFrame;
         float lineElapsed;
@@ -218,7 +219,7 @@ namespace TeamRoulette.UI
             if (inputOwner && inputOwner != this)
                 return;
 
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (!dialoguePlaysWhileFrozen && Input.GetKeyDown(KeyCode.Escape))
             {
                 if (
                     ObjectInspectionManager.Instance != null &&
@@ -236,7 +237,7 @@ namespace TeamRoulette.UI
                 return;
             }
 
-            if (pause || Time.timeScale == 0)
+            if (pause || (Time.timeScale == 0 && !dialoguePlaysWhileFrozen))
                 return;
 
             if (
@@ -327,6 +328,13 @@ namespace TeamRoulette.UI
             RenderLine();
         }
 
+        public void ShowDialogueWhileFrozen(DialogueSequence sequence)
+        {
+            ShowDialogue(sequence);
+            if (sequence && currentDialogue == sequence)
+                dialoguePlaysWhileFrozen = true;
+        }
+
         void RenderLine()
         {
             dialogueText.text = currentDialogue.lines[line];
@@ -370,6 +378,7 @@ namespace TeamRoulette.UI
             var finished = currentDialogue;
 
             currentDialogue = null;
+            dialoguePlaysWhileFrozen = false;
             dialoguePanel.SetActive(false);
 
             content.onDialogueFinished.Invoke();

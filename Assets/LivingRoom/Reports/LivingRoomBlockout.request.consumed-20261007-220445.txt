@@ -1,1 +1,0 @@
-Create primitive-only LivingRoom blockout, replace old geometry, save active scene without a backup.

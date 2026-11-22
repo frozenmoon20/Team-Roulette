@@ -127,6 +127,7 @@ namespace TeamRoulette.Room3
             if (PlayerHand.Instance && PlayerHand.Instance.Held) return;
             if (state == State.Black)
             {
+                if (!GameManager.TryBegin(GameStage.TV)) return;
                 SetStandby(true);
                 RoomAudio.For(this)?.Play("TV Power");
                 return;
@@ -149,8 +150,7 @@ namespace TeamRoulette.Room3
         public void Accept()
         {
             if (state != State.Confirm) return;
-            // TryBegin runs while GameUI is blocked, before any screen is covered by video.
-            if (!GameManager.TryBegin(GameStage.TV)) { Decline(); return; }
+            if (!GameManager.CanPlay(GameStage.TV)) { Decline(); return; }
             BeginPlayback();
         }
 

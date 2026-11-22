@@ -84,7 +84,8 @@ public static class TVGameVerification
         Check(game && game.enabled && manager && game.player && game.viewCamera, "실제 Screen·플레이어·카메라·진행 관리자 연결");
         Check(!game.Ready && !Field<RawImage>(game, "preview").gameObject.activeSelf, "시작은 검은 화면");
         game.Interact();
-        Check(!game.Ready && manager.CurrentStage == GameStage.Curtain, "TV 목표 이전에는 상호작용과 목표 건너뛰기 차단");
+        Check(!game.Ready && !manager.HasStarted(GameStage.TV) && manager.CurrentStage == GameStage.Curtain,
+            "TV 목표 이전에는 상호작용과 시작 대사 차단");
         foreach (var stage in GameManager.Progression.TakeWhile(stage => stage != GameStage.TV))
             Check(GameManager.ReportComplete(stage), "검증용 선행 목표 완료: " + stage);
         var mesh = game.screen.GetComponent<MeshFilter>().sharedMesh;
@@ -95,6 +96,8 @@ public static class TVGameVerification
         Physics.SyncTransforms();
         game.Interact();
         Check(game.Ready && Field<RawImage>(game, "preview").gameObject.activeSelf, "첫 클릭으로 썸네일과 반투명 플레이 표시");
+        Check(manager.HasStarted(GameStage.TV) && !game.IsPlaying && !Field<GameObject>(game, "prompt").activeInHierarchy,
+            "첫 클릭에서 시작 대사를 요청하고, 영상과 재생 확인은 대기");
         var ray = game.viewCamera.ViewportPointToRay(new Vector3(.5f, .5f));
         var interactor = game.player.GetComponentInChildren<PlayerInteractor>();
         results += "판정 진단: screen=" + game.screen.position + "; normal=" + normal + "; ray=" + ray + "\n";

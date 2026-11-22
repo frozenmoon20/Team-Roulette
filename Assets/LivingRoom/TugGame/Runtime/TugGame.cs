@@ -42,14 +42,13 @@ namespace TeamRoulette.Room3.TugPlay
         public bool playWhenSceneOpenedDirectly = true;
         public bool returnToLivingRoom = true;
         [Header("라운드와 난이도")]
-        [Min(1)] public int roundCount = 2;
+        [HideInInspector] public int roundCount = 1;
         [Min(1)] public int successesPerRound = 5;
         [Tooltip("방향 표시가 뜬 뒤 입력을 받을 시간입니다. 단위는 초입니다.")]
         [Min(.1f)] public float responseSeconds = .6f;
         [Header("라운드 전환과 종료 연출")]
         [Min(.1f)] public float exchangeWalkSeconds = 1.6f;
         [Min(.1f)] public float skyLookSeconds = 1.2f;
-        [Min(.1f)] public float celebrationSeconds = 2.2f;
 
         [Header("플레이어 시점과 겨울이 반응")]
         [Min(.7f)] public float dogDistance = 1.45f;
@@ -150,7 +149,7 @@ namespace TeamRoulette.Room3.TugPlay
             { Debug.LogError("[TugGame] 리깅된 로프의 SimpleTugRope를 연결해주세요.", this); return false; }
             if (ropePrefabs != null && ropePrefabs.Any(p => p && !p.GetComponentInChildren<SimpleTugRope>(true)))
             { Debug.LogError("[TugGame] 로프 목록의 모든 Prefab에 SimpleTugRope가 필요합니다.", this); return false; }
-            roundCount = Mathf.Max(1, roundCount); successesPerRound = Mathf.Max(1, successesPerRound);
+            roundCount = 1; successesPerRound = Mathf.Max(1, successesPerRound);
             CaptureAndLock();
             Phase = TugPhase.Preparing;
             MakeTargets(); MakeUI(); MakeActions();
@@ -296,14 +295,13 @@ namespace TeamRoulette.Room3.TugPlay
             while (sharedUI.IsDialogueOpen) yield return null;
             if (correct && RoundSuccesses >= successesPerRound)
             {
-                if (RoundIndex >= roundCount) yield return Celebrate();
-                else yield return Exchange();
+                yield return FinishLookingAtSky();
             }
             else if (correct) NextPrompt();
             else { yield return Wait(.25f); Phase = TugPhase.Waiting; RefreshUI(); }
         }
 
-        IEnumerator Exchange()
+        IEnumerator FinishLookingAtSky()
         {
             Phase = TugPhase.Exchanging; RefreshUI(); carrying = true;
             if (hand && hand.handModel) hand.handModel.SetActive(false);
@@ -316,29 +314,14 @@ namespace TeamRoulette.Room3.TugPlay
             Play(idleState);
             var roomAudio = RoomAudio.For(this);
             roomAudio?.Play("Tug Panting");
-            var skyDialogue = DialogueManager.Speak(sharedUI, Room3DialogueScript.TugLookAtSky);
+            var skyDialogue = DialogueManager.Speak(sharedUI, "아 날씨 좋다!");
             yield return MoveView(cameraPosition.y, -48, .85f);
             yield return Wait(skyLookSeconds);
             while (skyDialogue && skyDialogue.HasDialogue) yield return null;
             roomAudio?.Stop("Tug Panting");
-            // Keep one prepared toy when the list contains only one entry; repeat cyclically.
-            SpawnRope(RoundIndex);
-            Play(barkState);
-            PlayBarkSound();
-            yield return Wait(.5f);
-            Speak(Room3DialogueScript.TugPlayAgain);
-            yield return MoveView(cameraPosition.y, 18, .55f);
-            Play(walkState);
-            yield return MoveDog(away, start, Quaternion.LookRotation(start - away), exchangeWalkSeconds);
-            yield return TurnDog(Quaternion.LookRotation(-playerStand.forward), .35f);
-            Play(biteState);
-            yield return MoveView(sittingEyeHeight, 20, .75f);
-            carrying = false;
-            if (hand && hand.handModel) hand.handModel.SetActive(true);
-            RoundIndex++; RoundSuccesses = 0;
-            SetStatus("겨울이가 물고 있는 로프를 다시 잡았어요.");
-            yield return Wait(.65f);
-            Play(braceState); NextPrompt();
+            CompleteGame();
+            yield return Wait(.8f);
+            ReturnAfterCompletion();
         }
 
         IEnumerator MoveDog(Vector3 from, Vector3 to, Quaternion facing, float seconds)
@@ -354,15 +337,6 @@ namespace TeamRoulette.Room3.TugPlay
             }
             winter.position = to;
         }
-        IEnumerator TurnDog(Quaternion rotation, float seconds)
-        {
-            var from = winter.rotation;
-            for (float t = 0; t < seconds;)
-            {
-                if (IsPaused) { yield return null; continue; }
-                t += Time.deltaTime; winter.rotation = Quaternion.Slerp(from, rotation, Mathf.SmoothStep(0, 1, t / seconds)); yield return null;
-            }
-        }
         IEnumerator MoveView(float height, float pitch, float seconds)
         {
             float oldHeight = eyeHeight, oldPitch = viewPitch;
@@ -372,37 +346,6 @@ namespace TeamRoulette.Room3.TugPlay
                 t += Time.deltaTime; float p = Mathf.SmoothStep(0, 1, t / seconds);
                 eyeHeight = Mathf.Lerp(oldHeight, height, p); viewPitch = Mathf.Lerp(oldPitch, pitch, p); yield return null;
             }
-        }
-
-        IEnumerator Celebrate()
-        {
-            Phase = TugPhase.Celebrating; carrying = true; RefreshUI();
-            if (hand && hand.handModel) hand.handModel.SetActive(false);
-            SetStatus(""); Play(biteState);
-            float duration = Mathf.Max(.1f, celebrationSeconds);
-            for (float t = 0; t < duration;)
-            {
-                if (IsPaused) { yield return null; continue; }
-                t += Time.deltaTime;
-                headYaw = Mathf.Sin(t * 15) * headSwingDegrees * 1.5f;
-                winter.rotation = Quaternion.LookRotation(-playerStand.forward);
-                yield return null;
-            }
-            headYaw = 0; Play(barkState);
-            yield return Wait(.85f); Play(idleState);
-            CompleteGame();
-            var dialogue = DialogueManager.Speak(sharedUI, Room3DialogueScript.TugFinish);
-            while ((dialogue && dialogue.HasDialogue) || IsPaused) yield return null;
-            yield return Wait(.8f);
-            ReturnAfterCompletion();
-        }
-        void PlayBarkSound()
-        {
-            var roomAudio = RoomAudio.For(this);
-            if (roomAudio)
-                roomAudio.Play("Tug Bark", barkSource);
-            else if (barkSource && barkClip)
-                barkSource.PlayOneShot(barkClip);
         }
 
         void CompleteGame()
@@ -425,7 +368,7 @@ namespace TeamRoulette.Room3.TugPlay
         public void DebugComplete()
         {
             StopAllCoroutines();
-            RoundIndex = roundCount; RoundSuccesses = successesPerRound; TotalSuccesses = roundCount * successesPerRound;
+            RoundIndex = 1; RoundSuccesses = successesPerRound; TotalSuccesses = successesPerRound;
             CompleteGame();
             ReturnAfterCompletion();
         }
@@ -531,7 +474,7 @@ namespace TeamRoulette.Room3.TugPlay
             string[] arrows = { "↑", "←", "↓", "→" };
             prompt.text = Phase == TugPhase.Waiting ? arrows[(int)ExpectedDirection] : "";
             progress.text = Phase == TugPhase.Completed ? ""
-                : RoundIndex + " / " + roundCount + " 라운드    " + RoundSuccesses + " / " + successesPerRound + "회 성공";
+                : RoundSuccesses + "/" + successesPerRound;
         }
         void SetStatus(string message) { if (status) status.text = message; }
         void Speak(string message)
@@ -597,7 +540,7 @@ namespace TeamRoulette.Room3.TugPlay
 
         void OnValidate()
         {
-            roundCount = Mathf.Max(1, roundCount); successesPerRound = Mathf.Max(1, successesPerRound);
+            roundCount = 1; successesPerRound = Mathf.Max(1, successesPerRound);
             responseSeconds = Mathf.Max(.1f, responseSeconds); exchangeWalkSeconds = Mathf.Max(.1f, exchangeWalkSeconds);
         }
     }

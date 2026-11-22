@@ -20,6 +20,7 @@ public sealed class CurtainGameController : MonoBehaviour
     [Header("화면 전환과 조명")]
     public CanvasGroup whiteScreen;
     [SerializeField] Light directionalLight;
+    [SerializeField] Light boardCenterFillLight;
     [SerializeField] GameObject floatingDust;
     [SerializeField] VolumetricLight windowVolumetricLight;
 
@@ -118,6 +119,11 @@ public sealed class CurtainGameController : MonoBehaviour
         animatedCurtainA.SetActive(revealed);
         animatedCurtainB.SetActive(revealed);
         curtainsRevealed = revealed;
+        if (boardCenterFillLight)
+        {
+            boardCenterFillLight.enabled = revealed;
+            if (revealed) boardCenterFillLight.gameObject.SetActive(true);
+        }
         ApplyLighting();
         if (floatingDust) floatingDust.SetActive(revealed);
         if (windowVolumetricLight && windowVolumetricLight.enableDustParticles != revealed)

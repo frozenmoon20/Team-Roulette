@@ -16,6 +16,10 @@ public sealed class WashGameController : MonoBehaviour
     public Camera viewCamera;
     public Transform washView;
     public ParticleSystem water;
+    public GameObject waterVisual;
+    [SerializeField] AnimationClip rainOnWindow;
+    [SerializeField] Texture2D rainSpriteSheet;
+    float rainStartTime;
     [Header("세면 화면과 진행 표시")]
     public Canvas overlay;
     public RawImage screen;
@@ -60,6 +64,14 @@ public sealed class WashGameController : MonoBehaviour
     readonly Dictionary<Behaviour, bool> blocked = new Dictionary<Behaviour, bool>();
     readonly Dictionary<GameObject, bool> hidden = new Dictionary<GameObject, bool>();
 
+    void SetWaterFlow(bool active)
+    {
+        if (waterVisual) waterVisual.SetActive(active);
+        if (!water) return;
+        if (active) water.Play();
+        else water.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+    }
+
     void Awake()
     {
         // Keep the completion gauge at the top even when using the shared GameUI overlay.
@@ -70,7 +82,7 @@ public sealed class WashGameController : MonoBehaviour
             track.offsetMin = track.offsetMax = Vector2.zero;
         }
         overlay.gameObject.SetActive(false);
-        if (water) water.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        SetWaterFlow(false);
     }
     void Start()
     {
@@ -155,7 +167,7 @@ public sealed class WashGameController : MonoBehaviour
         presentationCamera.allowMSAA = false;
         RenderPipelineManager.endCameraRendering += RenderBlur;
         overlay.gameObject.SetActive(true);
-        water.Play();
+        SetWaterFlow(true);
         RoomAudio.For(this)?.Play("Running Water", runningAudio);
         SetStage(Stage.WaterRunning);
     }
@@ -287,6 +299,7 @@ public sealed class WashGameController : MonoBehaviour
     void SetStage(Stage stage)
     {
         CurrentStage = stage; enteredFrame = Time.frameCount; dragging = false;
+        if (stage == Stage.Wet || stage == Stage.Rinsing) rainStartTime = Time.time;
         var goal = stage switch
         {
             Stage.WaterRunning => TeamRoulette.Room3.ObjectiveStep.WetFace,
@@ -302,7 +315,7 @@ public sealed class WashGameController : MonoBehaviour
         TeamRoulette.Room3.ObjectiveManager.Request(TeamRoulette.Room3.GameStage.Wash, goal);
         if (stage == Stage.TowelReady)
         {
-            if (water) water.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            SetWaterFlow(false);
             StopRunningWater();
         }
         SetPaintingFreeze(stage == Stage.Soaping || stage == Stage.Wiping);
@@ -337,6 +350,28 @@ public sealed class WashGameController : MonoBehaviour
         }
     }
 
+    void UpdateRainFrame(bool visible)
+    {
+        bool hasRain = visible && rainOnWindow && rainSpriteSheet;
+        material.SetFloat("_Wet", hasRain ? 1f : 0f);
+        if (!hasRain) return;
+
+        const int columns = 11;
+        const int rows = 11;
+        const int frameCount = 120;
+        int frame = Mathf.FloorToInt((Time.time - rainStartTime) * rainOnWindow.frameRate) % frameCount;
+        int column = frame % columns;
+        int row = rows - 1 - frame / columns;
+        float texelX = 1f / rainSpriteSheet.width;
+        float texelY = 1f / rainSpriteSheet.height;
+        material.SetTexture("_RainTex", rainSpriteSheet);
+        material.SetVector("_RainFrame", new Vector4(
+            (float)column / columns + .5f * texelX,
+            (float)row / rows + .5f * texelY,
+            1f / columns - texelX,
+            1f / rows - texelY));
+    }
+
     void UpdateVisuals()
     {
         if (!material) return;
@@ -350,7 +385,7 @@ public sealed class WashGameController : MonoBehaviour
         blurRuntime.SetFloat("_Radius", blurRadius);
         material.SetFloat("_Foam", foam);
         bool soapOnFace = CurrentStage == Stage.Soaping || CurrentStage == Stage.RinseReady;
-        material.SetFloat("_Wet", CurrentStage >= Stage.Wet && !finished && !soapOnFace ? 1 : 0);
+        UpdateRainFrame(CurrentStage >= Stage.Wet && !finished && !soapOnFace);
         material.SetFloat("_Wiping", wiping ? 1 : 0);
         material.SetFloat("_Aspect", viewCamera.aspect);
         toolImage.color = wiping ? new Color(.76f, .88f, 1, .85f) : CurrentStage == Stage.Soaping ? new Color(.79f, 1, .88f, .9f) : Color.white;
@@ -422,7 +457,7 @@ public sealed class WashGameController : MonoBehaviour
         if(player){player.canMove=savedMove;player.canLook=savedLook;player.externalCursorControl=savedCursorControl;}
         RenderPipelineManager.endCameraRendering -= RenderBlur;
         if(presentationCamera) { presentationCamera.enabled=false;Destroy(presentationCamera.gameObject);presentationCamera=null; }
-        if (water) water.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        SetWaterFlow(false);
         StopRunningWater();
         if (overlay) overlay.gameObject.SetActive(false);
         if (viewCamera)
@@ -454,3 +489,4 @@ public sealed class WashGameController : MonoBehaviour
 
     void OnDisable() { OptionState.OnOptionChanged -= OnOptionChanged; StopAllCoroutines(); if (CurrentStage != Stage.Complete) CurrentStage = Stage.Idle; Release(); }
 }
+

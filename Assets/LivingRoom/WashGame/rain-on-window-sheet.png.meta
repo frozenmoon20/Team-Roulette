@@ -1,0 +1,2760 @@
+fileFormatVersion: 2
+guid: f19380ff0d4333d408f2437a35c80ef3
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 647127315801939563
+    second: rain-on-window-sheet_0
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 8192
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 0
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 8192
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: rain-on-window-sheet_000
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 3840
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7680adec682140a7851147518debb79e
+      internalID: 21300000
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_001
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 3840
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 427acd4604a34f3d8a58bf3701a819d1
+      internalID: 21300002
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_002
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 3840
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c7636aae3241420e93a1118d97e53250
+      internalID: 21300004
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_003
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 3840
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a36f8d8041cc4d3db11e5a1e341b0758
+      internalID: 21300006
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_004
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 3840
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6212e754be7c42338d61c2f2148591f2
+      internalID: 21300008
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_005
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 3840
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9ff452a2b354d73b267fba0294072a6
+      internalID: 21300010
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_006
+      rect:
+        serializedVersion: 2
+        x: 2304
+        y: 3840
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 19f833cfe7eb4e90b251b1d9bc3d6349
+      internalID: 21300012
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_007
+      rect:
+        serializedVersion: 2
+        x: 2688
+        y: 3840
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20bc49fa6ea4404293bf18f430a3d597
+      internalID: 21300014
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_008
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 3840
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 73c8bacfdaf647ff8e9b937bad2f83d3
+      internalID: 21300016
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_009
+      rect:
+        serializedVersion: 2
+        x: 3456
+        y: 3840
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7cde086800244c698c383fb5fca0b76a
+      internalID: 21300018
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_010
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 3840
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6c55a0f5821e4d1695db529c09b4b7f6
+      internalID: 21300020
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_011
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 3456
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b0d6fbf0a813412fa07731867588cfa5
+      internalID: 21300022
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_012
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 3456
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3f89469bbc6d4db78e0f9bcaf9fe67b9
+      internalID: 21300024
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_013
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 3456
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 41353d129e154c958cf3f798cfe957bc
+      internalID: 21300026
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_014
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 3456
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef7d3300c18f40c29dff17262f9ca7d1
+      internalID: 21300028
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_015
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 3456
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6dc579a2e9b941858da7ae6aa55d9493
+      internalID: 21300030
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_016
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 3456
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b5a6d3e299548998669beabe9661dcb
+      internalID: 21300032
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_017
+      rect:
+        serializedVersion: 2
+        x: 2304
+        y: 3456
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a607b9e4d4d944e6b420eb74da03febb
+      internalID: 21300034
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_018
+      rect:
+        serializedVersion: 2
+        x: 2688
+        y: 3456
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ca8c31548c64d3eb96f43c477a5efcc
+      internalID: 21300036
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_019
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 3456
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 83f4800e7dd542fbb072b35fe34c30ab
+      internalID: 21300038
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_020
+      rect:
+        serializedVersion: 2
+        x: 3456
+        y: 3456
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 45ceb284e27d4076aa1db436b7d047e9
+      internalID: 21300040
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_021
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 3456
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15d94a1dfbbb4747bc6390141185850b
+      internalID: 21300042
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_022
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 3072
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56a58ce7ab124e599d9ef9e6937c8e41
+      internalID: 21300044
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_023
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 3072
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5ec635e593954b589ee89f7bda87fb1f
+      internalID: 21300046
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_024
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 3072
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 88df1daaf2df4df69cad3c67b4bc09ed
+      internalID: 21300048
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_025
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 3072
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9db0679fb68349be8421b0ec11b9c825
+      internalID: 21300050
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_026
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 3072
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bbf2c9d16644aa9bc034b0fd4b506c2
+      internalID: 21300052
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_027
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 3072
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 45e60836d7ec43ccb6e36b43c37bbb8d
+      internalID: 21300054
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_028
+      rect:
+        serializedVersion: 2
+        x: 2304
+        y: 3072
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc9cb6f00f12407a83f954b1a46acc63
+      internalID: 21300056
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_029
+      rect:
+        serializedVersion: 2
+        x: 2688
+        y: 3072
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6288d9e828e44fd8aaff27518ff83429
+      internalID: 21300058
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_030
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 3072
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ea62a44548c14df68dd7717dbbe32687
+      internalID: 21300060
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_031
+      rect:
+        serializedVersion: 2
+        x: 3456
+        y: 3072
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7f79d932a1f44c99a1442cc45c1a9cb
+      internalID: 21300062
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_032
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 3072
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ebd2dad7a23b437cbb8fb0555f55cc41
+      internalID: 21300064
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_033
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2688
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 04e47f1aefcb4faba2b208007ae8c2d4
+      internalID: 21300066
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_034
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 2688
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cbdd5228a6b64f709145a69fb79bb7f3
+      internalID: 21300068
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_035
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 2688
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1d4d715644248ddaff84ace2232e638
+      internalID: 21300070
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_036
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 2688
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 00594964c8c44d498108941b7011dfec
+      internalID: 21300072
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_037
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 2688
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bacd9450946e49c1be7af8b16e5a4ee2
+      internalID: 21300074
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_038
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 2688
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fa216fb2c95448fb4a925ca44b0edcc
+      internalID: 21300076
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_039
+      rect:
+        serializedVersion: 2
+        x: 2304
+        y: 2688
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6a122c0760c84288be5e4f73c9ebb8e7
+      internalID: 21300078
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_040
+      rect:
+        serializedVersion: 2
+        x: 2688
+        y: 2688
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8a3d432538dd4a399197bdfccc6bb05d
+      internalID: 21300080
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_041
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 2688
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b86bca36d11640b8b564345200bfbf03
+      internalID: 21300082
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_042
+      rect:
+        serializedVersion: 2
+        x: 3456
+        y: 2688
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c968ced6ea8494e91531bf8c2535180
+      internalID: 21300084
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_043
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 2688
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 84b65517f88c4598923a9c615f9cb53e
+      internalID: 21300086
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_044
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 2304
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d54baaa695e434692bed9a5b782671f
+      internalID: 21300088
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_045
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 2304
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d26101ce14614ca29bec7bcd8355e94f
+      internalID: 21300090
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_046
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 2304
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc4b216ce8eb430ea71eefd1c67d1144
+      internalID: 21300092
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_047
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 2304
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f66d4a860e8143ebb6beb890fad4bb32
+      internalID: 21300094
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_048
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 2304
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85f12ef725d54b509bda4492d751870b
+      internalID: 21300096
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_049
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 2304
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60cc58f41d9c44d3bf285de19e44fad8
+      internalID: 21300098
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_050
+      rect:
+        serializedVersion: 2
+        x: 2304
+        y: 2304
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c5cc95ed507d472eb5545ecc24be820d
+      internalID: 21300100
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_051
+      rect:
+        serializedVersion: 2
+        x: 2688
+        y: 2304
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b5803e51bd6c44a0a95601e34c28cfc1
+      internalID: 21300102
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_052
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 2304
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 786a8b5bc87244cfa09355afde2fa58f
+      internalID: 21300104
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_053
+      rect:
+        serializedVersion: 2
+        x: 3456
+        y: 2304
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: db5d033d3b17413892edcdc2a377d816
+      internalID: 21300106
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_054
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 2304
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91275fffc6bb40d09911706901f1c895
+      internalID: 21300108
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_055
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1920
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5a0ea482fb747709761507314a48b14
+      internalID: 21300110
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_056
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 1920
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b654ecabf0f40d68aa97d8b62cc47d0
+      internalID: 21300112
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_057
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 1920
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f1754eceb38456c87f8c273b5fc4ba5
+      internalID: 21300114
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_058
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 1920
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98cf220c0b994fd8af85a119cdf20b15
+      internalID: 21300116
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_059
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 1920
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1015f00f0ca84a149d3b51ed0e6807b4
+      internalID: 21300118
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_060
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 1920
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e3876729327549b9b6c982aad5d0f2f4
+      internalID: 21300120
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_061
+      rect:
+        serializedVersion: 2
+        x: 2304
+        y: 1920
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 469b6d12101b4a68abe633fd8a19e0b2
+      internalID: 21300122
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_062
+      rect:
+        serializedVersion: 2
+        x: 2688
+        y: 1920
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c368f70624c4e2dacd0168f136f7f58
+      internalID: 21300124
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_063
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 1920
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7033fccb67084148b1de1a06e2d8c237
+      internalID: 21300126
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_064
+      rect:
+        serializedVersion: 2
+        x: 3456
+        y: 1920
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e2caf6a5dc3a4f02a805c182f9e676e6
+      internalID: 21300128
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_065
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 1920
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4fba8601dacf4a4d9b65e64a96e03dd5
+      internalID: 21300130
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_066
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1536
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3e837d53ebaf4dddb3014ecbc2ba69a7
+      internalID: 21300132
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_067
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 1536
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9714f083dcbf450b9f4f892761907099
+      internalID: 21300134
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_068
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 1536
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 41ad0b38c253451bae8d7acc2700eb17
+      internalID: 21300136
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_069
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 1536
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe8c278a6a7d4673a8ef4202d17f5a88
+      internalID: 21300138
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_070
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 1536
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ec810a4463b740dfbd59be1d49cd7570
+      internalID: 21300140
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_071
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 1536
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7baa6d2319634166a5e9860661bbd610
+      internalID: 21300142
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_072
+      rect:
+        serializedVersion: 2
+        x: 2304
+        y: 1536
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 22fc2fc9f16344c3828ac4eb7f2fba6a
+      internalID: 21300144
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_073
+      rect:
+        serializedVersion: 2
+        x: 2688
+        y: 1536
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bd17f6b95a142278f2843c383b74633
+      internalID: 21300146
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_074
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 1536
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 540f20b0e3a548a28eb96bd3b4c1fc60
+      internalID: 21300148
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_075
+      rect:
+        serializedVersion: 2
+        x: 3456
+        y: 1536
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 60e5319c52164f4899c9f1912c307cf8
+      internalID: 21300150
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_076
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 1536
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 596c627fbac947728e4e4c37ef6db036
+      internalID: 21300152
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_077
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 1152
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d0aca74c6e4e41c9b2c8ac9d2934c4b1
+      internalID: 21300154
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_078
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 1152
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf5d229ae0e7477bac8bffe3a21dec63
+      internalID: 21300156
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_079
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 1152
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ffea3c4dfe9d402ab25e3cadd53d31ca
+      internalID: 21300158
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_080
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 1152
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8c5faceba8a7461c98df9ecc9ef91a49
+      internalID: 21300160
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_081
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 1152
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7a5c045b8d6f4dc2a33008a43c0e0451
+      internalID: 21300162
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_082
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 1152
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ca768ace4ca84318835e6e48ad985082
+      internalID: 21300164
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_083
+      rect:
+        serializedVersion: 2
+        x: 2304
+        y: 1152
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b38293dd4c6f4afba1df6635dcdc0692
+      internalID: 21300166
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_084
+      rect:
+        serializedVersion: 2
+        x: 2688
+        y: 1152
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d8176143fa0d42f38fa73a94b647af38
+      internalID: 21300168
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_085
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 1152
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: afccc9e1c5714e62a54eae9e188d9a4d
+      internalID: 21300170
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_086
+      rect:
+        serializedVersion: 2
+        x: 3456
+        y: 1152
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6172dc9335a04e3ba985c35f5378254b
+      internalID: 21300172
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_087
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 1152
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7f94c683742b4b0ebe5c60b11da72615
+      internalID: 21300174
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_088
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 768
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ccd28dd129384ff893c8570620ed13ca
+      internalID: 21300176
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_089
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 768
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 61d48edb6db8487ea811bf62af504f5a
+      internalID: 21300178
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_090
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 768
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 928b2fecf8794efc8b194b00eea1ff78
+      internalID: 21300180
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_091
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 768
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dca4071f901848889f4236ed141589a8
+      internalID: 21300182
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_092
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 768
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5385067fcd5c408d87fde033fd00b435
+      internalID: 21300184
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_093
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 768
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1c8cf86e78ff4144bd522883d80faaba
+      internalID: 21300186
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_094
+      rect:
+        serializedVersion: 2
+        x: 2304
+        y: 768
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 08857d0685934427b59bb334abcfaa87
+      internalID: 21300188
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_095
+      rect:
+        serializedVersion: 2
+        x: 2688
+        y: 768
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: daf30304532a49f68ede911896f7a2ba
+      internalID: 21300190
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_096
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 768
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1b9469c214246788387c5d12e73afc5
+      internalID: 21300192
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_097
+      rect:
+        serializedVersion: 2
+        x: 3456
+        y: 768
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd37adfbcfb645839dc7506fe3d0fac7
+      internalID: 21300194
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_098
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 768
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d5ea465e424430e88ec8ec796411cba
+      internalID: 21300196
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_099
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 384
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eaf9bb7ed2ab482082fd727309a9c6f6
+      internalID: 21300198
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_100
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 384
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a9db9a9f7b934fa7aa62c2543fe57f35
+      internalID: 21300200
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_101
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 384
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0927031d3e6041889f663d2d7f4b9e0f
+      internalID: 21300202
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_102
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 384
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8ef10d2886c4eb5b5cb5ba507a7113a
+      internalID: 21300204
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_103
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 384
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 459df615fcba4791bfdb8cf94a6145d9
+      internalID: 21300206
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_104
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 384
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 121d41c0355c406bb0e6423e219f073a
+      internalID: 21300208
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_105
+      rect:
+        serializedVersion: 2
+        x: 2304
+        y: 384
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d9e2e1ec21dd49fbaa6be08da06e35f6
+      internalID: 21300210
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_106
+      rect:
+        serializedVersion: 2
+        x: 2688
+        y: 384
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 921004ad47434e0ba4543d0bbaeea812
+      internalID: 21300212
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_107
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 384
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b21ffb4544234781a07f56d3a405db64
+      internalID: 21300214
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_108
+      rect:
+        serializedVersion: 2
+        x: 3456
+        y: 384
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f232989e3d534903a491d3d3f27ddfaa
+      internalID: 21300216
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_109
+      rect:
+        serializedVersion: 2
+        x: 3840
+        y: 384
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0dbb79b5a48e4389899b89aa6f5445c2
+      internalID: 21300218
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_110
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 18aa849c78d64065a2fdb3f52911356e
+      internalID: 21300220
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_111
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 0
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 407ef813186e4717bac43b74b0da20d1
+      internalID: 21300222
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_112
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 0
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: be171d3068af438a87ed3c196e3b3afe
+      internalID: 21300224
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_113
+      rect:
+        serializedVersion: 2
+        x: 1152
+        y: 0
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6210628a23634ea9893b19c8ec7931dd
+      internalID: 21300226
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_114
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 0
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a0cd30cb3584419baa6f49d90eeeef8
+      internalID: 21300228
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_115
+      rect:
+        serializedVersion: 2
+        x: 1920
+        y: 0
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 382c113b85c54fadb0ea48ef1617eba9
+      internalID: 21300230
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_116
+      rect:
+        serializedVersion: 2
+        x: 2304
+        y: 0
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 177d38b7c4e74fd4a40e4787abe0be1d
+      internalID: 21300232
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_117
+      rect:
+        serializedVersion: 2
+        x: 2688
+        y: 0
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e2d1357b2c194e1a885092bc18e106ec
+      internalID: 21300234
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_118
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 0
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc95d309168040e7bf1ccab5bb2b6d43
+      internalID: 21300236
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: rain-on-window-sheet_119
+      rect:
+        serializedVersion: 2
+        x: 3456
+        y: 0
+        width: 384
+        height: 384
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e08e0dad49eb4fc18beb018e1e49ade2
+      internalID: 21300238
+      vertices: []
+      indices:
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      rain-on-window-sheet_000: 21300000
+      rain-on-window-sheet_001: 21300002
+      rain-on-window-sheet_002: 21300004
+      rain-on-window-sheet_003: 21300006
+      rain-on-window-sheet_004: 21300008
+      rain-on-window-sheet_005: 21300010
+      rain-on-window-sheet_006: 21300012
+      rain-on-window-sheet_007: 21300014
+      rain-on-window-sheet_008: 21300016
+      rain-on-window-sheet_009: 21300018
+      rain-on-window-sheet_010: 21300020
+      rain-on-window-sheet_011: 21300022
+      rain-on-window-sheet_012: 21300024
+      rain-on-window-sheet_013: 21300026
+      rain-on-window-sheet_014: 21300028
+      rain-on-window-sheet_015: 21300030
+      rain-on-window-sheet_016: 21300032
+      rain-on-window-sheet_017: 21300034
+      rain-on-window-sheet_018: 21300036
+      rain-on-window-sheet_019: 21300038
+      rain-on-window-sheet_020: 21300040
+      rain-on-window-sheet_021: 21300042
+      rain-on-window-sheet_022: 21300044
+      rain-on-window-sheet_023: 21300046
+      rain-on-window-sheet_024: 21300048
+      rain-on-window-sheet_025: 21300050
+      rain-on-window-sheet_026: 21300052
+      rain-on-window-sheet_027: 21300054
+      rain-on-window-sheet_028: 21300056
+      rain-on-window-sheet_029: 21300058
+      rain-on-window-sheet_030: 21300060
+      rain-on-window-sheet_031: 21300062
+      rain-on-window-sheet_032: 21300064
+      rain-on-window-sheet_033: 21300066
+      rain-on-window-sheet_034: 21300068
+      rain-on-window-sheet_035: 21300070
+      rain-on-window-sheet_036: 21300072
+      rain-on-window-sheet_037: 21300074
+      rain-on-window-sheet_038: 21300076
+      rain-on-window-sheet_039: 21300078
+      rain-on-window-sheet_040: 21300080
+      rain-on-window-sheet_041: 21300082
+      rain-on-window-sheet_042: 21300084
+      rain-on-window-sheet_043: 21300086
+      rain-on-window-sheet_044: 21300088
+      rain-on-window-sheet_045: 21300090
+      rain-on-window-sheet_046: 21300092
+      rain-on-window-sheet_047: 21300094
+      rain-on-window-sheet_048: 21300096
+      rain-on-window-sheet_049: 21300098
+      rain-on-window-sheet_050: 21300100
+      rain-on-window-sheet_051: 21300102
+      rain-on-window-sheet_052: 21300104
+      rain-on-window-sheet_053: 21300106
+      rain-on-window-sheet_054: 21300108
+      rain-on-window-sheet_055: 21300110
+      rain-on-window-sheet_056: 21300112
+      rain-on-window-sheet_057: 21300114
+      rain-on-window-sheet_058: 21300116
+      rain-on-window-sheet_059: 21300118
+      rain-on-window-sheet_060: 21300120
+      rain-on-window-sheet_061: 21300122
+      rain-on-window-sheet_062: 21300124
+      rain-on-window-sheet_063: 21300126
+      rain-on-window-sheet_064: 21300128
+      rain-on-window-sheet_065: 21300130
+      rain-on-window-sheet_066: 21300132
+      rain-on-window-sheet_067: 21300134
+      rain-on-window-sheet_068: 21300136
+      rain-on-window-sheet_069: 21300138
+      rain-on-window-sheet_070: 21300140
+      rain-on-window-sheet_071: 21300142
+      rain-on-window-sheet_072: 21300144
+      rain-on-window-sheet_073: 21300146
+      rain-on-window-sheet_074: 21300148
+      rain-on-window-sheet_075: 21300150
+      rain-on-window-sheet_076: 21300152
+      rain-on-window-sheet_077: 21300154
+      rain-on-window-sheet_078: 21300156
+      rain-on-window-sheet_079: 21300158
+      rain-on-window-sheet_080: 21300160
+      rain-on-window-sheet_081: 21300162
+      rain-on-window-sheet_082: 21300164
+      rain-on-window-sheet_083: 21300166
+      rain-on-window-sheet_084: 21300168
+      rain-on-window-sheet_085: 21300170
+      rain-on-window-sheet_086: 21300172
+      rain-on-window-sheet_087: 21300174
+      rain-on-window-sheet_088: 21300176
+      rain-on-window-sheet_089: 21300178
+      rain-on-window-sheet_090: 21300180
+      rain-on-window-sheet_091: 21300182
+      rain-on-window-sheet_092: 21300184
+      rain-on-window-sheet_093: 21300186
+      rain-on-window-sheet_094: 21300188
+      rain-on-window-sheet_095: 21300190
+      rain-on-window-sheet_096: 21300192
+      rain-on-window-sheet_097: 21300194
+      rain-on-window-sheet_098: 21300196
+      rain-on-window-sheet_099: 21300198
+      rain-on-window-sheet_100: 21300200
+      rain-on-window-sheet_101: 21300202
+      rain-on-window-sheet_102: 21300204
+      rain-on-window-sheet_103: 21300206
+      rain-on-window-sheet_104: 21300208
+      rain-on-window-sheet_105: 21300210
+      rain-on-window-sheet_106: 21300212
+      rain-on-window-sheet_107: 21300214
+      rain-on-window-sheet_108: 21300216
+      rain-on-window-sheet_109: 21300218
+      rain-on-window-sheet_110: 21300220
+      rain-on-window-sheet_111: 21300222
+      rain-on-window-sheet_112: 21300224
+      rain-on-window-sheet_113: 21300226
+      rain-on-window-sheet_114: 21300228
+      rain-on-window-sheet_115: 21300230
+      rain-on-window-sheet_116: 21300232
+      rain-on-window-sheet_117: 21300234
+      rain-on-window-sheet_118: 21300236
+      rain-on-window-sheet_119: 21300238
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
