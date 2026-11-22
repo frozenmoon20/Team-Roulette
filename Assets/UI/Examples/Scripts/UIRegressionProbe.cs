@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace TeamRoulette.UI
 {
@@ -43,8 +44,9 @@ namespace TeamRoulette.UI
             var content = ui.GetComponent<SceneUIContent>();
             var paw = ui.GetComponent<PawProgress>();
             Require(ui.objectiveText.text == content.objectives[0].text, "first scene objective displayed");
-            Require(!ui.hud.GetComponentsInChildren<ObjectiveRow>(true).Any(), "old objective list and check marks removed");
-            Require(!ui.keyGuides.Any(x => x.key == "SPACE" || x.key == "TAB"), "Space and Tab guides removed");
+            Require(ui.keyGuides[0].key == "TAB" && ui.keyGuides[0].alwaysVisible &&
+                ui.guideKeys[0].text == "TAB", "map is first and visible without an unlock");
+            Require(ui.guideKeys.Length == ui.keyGuides.Count, "all key guides have rows");
             Require(ui.backButton.GetComponentInChildren<TMP_Text>().text == "돌아가기", "back button has no ESC suffix");
             int count = content.objectives.Count;
             content.AddObjective(content.objectives[0].id, "duplicate");
@@ -113,6 +115,33 @@ namespace TeamRoulette.UI
             Require(paw.graphic.canvasRenderer, "paw has a CanvasRenderer");
             var pawMesh = paw.graphic.canvasRenderer.GetMesh();
             Require(pawMesh.vertexCount == 325, "all five paw pads produce rendered geometry");
+
+            var buttons = ui.settings.GetComponentsInChildren<Button>(true);
+            Button FindButton(string name) => buttons.Single(button => button.name == name);
+            var ratioDropdown = ui.settingsPages[0].GetComponentInChildren<TMP_Dropdown>();
+            var originalRatio = PlayerPrefs.GetInt("Roulette.UI.Aspect");
+            var camera = ui.player.GetComponentInChildren<Camera>();
+            int width = Screen.width, height = Screen.height;
+            Require(ratioDropdown && ratioDropdown.options.Select(option => option.text).SequenceEqual(GameViewport.Names),
+                "aspect dropdown lists the four ratios in order");
+            ratioDropdown.Show();
+            Require(ratioDropdown.IsExpanded, "aspect dropdown opens");
+            ratioDropdown.Hide();
+            ratioDropdown.value = 2;
+            Require(Screen.width == width && Screen.height == height, "aspect keeps window dimensions");
+            Require(Mathf.Abs(camera.pixelWidth / (float)camera.pixelHeight - 1.6f) < .02f, "16:10 camera viewport");
+            ratioDropdown.value = 0;
+            Require(camera.rect == new Rect(0, 0, 1, 1), "automatic aspect restores full viewport");
+            ratioDropdown.value = Mathf.Clamp(originalRatio, 0, 3);
+
+            FindButton("Return To Title").onClick.Invoke();
+            Require(FindButton("Yes").gameObject.activeInHierarchy &&
+                ui.settings.GetComponentsInChildren<TMP_Text>().Any(t => t.text == GameUISettingsControls.ReturnMessage),
+                "title return asks for confirmation");
+            FindButton("No").onClick.Invoke();
+            Require(!FindButton("Yes").gameObject.activeInHierarchy && ui.IsPaused && Time.timeScale == 0,
+                "cancel keeps settings open and gameplay paused");
+
             ui.CloseSettings();
             yield return null; yield return null;
             ui.player.enabled = false; ui.OpenSettings(); ui.CloseSettings();
@@ -130,7 +159,8 @@ namespace TeamRoulette.UI
             Require(Time.timeScale == 1 && !ui.settings.activeSelf && ui.player.enabled, "disable paused UI restores gameplay");
             ui.enabled = true;
             OptionState.Instance.Lock(OptionType.Hand);
-            Require(ui.guideKeys[0].text == "?", "reenabled UI reconnects option events");
+            int handGuide = ui.keyGuides.FindIndex(guide => !guide.alwaysVisible && guide.unlock == OptionType.Hand);
+            Require(handGuide >= 0 && ui.guideKeys[handGuide].text == "?", "reenabled UI reconnects option events");
             var duplicate = Instantiate(ui.gameObject);
             Require(!duplicate.activeSelf, "duplicate UI disabled"); Destroy(duplicate);
             ui.OpenSettings();

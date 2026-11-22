@@ -33,7 +33,11 @@ ESC로 설정을 열고 닫습니다. 설정 중에는 게임과 대사 타이�
 배경음악 AudioSource는 Music Sources, 추가 효과음은 Effect Sources에 연결합니다.
 기존 AudioManager, FirstPersonPlayer, PlayerMotionFeel은 자동으로 찾습니다.
 추가로 멈출 입력 스크립트가 있다면 Extra Input To Block에 연결합니다.
-Key Guides에서 조작 안내와 Unlock 조건을 지정합니다.
+화면 탭에서 밝기 아래 화면 비율을 선택합니다. 자동(기본), 16:9, 16:10, 21:9가 있습니다.
+창 크기는 그대로이며 선택한 비율 바깥은 검은 여백으로 표시합니다. 선택은 다음 실행에도 유지됩니다.
+조작 탭의 Key Guides 목록은 마우스 휠로 스크롤합니다. GameUI의 Key Guides에서 문구, 순서와 Unlock 조건을 바꿀 수 있습니다.
+지도(TAB) 안내는 첫 줄에 고정되어 보이며, 지도 자체는 기존 카메라 회전 해금 조건을 따릅니다.
+조작 탭 아래의 메인 화면으로 버튼에서 예를 누르면 마지막 자동저장을 유지한 채 Title 씬으로 돌아갑니다.
 플레이 중 _Systems의 OptionState에서 해당 항목을 체크하면 ?가 지정된 키 안내로 바뀝니다.
 
 발바닥 진행도
