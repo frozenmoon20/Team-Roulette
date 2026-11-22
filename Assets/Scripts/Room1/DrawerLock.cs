@@ -6,7 +6,7 @@ using UnityEngine.Events;
 //   - 손(Hand) 해금 전 클릭: noHandDialogue만 나오고 끝 ("손에 감각이 없어서 돌릴 수가 없어")
 //   - 손 해금 후 처음 클릭: firstDialogue ("잠겨 있다. 숫자 자물쇠…") → onUse
 //   - 다시 클릭(아직 못 열었을 때): 대사 없이 바로 onUse
-//   - 이미 열었으면: solvedHint 한 줄만 화면 아래에 잠깐 표시
+//   - 이미 열었으면: solvedDialogue 대사 (비워 두면 solvedHint 한 줄만 화면 아래에 잠깐 표시)
 // onUse에는 ViewFocus.Focus를 연결하고, ViewFocus의 On Arrived에 CodeLock.Open,
 // CodeLock의 On Closed에 ViewFocus.Return을 연결한다.
 // 팀 공용 ConditionalInteractable을 상속만 한다 (원본은 건드리지 않음). Required Options는 비워 둔다.
@@ -22,7 +22,9 @@ public class DrawerLock : ConditionalInteractable
     [Header("손 해금 후")]
     public DialogueStep firstDialogue;       // 처음 클릭했을 때 대사 (비워도 됨)
     public UnityEvent onUse;                 // 대사 뒤 실행 (ViewFocus.Focus 연결)
-    public string solvedHint = "이미 열었어.";   // 다 연 뒤 클릭하면 뜨는 한 줄
+    [Header("다 연 뒤")]
+    public DialogueStep solvedDialogue;      // 다 연 뒤 클릭했을 때 대사 (넣으면 아래 한 줄 대신 이게 나옴)
+    public string solvedHint = "이미 열었어.";   // solvedDialogue를 비워 뒀을 때 화면 아래에 뜨는 한 줄
 
     bool busy;                               // 대사 진행 중 (그동안 다시 클릭 무시)
     bool told;                               // 처음 대사를 봤는지
@@ -38,12 +40,21 @@ public class DrawerLock : ConditionalInteractable
 
         if (codeLock != null && codeLock.IsSolved)
         {
-            if (!string.IsNullOrEmpty(solvedHint)) PlayerInteractor.ShowHint(solvedHint);
+            if (solvedDialogue != null) StartCoroutine(SolvedRoutine());
+            else if (!string.IsNullOrEmpty(solvedHint)) PlayerInteractor.ShowHint(solvedHint);
             return;
         }
 
         bool hand = OptionState.Instance != null && OptionState.Instance.IsUnlocked(OptionType.Hand);
         StartCoroutine(hand ? UseRoutine() : NoHandRoutine());
+    }
+
+    // 다 연 뒤: 대사만 보고 끝
+    IEnumerator SolvedRoutine()
+    {
+        busy = true;
+        yield return PlayAndWait(solvedDialogue);
+        busy = false;
     }
 
     // 손 해금 전: 대사만 보고 끝 (서랍 앞으로 가지 않음)
@@ -62,7 +73,12 @@ public class DrawerLock : ConditionalInteractable
         if (!told)
         {
             told = true;
+            // 대사 동안 다른 오브젝트 클릭 막기 (막지 않으면 대사 도중 컴퓨터 등을 눌렀을 때
+            // 대사가 끊기고, 컴퓨터 화면과 서랍 다이얼이 동시에 열려 꼬임)
+            bool wasBlocked = PlayerInteractor.Blocked;
+            PlayerInteractor.Blocked = true;
             yield return PlayAndWait(firstDialogue);
+            PlayerInteractor.Blocked = wasBlocked;
         }
 
         onUse.Invoke();

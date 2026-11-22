@@ -96,6 +96,13 @@ public class DustyFrame : ConditionalInteractable
     protected override void OnUnlocked() { Use(); }
     protected override void OnRepeatInteract() { Use(); }
 
+    // 이어하기용: 이미 닦고 회상까지 다녀온 액자로 표시 (먼지를 숨기고, 클릭하면 doneDialogue만). SaveFlag의 On Restored에 연결
+    public void MarkDone()
+    {
+        used = true;
+        if (dust != null) dust.enabled = false;
+    }
+
     // 처음 쓸 때 한 번 준비 (Awake/Start를 쓰지 않는 이유: 부모 ConditionalInteractable의 Awake/Start를 가리지 않기 위해)
     void Init()
     {

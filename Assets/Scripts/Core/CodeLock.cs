@@ -63,6 +63,9 @@ public class CodeLock : MonoBehaviour
     public bool IsOpen { get; private set; }
     public bool IsSolved { get; private set; }
 
+    // 이어하기용: 이미 푼 자물쇠로 표시 (대사·소리·이벤트 없이). SaveFlag의 On Restored에 연결
+    public void MarkSolved() { IsSolved = true; }
+
     int[] digits;
     int index;                               // 0~자릿수-1 = 숫자 자리, 그다음 (추가 선택지), 맨 끝 = "그만 둔다"
     bool busy;                               // 정답 확인·대사 중

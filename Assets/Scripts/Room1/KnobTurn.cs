@@ -62,6 +62,8 @@ public class KnobTurn : MonoBehaviour
     public string state;                     // 지금 상태 (미끄러짐 / 돌아감 / 되돌아감)
     public float angle;                      // 지금 돌린 각도 (도)
 
+    public bool IsOpened { get; private set; }   // 문이 열렸는지 (DoorInteract가 확인)
+
     bool turning;
     bool homeSet;
     float turnLevel;                         // 돌리는 소리 크기 (0~1, 휠을 굴리면 올라가고 멈추면 내려감)
@@ -180,9 +182,23 @@ public class KnobTurn : MonoBehaviour
         for (int f = 0; f < 5; f++) pose.SetFinger((HandPose.Finger)f, letGoCurl);
     }
 
+    // 이어하기용: 미니게임 없이 문을 바로 열린 각도로 (SaveFlag의 On Restored에 연결)
+    public void OpenInstant()
+    {
+        if (!homeSet)
+        {
+            if (knob != null) knobHome = knob.localRotation;
+            if (hinge != null) hingeHome = hinge.localRotation;
+            homeSet = true;
+        }
+        if (hinge != null) hinge.localRotation = hingeHome * Quaternion.Euler(0f, openAngle, 0f);
+        IsOpened = true;
+    }
+
     // 문을 openAngle만큼 스르륵 열기 (로컬 Y축)
     IEnumerator OpenRoutine()
     {
+        IsOpened = true;
         AudioManager.Play(doorClip, clipVolume);
         if (hinge != null)
         {
@@ -205,6 +221,7 @@ public class KnobTurn : MonoBehaviour
         turning = false;
         if (turnSource != null) turnSource.Stop();
         angle = 0f;
+        IsOpened = false;
         knob.localRotation = knobHome;
         if (hinge != null) hinge.localRotation = hingeHome;
     }

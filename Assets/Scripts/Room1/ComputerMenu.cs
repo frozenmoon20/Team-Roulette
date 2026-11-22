@@ -16,6 +16,8 @@ using TeamRoulette.UI;
 //     하위 선택지는 같은 선택창 UI를 같이 쓰고, Screen Panel은 비워 둔다.
 //   - Close After: 그 항목이 끝나면 이 선택창을 닫는다 (하위 선택지에서 "보낸다" 후 원래 메뉴로 돌아갈 때).
 //   - "그만 둔다"(Is Exit 체크) → 화면과 선택창을 끄고 onClosed (ViewFocus의 Return에 연결).
+//   - 자동저장: 조건(Need Played)에 넣은 대사를 다 보면 저장에 기록한다 ("Played/오브젝트 경로").
+//     그래서 일기장·사진첩을 본 뒤 게임을 껐다 켜도(이어하기) 메신저 조건이 그대로 통과된다. 따로 연결할 것 없음.
 //   - 효과음: 항목을 옮길 때 Move Clip, 고를 때(Space/Enter) Select Clip (마우스 딸깍 소리). 비워 두면 소리 없음.
 //     하위 선택지(답장을 보낼까? 등)에도 같은 소리를 넣으려면 그 ComputerMenu에도 칸을 채운다.
 // 사용: 빈 오브젝트에 붙이고, Screen Panel / Menu Panel / Menu Text를 연결한 뒤 Items에 항목을 채운다.
@@ -72,6 +74,27 @@ public class ComputerMenu : MonoBehaviour
     {
         if (screenPanel != null) screenPanel.SetActive(false);
         if (menuPanel != null) menuPanel.SetActive(false);
+
+        // 조건 대사가 끝나면 저장에 "봤음"을 기록 (이어하기 때 Ready에서 확인)
+        if (items == null) return;
+        foreach (Item item in items)
+        {
+            if (item == null || item.needPlayed == null) continue;
+            foreach (DialogueStep d in item.needPlayed)
+            {
+                if (d == null) continue;
+                string id = PlayedId(d);
+                d.onFinished.AddListener(() => SaveSystem.SetFlag(id));   // 같은 이름은 저장에 한 번만 들어감
+            }
+        }
+    }
+
+    // 저장용 이름: "Played/" + 대사 오브젝트의 Hierarchy 경로 (같은 이름의 대사가 있어도 안 겹치게)
+    static string PlayedId(DialogueStep d)
+    {
+        string path = d.name;
+        for (Transform t = d.transform.parent; t != null; t = t.parent) path = t.name + "/" + path;
+        return "Played/" + path;
     }
 
     // 선택창 열기 (메인 메뉴는 컴퓨터 화면도 같이 켬)
@@ -139,7 +162,7 @@ public class ComputerMenu : MonoBehaviour
     {
         if (item.needPlayed == null) return true;
         foreach (DialogueStep d in item.needPlayed)
-            if (d != null && !d.HasPlayed) return false;
+            if (d != null && !d.HasPlayed && !SaveSystem.HasFlag(PlayedId(d))) return false;   // 이번 판에 봤거나, 저장에 봤다고 남아 있으면 통과
         return true;
     }
 

@@ -20,6 +20,8 @@ using UnityEngine.Events;
 // 사용: LP_Player에 붙어 있는 그대로 쓰고 (Play()라는 이름이 같아서 LP_Spot의 연결도 그대로) 아래 칸을 채운다.
 //   Deck: 씬에 놓은 RecordDeckAnimated의 Animator / Record: LP_Record / Music: 음악 AudioSource (비우면 같은 오브젝트)
 //   On Finished: LP_Player의 OptionUnlocker.Unlock (BGM 해금) → LP_Spot의 On All Placed에서는 Unlock을 빼기
+// 이어하기: PlayInstant()는 뚜껑 열기·판 내려오기를 건너뛰고 "이미 돌아가는 중" 상태로 바로 시작한다
+//   (판 회전 + 음악 + 반복 왕복). 해금(On Finished)은 다시 하지 않는다. SavePlaceSpot의 On Restored에 연결.
 public class LPPlayer : MonoBehaviour
 {
     [Header("연결")]
@@ -85,13 +87,36 @@ public class LPPlayer : MonoBehaviour
         StartCoroutine(Sequence());
     }
 
-    IEnumerator Sequence()
+    // 이어하기용: 연출 없이 바로 "돌아가는 중" 상태로 (판은 SavePlaceSpot이 이미 자리에 놓았음)
+    public void PlayInstant()
     {
-        // 판은 PlaceSpot이 이미 자리(Place Point)에 놓았음.
-        // 단, PlaceSpot은 "물건의 실제 크기 바닥"을 기준으로 놓아서, 처음에 비스듬히 세워 둔 판은 옆으로 밀려 놓인다
-        // → 판을 Place Point 한가운데에 똑바로 다시 맞춘다 (판의 기준점 = 밑면 가운데)
-        // 또 Place Point의 부모(턴테이블 모델 등)에 찌그러진 크기(Scale)나 회전이 있으면, 그 자식이 된 판이 늘어나 버린다
-        // → 판을 부모에서 떼어 내고(맨 위로) 크기 1로 되돌린 뒤 자리에 놓는다. 이후 판을 다시 집을 일은 없다.
+        if (IsPlaying) return;
+        IsPlaying = true;
+        PutRecordOnPoint();
+        clipLength = Mathf.Max(ClipLength(), 0.01f);
+
+        if (!loopForever)
+        {
+            // 반복 모드가 아니면 원래 연출은 끝나 있는 상태 → 애니메이션 마지막 모습으로 멈춰 둠 (음악 없음)
+            if (deck != null) { deck.Play(stateName, 0, 1f); deck.speed = 0f; }
+            return;
+        }
+
+        pingStart = Time.time;                       // 반복 구간 왕복 바로 시작
+        spinning = true;
+        speed = rpm * 6f;                            // 판도 처음부터 제 속도로
+        if (music != null)
+        {
+            music.loop = true;
+            music.volume = 0f;
+            music.Play();
+            StartCoroutine(Fade(0f, musicVolume, 1f));   // 1초 동안 살짝 커지게 (뚝 시작하지 않게)
+        }
+    }
+
+    // 판을 Place Point 한가운데에 똑바로 다시 맞춤 (부모의 찌그러진 크기·회전 영향을 없앰)
+    void PutRecordOnPoint()
+    {
         if (record != null && record.parent != null)
         {
             Transform point = record.parent;
@@ -99,6 +124,16 @@ public class LPPlayer : MonoBehaviour
             record.localScale = Vector3.one;
             record.SetPositionAndRotation(point.position, point.rotation);
         }
+    }
+
+    IEnumerator Sequence()
+    {
+        // 판은 PlaceSpot이 이미 자리(Place Point)에 놓았음.
+        // 단, PlaceSpot은 "물건의 실제 크기 바닥"을 기준으로 놓아서, 처음에 비스듬히 세워 둔 판은 옆으로 밀려 놓인다
+        // → 판을 Place Point 한가운데에 똑바로 다시 맞춘다 (판의 기준점 = 밑면 가운데)
+        // 또 Place Point의 부모(턴테이블 모델 등)에 찌그러진 크기(Scale)나 회전이 있으면, 그 자식이 된 판이 늘어나 버린다
+        // → 판을 부모에서 떼어 내고(맨 위로) 크기 1로 되돌린 뒤 자리에 놓는다. 이후 판을 다시 집을 일은 없다.
+        PutRecordOnPoint();
 
         // 뚜껑이 열릴 때까지 숨겨 둠
         // 숨길 때 "지금 켜져 있는 것"만 기억 → 다시 보일 때 그것만 켬

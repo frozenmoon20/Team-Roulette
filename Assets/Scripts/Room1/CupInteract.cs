@@ -35,7 +35,7 @@ public class CupInteract : ConditionalInteractable
     FirstPersonPlayer player;
 
     // 원본 구조상 첫 클릭은 OnUnlocked, 그 뒤는 OnRepeatInteract로 온다 → 둘 다 같은 처리
-    protected override void OnUnlocked()       { Use(); }
+    protected override void OnUnlocked() { Use(); }
     protected override void OnRepeatInteract() { Use(); }
 
     void Use()
@@ -77,8 +77,12 @@ public class CupInteract : ConditionalInteractable
         if (!told && firstDialogue != null)
         {
             told = true;
+            // 대사 동안 다른 오브젝트 클릭 막기 (막지 않으면 대사가 끊기고 다른 이벤트와 동시에 진행돼 꼬임)
+            bool wasBlocked = PlayerInteractor.Blocked;
+            PlayerInteractor.Blocked = true;
             firstDialogue.Play();
             while (firstDialogue.IsPlaying) yield return null;
+            PlayerInteractor.Blocked = wasBlocked;
         }
 
         onUse.Invoke();

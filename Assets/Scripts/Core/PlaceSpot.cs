@@ -97,6 +97,23 @@ public class PlaceSpot : MonoBehaviour, IInteractable, IHasName
             onAllPlaced.Invoke();
     }
 
+    // 이어하기용 (SavePlaceSpot이 부름): 손을 거치지 않고, 이벤트·소리 없이 물건을 넣은 상태로 만든다
+    public void RestorePlaced(GrabbableItem item)
+    {
+        if (item == null) return;
+        Transform targetPoint = GetNextPlacePoint();
+
+        if (hideOnPlace) item.gameObject.SetActive(false);
+        else if (useExactPlacement) item.PlaceExactlyAt(targetPoint);
+        else item.PlaceAt(targetPoint);
+        item.enabled = false;                         // 다시 못 집게
+
+        if (disablePlacedColliders)
+            foreach (Collider c in item.GetComponentsInChildren<Collider>(true)) c.enabled = false;
+
+        PlacedCount++;
+    }
+
     static void PlayDialogue(DialogueStep step)
     {
         if (step != null && !step.IsPlaying) step.Play();
