@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using TeamRoulette.UI;
 using TMPro;
 using UnityEngine;
@@ -11,12 +13,17 @@ namespace TeamRoulette.Room3
 {
     public sealed class PorchGameController : MonoBehaviour
     {
+        public const string CreditsFileName = "EndingCredits.md";
+        public const string CreditsSourcePath = "LivingRoom/PorchGame/" + CreditsFileName;
+
         [Header("엔딩 크레딧")]
-        [TextArea(5, 30)] public string creditsText = "게임이 끝났습니다.\n엔딩 크레딧이 내려갑니다.";
+        [SerializeField, HideInInspector] string creditsText = "게임이 끝났습니다.\n엔딩 크레딧이 내려갑니다.";
         public TMP_FontAsset font;
         [Min(1)] public float fontSize = 48;
         [Tooltip("크레딧이 1초에 올라가는 거리입니다.")]
         [Min(1)] public float scrollSpeed = 70;
+        [Tooltip("크레딧 중 마우스 왼쪽 버튼을 누르고 있을 때 적용하는 속도 배율입니다.")]
+        [Min(1)] public float heldScrollMultiplier = 4;
         [Tooltip("크레딧이 지나간 뒤 타이틀로 이동하기 전 대기 시간입니다. 단위는 초입니다.")]
         [Min(0)] public float endDelay = 2;
         [Header("크레딧 이후 이동할 씬")]
@@ -109,19 +116,65 @@ namespace TeamRoulette.Room3
             textRect.pivot = new Vector2(.5f, 0); textRect.sizeDelta = Vector2.zero;
         }
 
+        public string ReadCredits()
+        {
+#if UNITY_EDITOR
+            var path = Path.Combine(Application.dataPath, CreditsSourcePath);
+#else
+            var path = Path.Combine(Application.streamingAssetsPath, CreditsFileName);
+#endif
+            try
+            {
+                var markdown = File.ReadAllText(path);
+                if (!string.IsNullOrWhiteSpace(markdown))
+                    return FormatCreditsMarkdown(markdown);
+            }
+            catch (IOException error)
+            {
+                Debug.LogWarning($"Could not read ending credits: {error.Message}", this);
+            }
+            catch (System.UnauthorizedAccessException error)
+            {
+                Debug.LogWarning($"Could not read ending credits: {error.Message}", this);
+            }
+            return creditsText;
+        }
+
+        static string FormatCreditsMarkdown(string markdown)
+        {
+            var lines = markdown.TrimEnd().Replace("\r\n", "\n").Split('\n');
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = Regex.Replace(lines[i], @"\*\*(.+?)\*\*", "<b>$1</b>");
+                var heading = Regex.Match(line, @"^(#{1,6})\s+(.+)$");
+                if (heading.Success)
+                {
+                    int size = heading.Groups[1].Length == 1 ? 160 :
+                        heading.Groups[1].Length == 2 ? 130 : 112;
+                    line = $"<size={size}%><b>{heading.Groups[2].Value}</b></size>";
+                }
+                else if (line.StartsWith("- ") || line.StartsWith("* "))
+                    line = "• " + line.Substring(2);
+                lines[i] = line;
+            }
+            return string.Join("\n", lines);
+        }
+
         IEnumerator RollCredits(GameUI ui)
         {
             Canvas.ForceUpdateCanvases();
             var viewport = (RectTransform)label.transform.parent;
-            float height = Mathf.Max(fontSize, label.GetPreferredValues(creditsText, viewport.rect.width * .8f, Mathf.Infinity).y);
+            string displayText = ReadCredits();
+            float height = Mathf.Max(fontSize, label.GetPreferredValues(displayText, viewport.rect.width * .8f, Mathf.Infinity).y);
             label.rectTransform.sizeDelta = new Vector2(0, height);
-            label.text = creditsText;
+            label.text = displayText;
             float y = -height - 40;
             while (y < viewport.rect.height + 40)
             {
                 label.rectTransform.anchoredPosition = new Vector2(0, y);
                 yield return null;
-                y += Mathf.Max(1, scrollSpeed) * Time.unscaledDeltaTime;
+                float multiplier = Input.GetMouseButton(0) ? Mathf.Max(1, heldScrollMultiplier) : 1;
+                y += Mathf.Max(1, scrollSpeed) * multiplier * Time.unscaledDeltaTime;
             }
             label.text = "";
             var roomAudio = RoomAudio.For(this);
