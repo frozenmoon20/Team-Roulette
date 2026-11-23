@@ -319,12 +319,14 @@ public static class Room3FlowVerification
         CheckObjective(living, GameStage.Entrance);
         player.enabled = true;
         door.Interact();
+        yield return WaitFor(() => flow.EndingVisible, "Credits start after the entrance dialogue");
         yield return .1;
         Check(manager.IsFinished && flow.EndingVisible, "Entrance completes flow and opens temporary ending");
         Check(!player.isActiveAndEnabled && !Find<PlayerInteractor>(living).isActiveAndEnabled,
             "Ending stops player movement, camera input and interactions");
+        string expectedCredits = porch.ReadCredits();
         Check(Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Exclude, FindObjectsSortMode.None)
-            .Any(text => text.text == porch.creditsText), "Ending displays the configured credits");
+            .Any(text => text.text == expectedCredits), "Ending displays the configured credits");
         Check(Time.timeScale == 0 && !Find<GameUI>(living).isActiveAndEnabled,
             "Ending freezes time and disables settings input");
         door.Interact();

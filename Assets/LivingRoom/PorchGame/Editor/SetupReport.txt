@@ -1,5 +1,0 @@
-현관 크기의 독립 클릭 영역 연결 완료
-대상: suburb_house/Door_exterior_windowed.001
-영역: PorchGame/Porch Click Area
-크기: (1.05, 0.20, 2.18)
-집 프리팹 변경 없음
